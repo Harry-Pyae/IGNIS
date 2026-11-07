@@ -11,43 +11,46 @@ before writing code. Where they disagree, the Build Plan's Core Principles win.
 4. **Scientific domain purity.** MVP retrieval covers **solid-material flammability only** (BASS, BASS-II, Saffire, SoFIE/MIST). SAME smoke-detection experiments carry their own domain (`smoke_detection`) and never enter solid-flammability retrieval. Liquid-droplet combustion (FLEX) is OUT of the MVP entirely and must never be matched against solid scenarios. The domain gate runs before any similarity scoring.
 5. **Honesty beats impressiveness.** Missing data stays null and visible. Original units are preserved alongside normalized values. "Unknown", "untested", and "outside current catalog range" are valid, displayed states — and they are distinct states.
 
+## Team (IGNIS_TEAM_PLAN.md v2)
+
+| Role | Owns | Branch |
+|---|---|---|
+| **Coder A** — Engine & Integration (team lead) | `main`, engine, API logic, deployment, merges | `main` |
+| **Coder B** — Mission Console | the public UI | `console` |
+| **Coder C** — Features *(optional)* | the Team Plan's Coder C list | `features` |
+| **R1** — Data & Science Research | sources, extraction, verification (the catalog) | none — works in `/curate` |
+| **R2** — Media Research | NASA footage/stills, media ledger, pitch video | none |
+| **R3** — Testing & Judge Experience | QA log, demo, captions, Burmese review, submission | none |
+
 ## Git rules
 
-- **Never push to `main`.** `main` belongs to Part 1 (team lead). Nobody else pushes or merges to it.
-- Work only on your part's branch, cut from the latest `main`:
-
-  | Part | Owner role | Branch |
-  |---|---|---|
-  | 2 | Evidence Engine | `part2-engine` |
-  | 3 | Mission Console | `part3-console` |
-  | 4 | Evidence Catalog | `part4-catalog` |
-  | 5 | Source Intelligence & Media | `part5-sources` |
-  | 6 | Broadcast & Judge Experience | `part6-broadcast` |
-
+- **Only Coder A pushes or merges to `main`.** Coder B works on `console`, Coder C on `features`,
+  each cut from the latest `main`.
+- Research members (R1–R3) don't touch code. They work through `/curate`, shared drives and docs, and send
+  repo docs (coverage note, media ledger, QA log, demo script) to Coder A as an issue or a docs-only PR.
 - Small commits with clear messages. Open a PR to `main` when a task is done.
 - **CI must be green before you open a PR**: `npm run typecheck && npm run lint && npm test && npm run build`.
-- **Daily merge window (evening):** Part 1 reviews and merges PRs once a day, then `main` deploys.
+- **Daily merge window (evening):** Coder A reviews and merges PRs once a day, then `main` deploys and R3 tests it.
   Rebase on `main` each morning: `git fetch && git rebase origin/main`.
-- Check your work on the deployed preview URL, not just localhost.
-- Cross-part changes go through Part 1 as a request (issue or PR comment). Never edit another part's files.
+- Check your work on the deployed URL, not just localhost.
+- Cross-ownership changes (shared types, schema, another branch's files) go through Coder A as a request.
 
 ## File ownership
 
 | Path | Owner | Notes |
 |---|---|---|
-| `src/lib/types.ts`, `src/lib/fixtures.ts`, `src/lib/copy.ts` | Part 1 | Shared contracts, edge-case fixtures, approved scientific copy. Changes only via Part 1. |
-| `supabase/migrations/*`, RLS, `scripts/local-db.mjs` | Part 1 | Schema = Build Plan §4 (0001, verbatim) + additive migrations. |
-| `supabase/seed.sql` **records**, `docs/catalog-coverage.md` | Part 4 | Card content and sign-off. `verified_by` = the reviewer's own name, set only by publishing in `/curate`. |
-| `src/styles/tokens.css`, `src/styles/index.css`, `src/components/ui/*` | Part 1 | Tokens + primitives. Part 3 uses them, never forks them. See `/kit`. |
-| `src/pages/Curate.tsx`, `src/pages/Kit.tsx`, `src/lib/catalog.ts`, `src/components/CatalogStatus.tsx`, `src/components/AppHeader.tsx` | Part 1 | Curation path, design kit, client catalog integration, app shell. |
-| `src/server/http.ts` (rate-limit + curator guard), `src/server/llm.ts`, `src/server/db.ts` | Part 1 | Guard infrastructure, adapter. Part 2 wires the guards into its endpoint logic. |
-| `api/*` contracts, `src/server/claims.ts`, `src/server/synthesis.ts`, `src/server/cacheKey.ts` | Part 1 | Request/response shapes, claim validation and the server boundary are final. |
-| `src/lib/gates.ts` | Part 2 extends · Part 1 owns signature | ONE gate implementation used by the endpoint and the engine. Never fork it. |
-| `src/engine/*` (new), `src/server/prompts.ts`, logic inside `api/*` | Part 2 | Resolver, matching/scoring (semantics frozen in `types.ts`), gap grid, prompts, briefing cache, export endpoint. |
-| `src/pages/Home.tsx` console sections, `src/components/*` (non-ui, non-shell), `src/i18n/*` (new) | Part 3 | The public console built to §8.3. Landing hero/how-it-works/catalog/footer copy is Part 1-approved. |
-| `docs/sources.md`, card `media_url` stills | Part 5 | Real NASA public-domain material only. |
-| `docs/demo-script.md`, `docs/pitch.md`, `README.md` judge section, MY translations | Part 6 | |
-| `public/art/*` | Part 1 | Branding/decor only — never shown as experiment data. |
+| `src/lib/types.ts`, `src/lib/fixtures.ts`, `src/lib/copy.ts` | Coder A | Shared contracts, edge-case fixtures, approved scientific copy. Changes only via Coder A. |
+| `supabase/migrations/*`, RLS, `scripts/local-db.mjs` | Coder A | Schema = Build Plan §4 (0001, verbatim) + additive migrations. |
+| `supabase/seed.sql` **records**, `docs/catalog-coverage.md` | R1 | Card content and sign-off. `verified_by` = the reviewer's own name, set only by publishing in `/curate`. |
+| `src/styles/tokens.css`, `src/styles/index.css`, `src/components/ui/*` | Coder A | Tokens + primitives. Coder B/C use them, never fork them. See `/kit`. |
+| `src/pages/Curate.tsx`, `src/pages/Kit.tsx`, `src/lib/catalog.ts`, `src/components/CatalogStatus.tsx`, `src/components/AppHeader.tsx` | Coder A | Curation path, design kit, client catalog integration, app shell. |
+| `src/server/*`, `api/*`, `src/lib/gates.ts`, `src/lib/coverage.ts`, `src/engine/*` (new) | Coder A | Engine, endpoints, claim validation, prompts, briefing cache, export. ONE gate implementation — never fork it. |
+| `src/pages/Home.tsx` console sections, `src/components/*` (non-ui, non-shell), `src/i18n/*` (new) | Coder B | The public console built to §8.3. Landing hero/how-it-works/catalog/footer copy is Coder A-approved. |
+| `src/features/*` (new) | Coder C | Telemetry modal, auto-play captions, comparison animation, `/curate` quality-of-life — each with a fallback. |
+| `docs/sources.md`, `docs/catalog-coverage.md` | R1 | Source queue and the coverage note R3 picks the demo scenario from. |
+| `docs/media-ledger.md`, card `media_url` stills, the pitch video | R2 | Real NASA public-domain material only; every asset in the ledger. |
+| `docs/QA-LOG.md`, `docs/demo-script.md`, `docs/pitch.md`, `README.md` judge section, MY translations | R3 | |
+| `public/art/*` | Coder A | Branding/decor only — never shown as experiment data. |
 
 ## Local development
 

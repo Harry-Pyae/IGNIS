@@ -1,5 +1,5 @@
 -- IGNIS initial schema — copied verbatim from IGNIS_BUILD_PLAN.md §4.
--- RLS policies (§10) follow the schema. Changes go through Part 1 only.
+-- RLS policies (§10) follow the schema. Changes go through Coder A only.
 
 create table experiments (
   id uuid primary key default gen_random_uuid(),

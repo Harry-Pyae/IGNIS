@@ -13,7 +13,7 @@
 --        · GMT45-T4 2.2 | 10→2.2 | 18.7 | Quenched (BASS-II)
 --
 -- PUBLICATION STATUS (round 2, A2): all three rows are DRAFTS (verified_by = null), so they are
--- invisible to the public API until Part 4 (chief curator) re-checks every field against the PDF
+-- invisible to the public API until R1 (Data & Science Research) re-checks every field against the PDF
 -- and publishes them from /curate under their own name. Nobody publishes on someone else's behalf.
 -- spread_rate_mm_s is null on purpose: the paper plots spread rates (Fig. 4) but never states numbers.
 -- Quote pages and figure pages differ: Fig. 2 is on p.4, Fig. 3 on p.5, Figs. 5/6 on p.6.
@@ -58,5 +58,5 @@ insert into experiments (
   'https://ntrs.nasa.gov/citations/20150008962', 'BASS-II', 5, 'Figures 5 and 6',
   'Appendix: Test summary of flat SIBAL fabrics in concurrent flow in BASS and BASS II', '3. Results and Discussion',
   '20150008962', null, null, null, '[{"parameter":"flow_cm_s","from":10,"to":2.2,"stored":"final_held","note":"ignited at 10 cm/s, reduced incrementally after ignition to 2.2 cm/s and held for the remainder of the test (p.5)"}]'::jsonb, null,
-  'Flow NOT constant: ignited at 10 cm/s, reduced to 2.2 cm/s "and held there for the remainder of the test"; flow_cm_s stores the held value. Appendix (p.9) lists GMT45-T4 as 10->2.2 cm/s, 18.7% O2, Quenched. OPEN QUESTION FOR PART 4: should a changing-flow quenching test be carded with the held flow (current choice, flagged in condition_changes) or kept out of constant-flow comparisons entirely?'
+  'Flow NOT constant: ignited at 10 cm/s, reduced to 2.2 cm/s "and held there for the remainder of the test"; flow_cm_s stores the held value. Appendix (p.9) lists GMT45-T4 as 10->2.2 cm/s, 18.7% O2, Quenched. OPEN QUESTION FOR R1: should a changing-flow quenching test be carded with the held flow (current choice, flagged in condition_changes) or kept out of constant-flow comparisons entirely?'
 );

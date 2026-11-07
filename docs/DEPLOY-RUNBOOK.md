@@ -10,7 +10,7 @@ Takes about 15 minutes.
 2. When the project is ready, open **SQL Editor → New query**, then paste and **Run** each file **in this order**:
    1. `supabase/migrations/0001_init.sql`
    2. `supabase/migrations/0002_round2.sql`
-   3. `supabase/seed.sql` (3 **draft** cards: invisible to the public until Part 4 verifies them in `/curate`)
+   3. `supabase/seed.sql` (3 **draft** cards: invisible to the public until R1 verifies them in `/curate`)
 3. **Project Settings → API**. Copy three values:
    - Project URL → `SUPABASE_URL`
    - `anon` / publishable key → `SUPABASE_ANON_KEY`
@@ -37,10 +37,10 @@ Takes about 15 minutes.
    **redeploy**.
 4. **Deploy**. When it's green, copy the production URL (e.g. `https://ignis-xxxx.vercel.app`).
 
-## 3. Hand back to Part 1
+## 3. Hand back to Coder A
 
-Send Part 1 (privately): the production URL, and confirmation that all 7 variables are set for Production + Preview.
-Part 1 then runs the live verification:
+Send Coder A (privately): the production URL, and confirmation that all 7 variables are set for Production + Preview.
+Coder A then runs the live verification (R3 repeats it in `docs/QA-LOG.md`):
 
 - RLS on the real database: drafts invisible, verified visible, anon writes denied (`IGNIS_DB_TESTS=1` scoped to a
   deliberately disposable run that cleans up its own rows).

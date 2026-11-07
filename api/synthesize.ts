@@ -27,7 +27,7 @@ export const POST = route(async (req) => {
   const prepared = prepareSynthesis(data.scenario, data.experiment_ids, catalog, revision);
   if (!prepared.ok) return apiError(prepared.status, prepared.code, prepared.message, prepared.issues);
 
-  // TODO(part2): look up / store briefings_cache with briefingCacheKey() (src/server/cacheKey.ts).
+  // TODO(coder-a): look up / store briefings_cache with briefingCacheKey() (src/server/cacheKey.ts).
   const user = `SCENARIO:\n${JSON.stringify(data.scenario)}\n\n${prepared.ctx.text}`;
   const briefing = await runClaimPipeline(
     (temperature) =>

@@ -1,5 +1,5 @@
 /**
- * /curate form state helpers (pure, testable). OWNER: Part 1.
+ * /curate form state helpers (pure, testable). OWNER: Coder A.
  * Round 2, A1: every extraction starts from a CLEAN form. Only fields the curator explicitly
  * ticks in "carry forward" survive; every extractable field is replaced (null → blank).
  */

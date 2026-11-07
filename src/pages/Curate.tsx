@@ -1,8 +1,8 @@
 /**
  * /curate — internal curation path (§8.2, round 2 A1/A2). Ugly-but-fast by design; not judged.
- *   Part 5 enters/extracts → SAVE DRAFT (private) → Part 4 reopens, corrects → VERIFY & PUBLISH under their own name.
+ *   R1 enters/extracts → SAVE DRAFT (private) → reopens, checks every value → VERIFY & PUBLISH under their own name.
  * Protection is SERVER-SIDE (curator secret checked in /api/*); hiding this route is not the protection.
- * OWNER: Part 1.
+ * OWNER: Coder A.
  */
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { Badge, Button, Panel, Select } from '../components/ui';

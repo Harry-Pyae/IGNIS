@@ -1,6 +1,6 @@
 /**
- * IGNIS shared contracts. Parts 2 and 3 code against this file.
- * OWNER: Part 1. Changes go through a request to Part 1, never edited on a part branch.
+ * IGNIS shared contracts. The engine (Coder A) and the console (Coder B) code against this file.
+ * OWNER: Coder A. Changes go through a request to Coder A, never edited on the console/features branch.
  *
  * Mirrors supabase/migrations/0001_init.sql + 0002_round2.sql (IGNIS_BUILD_PLAN.md §4)
  * and the matching / claim / coverage contracts (§5–§7, docs/DECISIONS-ROUND2.md).
@@ -139,7 +139,7 @@ export const ParsedScenarioSchema = z.object({
 });
 export type ParsedScenario = z.infer<typeof ParsedScenarioSchema>;
 
-/** Output of Part 2's alias resolver. The raw phrase is always preserved. */
+/** Output of the engine's alias resolver. The raw phrase is always preserved. */
 export const ResolvedMaterialSchema = z.discriminatedUnion('status', [
   z.object({
     status: z.literal('resolved'),
@@ -165,7 +165,7 @@ export const ResolvedScenarioSchema = ParsedScenarioSchema.omit({ fuel_material_
 export type ResolvedScenario = z.infer<typeof ResolvedScenarioSchema>;
 
 // ---------------------------------------------------------------------------
-// Gates (§5b stage 1) — src/lib/gates.ts is the ONE implementation (Part 2 extends it)
+// Gates (§5b stage 1) — src/lib/gates.ts is the ONE implementation (the engine extends it)
 // ---------------------------------------------------------------------------
 export const GateReasonSchema = z.enum(['domain_mismatch', 'material_unresolved', 'material_mismatch', 'form_incompatible']);
 export type GateReason = z.infer<typeof GateReasonSchema>;
@@ -181,7 +181,7 @@ export const GateResultSchema = z.object({
 export type GateResult = z.infer<typeof GateResultSchema>;
 
 // ---------------------------------------------------------------------------
-// Matching (§5) — produced by deterministic code only (Part 2)
+// Matching (§5) — produced by deterministic code only (the engine, Coder A)
 //
 // SCORING SEMANTICS (frozen; fixtures in tests/fixtures/contracts.ts):
 // • Range population: min/max of p over the GATE-SURVIVING verified catalog cards that

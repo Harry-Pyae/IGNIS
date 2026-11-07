@@ -20,7 +20,7 @@ import { COPY } from '../lib/copy';
 import { FIXTURES, SEED_CARDS } from '../lib/fixtures';
 import type { Briefing, ChipStatus } from '../lib/types';
 
-/** /kit — living reference of tokens + primitives for Part 3. Not linked from the public app. */
+/** /kit — living reference of tokens + primitives for Coder B (and Coder C). Not linked from the public app. */
 
 const EVIDENCE_STATES: [ChipStatus, string][] = [
   ['not_reported', 'This card does not report the value. Other verified cards may still cover it.'],
@@ -53,7 +53,7 @@ const BRIEF_SECTIONS = [
   ['UNTESTED', 'untested', 'Untested', 'text-warn'],
 ] as const;
 
-/** Reference rendering of a Briefing from the contract — for Part 3, not the production Brief. */
+/** Reference rendering of a Briefing from the contract — for Coder B, not the production Brief. */
 function BriefPreview({ briefing }: { briefing: Briefing }) {
   return (
     <div className="flex flex-col gap-3">
@@ -282,7 +282,7 @@ export function Kit() {
         </p>
       </Block>
 
-      <Block title="Mission Brief — reference rendering (Part 3 owns the real one)">
+      <Block title="Mission Brief — reference rendering (Coder B owns the real one)">
         <div className="grid gap-6 lg:grid-cols-2">
           <div>
             <p className="console-label mb-3 text-dim">FIXTURES.withheldClaims</p>

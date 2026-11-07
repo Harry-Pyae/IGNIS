@@ -1,6 +1,6 @@
 /**
- * Approved scientific copy (docs/DECISIONS-ROUND2.md, decisions 3–4). OWNER: Part 1.
- * Parts 3 and 6 render these strings (or reviewed translations of them) — never paraphrase
+ * Approved scientific copy (docs/DECISIONS-ROUND2.md, decisions 3–4). OWNER: Coder A.
+ * Coder B and R3 render these strings (or reviewed translations of them) — never paraphrase
  * them into stronger claims. A finite curated catalog cannot establish absence across all
  * NASA research, so absence is always bounded to "the current IGNIS catalog".
  */

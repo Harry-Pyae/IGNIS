@@ -143,8 +143,7 @@ verify it, defend it.
   and publish them under your name — including the GMT45-T4 changing-flow
   qualifier (ignited 10 cm/s → reduced to 2.2). The public catalog count is
   zero until you do this.
-- Source hunting in priority order (the GPT review's source table in
-  `reports/` is your starting list): BASS/BASS-II NTRS papers, PSI-25
+- Source hunting in priority order: BASS/BASS-II NTRS papers, PSI-25
   dataset, Saffire I–IV reports (NTRS 20170008805, 20210011521), SoFIE/MIST
   papers when obtainable. FLEX links for the roadmap slide only; SAME only
   as `smoke_detection` context.

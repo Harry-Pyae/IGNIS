@@ -1,6 +1,6 @@
 /**
- * Shared primitives — token-styled only. OWNER: Part 1.
- * Part 3 builds every §8.1 section from these; request a new primitive instead of forking one.
+ * Shared primitives — token-styled only. OWNER: Coder A.
+ * Coder B builds every §8.1 section from these; request a new primitive instead of forking one.
  * Live reference of every primitive: /kit
  */
 export { Badge } from './Badge';

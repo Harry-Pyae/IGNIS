@@ -1,5 +1,5 @@
 /**
- * Public catalog summary (provenance strip + landing Catalog block). OWNER: Part 1.
+ * Public catalog summary (provenance strip + landing Catalog block). OWNER: Coder A.
  * Reads the counts-only SQL function catalog_stats() — drafts stay private, but the UI can
  * honestly say "N cards in review".
  *
