@@ -4,6 +4,7 @@
 
 <h1 align="center">IGNIS</h1>
 <p align="center"><b>Evidence-first fire-safety intelligence for human spaceflight</b><br/>
+by <b>Team AstroFlare</b> · 
 NASA Space Apps 2026 · Flame in Freefall</p>
 
 Describe a spacecraft fire scenario in mission terms and IGNIS retrieves the closest verified NASA microgravity

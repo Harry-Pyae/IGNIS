@@ -6,8 +6,9 @@ type Variant = 'primary' | 'secondary' | 'ghost';
 type Size = 'sm' | 'md' | 'lg';
 
 const VARIANTS: Record<Variant, string> = {
-  primary: 'bg-amber text-bg font-semibold can-hover:hover:bg-[color-mix(in_srgb,var(--color-amber)_86%,white)]',
-  secondary: 'border border-border bg-panel text-text can-hover:hover:border-raised',
+  primary: 'btn-primary text-bg font-semibold',
+  secondary:
+    'border border-border bg-panel/70 text-text shadow-[inset_0_1px_0_0_color-mix(in_srgb,var(--color-text)_6%,transparent)] can-hover:hover:border-raised can-hover:hover:bg-panel',
   ghost: 'text-dim can-hover:hover:text-text can-hover:hover:bg-[color-mix(in_srgb,var(--color-text)_6%,transparent)]',
 };
 const SIZES: Record<Size, string> = {
@@ -41,7 +42,7 @@ export function Button({
     <button
       type={type}
       className={cx(
-        'pressable inline-flex shrink-0 items-center justify-center whitespace-nowrap transition-colors duration-150',
+        'pressable inline-flex shrink-0 items-center justify-center whitespace-nowrap font-medium tracking-[-0.005em] transition-[color,background-color,border-color,box-shadow,filter,transform] duration-[180ms] ease-[var(--ease-out)]',
         'disabled:cursor-not-allowed disabled:opacity-45',
         VARIANTS[variant],
         SIZES[size],

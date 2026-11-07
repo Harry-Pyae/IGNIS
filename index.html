@@ -8,6 +8,7 @@
       name="description"
       content="IGNIS retrieves the closest verified NASA microgravity combustion experiments for a spacecraft fire scenario, explains what they observed, and marks where the current catalog has no matching evidence."
     />
+    <meta name="author" content="Team AstroFlare" />
     <meta name="theme-color" content="#0C0F16" />
     <meta name="color-scheme" content="dark" />
 
@@ -43,13 +44,8 @@
       fetchpriority="high"
     />
 
-    <!-- Fonts: Space Grotesk (UI) + IBM Plex Mono (console) -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap"
-    />
+    <!-- Fonts: self-hosted Space Grotesk (UI) + IBM Plex Mono (console). Preload the one above the fold. -->
+    <link rel="preload" href="/fonts/space-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin />
   </head>
   <body>
     <div id="root"></div>

@@ -61,7 +61,7 @@ export function PresetChip({ active, className, type = 'button', ...rest }: Pres
       type={type}
       aria-pressed={active}
       className={cx(
-        'pressable inline-flex min-h-9 items-center gap-2 rounded-full border px-4 py-1.5 text-left text-[13px] transition-colors duration-150',
+        'pressable inline-flex min-h-9 items-center gap-2 rounded-full border px-4 py-1.5 text-left text-[13px] transition-[color,background-color,border-color,box-shadow,filter,transform] duration-[180ms] ease-[var(--ease-out)]',
         active
           ? 'border-amber bg-amber/10 text-text'
           : 'border-border bg-panel/70 text-dim can-hover:hover:border-raised can-hover:hover:text-text',

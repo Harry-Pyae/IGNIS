@@ -1,7 +1,11 @@
 /**
  * Public catalog summary (provenance strip + landing Catalog block). OWNER: Part 1.
  * Reads the counts-only SQL function catalog_stats() — drafts stay private, but the UI can
- * honestly say "N cards in review". Supabase + Zod load lazily, off the LCP path.
+ * honestly say "N cards in review".
+ *
+ * Landing-page budget: one plain fetch to the PostgREST RPC endpoint, no supabase-js and no
+ * Zod on this path (they cost ~150 KB of parse time before first paint on slow phones).
+ * The shape check below mirrors CatalogStatsSchema in types.ts.
  *
  * States are distinct on purpose:
  *   loading · unavailable (not configured | request failed → offer retry) · ready (may be empty)
@@ -15,16 +19,29 @@ export type CatalogSummary =
   | { state: 'unavailable'; reason: 'not_configured' | 'error' }
   | { state: 'ready'; stats: CatalogStats };
 
+const isCount = (v: unknown): v is number => Number.isInteger(v) && (v as number) >= 0;
+function asStats(d: unknown): CatalogStats | null {
+  const s = d as Partial<CatalogStats> | null;
+  if (!s || !isCount(s.verified) || !isCount(s.in_review) || typeof s.revision !== 'string') return null;
+  if (!Array.isArray(s.campaigns) || !s.campaigns.every((c) => typeof c === 'string')) return null;
+  if (s.last_updated !== null && typeof s.last_updated !== 'string') return null;
+  return s as CatalogStats;
+}
+
 async function load(): Promise<CatalogSummary> {
+  const url = import.meta.env.SUPABASE_URL;
+  const key = import.meta.env.SUPABASE_ANON_KEY;
+  if (!url || !key) return { state: 'unavailable', reason: 'not_configured' };
   try {
-    const [{ supabase }, { CatalogStatsSchema }] = await Promise.all([import('./supabase'), import('./types')]);
-    if (!supabase) return { state: 'unavailable', reason: 'not_configured' };
-    const { data, error } = await supabase.rpc('catalog_stats');
-    if (error) return { state: 'unavailable', reason: 'error' };
-    const parsed = CatalogStatsSchema.safeParse(data);
-    return parsed.success ? { state: 'ready', stats: parsed.data } : { state: 'unavailable', reason: 'error' };
+    const res = await fetch(`${url}/rest/v1/rpc/catalog_stats`, {
+      method: 'POST',
+      headers: { apikey: key, authorization: `Bearer ${key}`, 'content-type': 'application/json' },
+      body: '{}',
+    });
+    const stats = res.ok ? asStats(await res.json()) : null;
+    return stats ? { state: 'ready', stats } : { state: 'unavailable', reason: 'error' };
   } catch {
-    // Chunk failed to load, client threw during init, network down…
+    // Network down, CORS, DNS…
     return { state: 'unavailable', reason: 'error' };
   }
 }
