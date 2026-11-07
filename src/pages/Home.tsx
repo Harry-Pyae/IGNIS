@@ -12,6 +12,9 @@ import {
   Slider,
   type IconName,
 } from '../components/ui';
+import { CatalogBlock } from '../components/CatalogStatus';
+import { useCatalogSummary } from '../lib/catalog';
+import { COPY } from '../lib/copy';
 
 /** §8.1 Scenario Builder templates. Presets carry their explicit material mapping (§5a) — Part 2/3 wire them. */
 const PRESETS = [
@@ -22,13 +25,12 @@ const PRESETS = [
   'Custom',
 ] as const;
 
-const NO_PREDICTION_CAPTION = 'Slider changes which NASA evidence is retrieved — IGNIS does not predict behavior.';
-
 export function Home() {
   return (
     <main id="top">
       <Hero />
       <HowItWorks />
+      <CatalogSection />
       <Principle />
       <GuidedDemoPanel />
       <ConsoleSkeleton />
@@ -53,7 +55,7 @@ function Hero() {
         height={941}
         alt=""
         aria-hidden
-        fetchPriority="high"
+        {...{ fetchpriority: 'high' }} /* lowercase: React 18 passes it straight to the DOM */
         decoding="async"
         className="absolute inset-0 -z-20 size-full object-cover object-[68%_center]"
       />
@@ -78,9 +80,9 @@ function Hero() {
             <span className="text-dim">Nothing it didn&apos;t.</span>
           </h1>
           <p {...rise(2)} className="anim-rise mt-6 max-w-lg text-[17px] leading-relaxed text-dim">
-            Describe a spacecraft fire scenario in mission terms. IGNIS retrieves NASA&apos;s closest real
-            microgravity combustion experiments, explains what was actually observed — and explicitly shows what NASA
-            has never tested.
+            Describe a spacecraft fire scenario in mission terms. IGNIS retrieves the closest verified NASA
+            microgravity combustion experiments, explains what they actually observed — and marks where the current
+            catalog has no matching evidence.
           </p>
           <div {...rise(3)} className="anim-rise mt-9 flex flex-wrap items-center gap-3">
             <Button variant="primary" size="lg" icon="play" glow onClick={() => scrollToId('guided-demo')}>
@@ -91,7 +93,7 @@ function Hero() {
             </Button>
           </div>
           <ul {...rise(4)} className="anim-rise mt-12 flex flex-wrap gap-x-6 gap-y-2">
-            {['Solid flammability only', 'Every claim cited', 'Untested shown, never guessed'].map((t) => (
+            {['Solid flammability only', 'Every claim checked against its card', 'Gaps shown, never guessed'].map((t) => (
               <li key={t} className="console-label flex items-center gap-2 text-dim">
                 <Icon name="verify" size={14} className="text-success" />
                 {t}
@@ -111,32 +113,47 @@ function scrollToId(id: string) {
 
 /* -------------------------------------------------------------------------- */
 
-const STEPS: { icon: IconName; tag: string; title: string; body: string }[] = [
+const STEPS: { icon: IconName; tag: string; title: string; lines: [string, string] }[] = [
   {
     icon: 'scenario',
     tag: '01 · Describe',
     title: 'Mission terms in',
-    body: '“Flight suit near a vent, 21% O₂.” You confirm the parsed parameters before anything runs.',
+    lines: [
+      'Describe a spacecraft fire scenario the way a crew would.',
+      'You confirm the parsed conditions and the resolved material before anything runs.',
+    ],
   },
   {
     icon: 'map-scatter',
     tag: '02 · Retrieve',
-    title: 'Real burn tests out',
-    body: 'Deterministic gates and similarity pick the closest verified BASS, Saffire and SoFIE experiments — no AI in the ranking.',
+    title: 'Verified experiments out',
+    lines: [
+      'Deterministic gates and similarity select the closest verified NASA experiments.',
+      'No AI touches eligibility or ranking.',
+    ],
+  },
+  {
+    icon: 'evidence',
+    tag: '03 · Explain',
+    title: 'Claims checked at the source',
+    lines: [
+      'Observed and supported statements cite the retrieved experiments.',
+      'The server checks every cited value against its card; anything unsupported is withheld.',
+    ],
   },
   {
     icon: 'gap',
-    tag: '03 · Refuse to guess',
-    title: 'Gaps made visible',
-    body: 'Where NASA never tested, IGNIS says UNTESTED. Every AI sentence must cite a card or it is withheld.',
+    tag: '04 · Gaps',
+    title: 'Absence made visible',
+    lines: ['Where nothing matches, IGNIS says so plainly — never filled in:', `“${COPY.absence}”`],
   },
 ];
 
 function HowItWorks() {
   return (
-    <section id="how-it-works" className="scroll-mt-20 px-4 py-20 sm:px-6">
+    <section id="how-it-works" aria-labelledby="how-title" className="scroll-mt-20 px-4 py-20 sm:px-6">
       <div className="relative isolate mx-auto max-w-6xl overflow-hidden rounded-panel border border-border bg-panel">
-        {/* Decorative constellation (moved here from the Evidence Map: its orange/blue dots read as data). */}
+        {/* Decorative constellation (kept off the Evidence Map: its orange/blue dots read as data). */}
         <img
           src="/art/bg-constellation.webp"
           width={1672}
@@ -145,30 +162,43 @@ function HowItWorks() {
           aria-hidden
           loading="lazy"
           decoding="async"
-          className="absolute inset-0 -z-10 size-full object-cover object-right opacity-90 max-md:opacity-35"
+          className="absolute inset-0 -z-10 size-full object-cover object-right opacity-70 [mask-image:linear-gradient(to_right,transparent_15%,black_75%)]"
         />
-        <div className="max-w-xl p-6 sm:p-10">
-          <span className="console-label text-amber">How it works</span>
-          <h2 className="mt-3 text-3xl font-semibold tracking-[-0.01em] sm:text-4xl">
+        <div className="p-6 sm:p-10">
+          <span className="console-label text-amber">How IGNIS works</span>
+          <h2 id="how-title" className="mt-3 max-w-xl text-3xl font-semibold tracking-[-0.01em] sm:text-4xl">
             An evidence catalog, not a simulator.
           </h2>
-          <ol className="mt-8 flex flex-col gap-6">
+          <ol className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {STEPS.map((s) => (
-              <li key={s.tag} className="flex gap-4">
-                <span className="grid size-10 shrink-0 place-items-center rounded-xl border border-border bg-bg/70 text-amber">
+              <li key={s.tag} className="flex flex-col gap-3 rounded-xl border border-border bg-bg/80 p-5">
+                <span className="grid size-10 place-items-center rounded-xl border border-border bg-panel text-amber">
                   <Icon name={s.icon} size={19} />
                 </span>
                 <div>
                   <span className="console-label text-dim">{s.tag}</span>
-                  <h3 className="text-[17px] font-semibold">{s.title}</h3>
-                  <p className="mt-1 text-[15px] leading-relaxed text-dim">{s.body}</p>
+                  <h3 className="mt-0.5 text-[17px] font-semibold">{s.title}</h3>
                 </div>
+                <p className="text-[14px] leading-relaxed text-dim">
+                  {s.lines[0]} <span className="text-text">{s.lines[1]}</span>
+                </p>
               </li>
             ))}
           </ol>
         </div>
       </div>
     </section>
+  );
+}
+
+function CatalogSection() {
+  const { summary, retry } = useCatalogSummary();
+  return (
+    <div id="catalog" className="scroll-mt-20 px-4 pb-20 sm:px-6">
+      <div className="mx-auto max-w-6xl">
+        <CatalogBlock summary={summary} retry={retry} />
+      </div>
+    </div>
   );
 }
 
@@ -195,7 +225,7 @@ function Principle() {
             </Panel>
             <Panel tone="untested" className="!p-4">
               <span className="console-label text-warn">Untested</span>
-              <p className="mt-1.5 text-sm text-dim">No evidence. Shown, never filled in.</p>
+              <p className="mt-1.5 text-sm text-dim">No matching verified evidence in the current catalog. Shown, never filled in.</p>
             </Panel>
           </div>
         </div>
@@ -275,7 +305,7 @@ function ConsoleSkeleton() {
           <div className="flex flex-col gap-5">
             <Slider label="O₂" unit="%" min={14} max={30} value={o2} onChange={setO2} />
             <Slider label="Airflow" unit="cm/s" min={0} max={30} value={flow} onChange={setFlow} />
-            <p className="text-[13px] text-dim">{NO_PREDICTION_CAPTION}</p>
+            <p className="text-[13px] text-dim">{COPY.sliderCaption}</p>
           </div>
         </div>
       </Panel>
@@ -285,12 +315,7 @@ function ConsoleSkeleton() {
           id="s2"
           step="02 · Retrieve"
           title="Evidence map"
-          aside={
-            <>
-              <Badge variant="live" />
-              <Scaffold owner="part3-console" />
-            </>
-          }
+          aside={<Scaffold owner="part3-console" />}
         />
         <EmptyState icon="map-scatter" title="The Evidence Map renders here">
           Verified experiments plotted by airflow × O₂, the scenario marker, match lines and hatched untested cells.
@@ -307,7 +332,7 @@ function ConsoleSkeleton() {
         <Panel as="section" aria-labelledby="s4">
           <SectionHeader id="s4" step="04 · Evidence-validated claims" title="Mission brief" aside={<Scaffold owner="part3" />} />
           <EmptyState icon="evidence" title="Validated claims appear here">
-            Observed · Supported interpretation · Untested — every citation checked on the server first.
+            Observed · Supported interpretation · Untested. {COPY.claimsGuarantee}
           </EmptyState>
         </Panel>
       </div>
@@ -315,8 +340,7 @@ function ConsoleSkeleton() {
       <Panel as="section" aria-labelledby="s5">
         <SectionHeader id="s5" step="05 · Research prioritization" title="Evidence gap radar" aside={<Scaffold owner="part3" />} />
         <EmptyState icon="gap" title="The largest untested regions appear here">
-          Untested regions are not necessarily unsafe — they are unstudied. IGNIS marks them as candidate areas for
-          future NASA testing.
+          {COPY.gapNote}
         </EmptyState>
       </Panel>
     </div>
@@ -325,15 +349,30 @@ function ConsoleSkeleton() {
 
 function Footer() {
   return (
-    <footer className="border-t border-border/70 px-4 py-10 sm:px-6">
-      <div className="mx-auto flex max-w-6xl flex-col gap-3 text-[13px] text-dim sm:flex-row sm:items-center sm:justify-between">
-        <p>
-          Evidence from NASA NTRS and PSI sources. Illustrations on this page are branding — not NASA experiment
-          imagery.
-        </p>
-        <a href="#top" className="console-label text-dim can-hover:hover:text-text">
-          Back to top
-        </a>
+    <footer className="border-t border-border/70 px-4 py-12 sm:px-6">
+      <div className="mx-auto grid max-w-6xl gap-8 text-[13px] text-dim md:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+        <div className="flex flex-col gap-3">
+          <p className="flex flex-wrap items-center gap-2 text-text">
+            <img src="/art/logo-flame.webp" width={20} height={20} alt="" aria-hidden loading="lazy" className="size-5 rounded-full" />
+            <span className="font-semibold tracking-[0.14em]">IGNIS</span>
+            <span className="text-dim">· Team IGNIS · NASA Space Apps 2026</span>
+          </p>
+          <p>
+            Experiment data: NASA Technical Reports Server (NTRS) and NASA Physical Sciences Informatics (PSI). Each card
+            links to and credits its own source.
+          </p>
+          <p>IGNIS is an independent NASA Space Apps project. Not affiliated with or endorsed by NASA.</p>
+          <p>Illustrations on this page are branding — not NASA experiment imagery.</p>
+        </div>
+        <div className="flex flex-col items-start gap-3 md:items-end">
+          {/* Open dataset export (§8.1 item 6) — Part 2 builds the endpoint; enable once it lands. */}
+          <Button size="sm" icon="download" disabled title="Open dataset export lands with Part 2">
+            Open dataset (.json)
+          </Button>
+          <a href="#top" className="console-label text-dim can-hover:hover:text-text">
+            Back to top
+          </a>
+        </div>
       </div>
     </footer>
   );
