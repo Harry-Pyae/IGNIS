@@ -1,6 +1,6 @@
 /**
  * A2 lifecycle through the REAL API handlers + a disposable database:
- * draft (invisible to anon) → Part 4-style edit → placeholder publish rejected → publish (visible)
+ * draft (invisible to anon) → R1-style edit → placeholder publish rejected → publish (visible)
  * → correction un-publishes (invisible again, catalog revision changes).
  */
 import { afterAll, describe, expect, it } from 'vitest';
@@ -34,7 +34,7 @@ describe.skipIf(!dbTestsEnabled)('curation lifecycle (A2)', () => {
     expect((await write({ action: 'save_draft', record: record(testId) }, {})).status).toBe(401);
   });
 
-  it('Part 5 saves a draft: stored, but invisible to the public', async () => {
+  it('R1 saves a draft: stored, but invisible to the public', async () => {
     const before = await stats();
     const res = await write({ action: 'save_draft', record: record(testId) });
     expect(res.status).toBe(201);
@@ -45,14 +45,14 @@ describe.skipIf(!dbTestsEnabled)('curation lifecycle (A2)', () => {
     expect((await stats()).in_review).toBe(before.in_review + 1);
   });
 
-  it('Part 4 lists and reopens the draft', async () => {
+  it('R1 lists and reopens the draft', async () => {
     const { items } = await (await list()).json();
     expect(items.find((i: { id: string }) => i.id === id)).toMatchObject({ status: 'draft', test_id: testId });
     const { experiment } = await (await list(`?id=${id}`)).json();
     expect(experiment.test_id).toBe(testId);
   });
 
-  it('Part 4 corrects it — still a draft', async () => {
+  it('R1 corrects it — still a draft', async () => {
     const res = await write({ action: 'save_draft', id, record: { ...record(testId), thickness_mm: 1.5, notes: 'corrected per Table 2' } });
     expect(res.status).toBe(200);
     expect((await res.json()).experiment).toMatchObject({ thickness_mm: 1.5, verified_by: null });

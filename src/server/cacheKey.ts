@@ -1,5 +1,5 @@
 /**
- * Briefing-cache identity (round 2, B). Part 2 implements the cache; this key is the contract.
+ * Briefing-cache identity (round 2, B). Coder A implements the cache; this key is the contract.
  * Includes the catalog revision, so correcting / unpublishing any verified card invalidates
  * stale briefings, and the prompt + validator versions, so rule changes do too.
  * Stored in briefings_cache.scenario_hash (+ catalog_revision column for auditing).

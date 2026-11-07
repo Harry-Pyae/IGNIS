@@ -22,10 +22,10 @@ verified evidence.
 
 ```bash
 git clone https://github.com/Harry-Pyae/IGNIS.git && cd IGNIS
-git checkout part3-console        # your part's branch — see AGENTS.md
+git checkout console              # your branch (Coder B) — see AGENTS.md
 nvm use                           # Node 24.x (.nvmrc)
 npm ci
-cp .env.example .env              # values come from Part 1, privately
+cp .env.example .env              # values come from Coder A, privately
 npm run dev                       # http://localhost:5173  (also serves /api/* locally)
 ```
 
@@ -38,7 +38,7 @@ npm run dev                       # http://localhost:5173  (also serves /api/* l
 | `npm run dev:local` | The app against that local DB (curator secret `local-curator-secret`) |
 | `npm run test:db` | RLS access matrix + draft→publish lifecycle on a fresh throwaway DB |
 
-Pages: `/` public app · `/curate` curation (server-protected writes) · `/kit` design-kit reference for Part 3.
+Pages: `/` public app · `/curate` curation (server-protected writes) · `/kit` design-kit reference for Coder B.
 
 ## Layout
 
@@ -48,13 +48,13 @@ api/                      Vercel serverless routes (Web-standard POST handlers)
   synthesize.ts           LLM Job B + §7.4 claim validation — public, rate-limited
   extract.ts              LLM Job C — curator secret
   curate-write.ts         the only DB write path — curator secret, service role
-src/lib/types.ts          shared contracts + Zod schemas (owner: Part 1)
+src/lib/types.ts          shared contracts + Zod schemas (owner: Coder A)
 src/server/               llm adapter, claim pipeline, http guards, db clients, prompts
 src/styles/tokens.css     §8.3 tokens + motion inventory
 src/components/ui/        Panel, Button, Chip, Select, Slider, Badge, Icon, …
 src/pages/                Home (landing + console scaffold), Curate, Kit
 supabase/migrations/      schema (§4) + RLS (§10)
-supabase/seed.sql         3 DRAFT seed cards (BASS / BASS-II, NTRS 20150008962) awaiting Part 4 sign-off
+supabase/seed.sql         3 DRAFT seed cards (BASS / BASS-II, NTRS 20150008962) awaiting R1 sign-off
 tests/                    claims probes, gates/coverage, extraction, endpoint boundary, fixtures, db/ (RLS + lifecycle)
 public/art/               branding art pack (decor only — never experiment data)
 ```
@@ -76,10 +76,10 @@ All bodies are JSON, validated with Zod (`src/lib/types.ts`). Errors are always
 🔒 = header `x-curator-secret`. Synthesize re-reads the catalog as the public role and applies the eligibility gates
 before any provider call (`ineligible_evidence` 400 otherwise), so clients can never inject or mis-scope evidence.
 
-## Database setup (once, Part 1)
+## Database setup (once, Coder A)
 
 1. Create a Supabase project. In **SQL Editor**, run `supabase/migrations/0001_init.sql`, then `0002_round2.sql`,
-   then `supabase/seed.sql` (3 **draft** cards — public only after Part 4 verifies them in `/curate`).
+   then `supabase/seed.sql` (3 **draft** cards — public only after R1 verifies them in `/curate`).
 2. Put the URL + anon + service-role keys in `.env` and in Vercel.
 3. Locally, `npm run test:db` proves the RLS matrix and the draft→publish lifecycle on a throwaway database.
 

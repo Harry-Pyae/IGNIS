@@ -1,9 +1,9 @@
 /**
- * Contract fixtures (round 2, B) — the edge cases Parts 2 and 3 build against.
+ * Contract fixtures (round 2, B) — the edge cases Coder A (engine) and Coder B (console) build against.
  * Every object is validated against its schema in tests/fixtures.test.ts; coverage fixtures
  * are re-derived with computeCoverage() there, so they cannot drift from the real rules.
  * Scores inside MatchResults are illustrative (internal sort order only, never rendered);
- * Part 2's own tests own the exact scoring numbers. OWNER: Part 1.
+ * the engine's own tests own the exact scoring numbers. OWNER: Coder A.
  */
 import { COPY } from './copy.js';
 import type { Briefing, CoverageResult, Experiment, MatchResult, ResolvedScenario } from './types.js';
@@ -33,7 +33,7 @@ const base = {
   notes: null,
 } as const;
 
-/** The three seed cards, as they will look once Part 4 publishes them. */
+/** The three seed cards, as they will look once R1 publishes them. */
 export const SEED_CARDS: Experiment[] = [
   {
     ...base,

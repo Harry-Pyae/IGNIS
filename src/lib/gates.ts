@@ -1,8 +1,8 @@
 /**
  * §5b Stage 1 eligibility gates — the ONE implementation (pure, no I/O).
  * Used by /api/synthesize to reject ineligible evidence before any provider call, and by
- * Part 2's engine before scoring. OWNER OF THE LOGIC: Part 2 — extend it HERE (never fork it);
- * the signature and GateResult shape are a Part 1 contract.
+ * the engine before scoring. OWNER: Coder A — extend it HERE (never fork it);
+ * the signature and GateResult shape are a frozen contract.
  *
  * Shipped minimal + correct: domain equal → fuel exact OR same material_class → form compatible.
  */

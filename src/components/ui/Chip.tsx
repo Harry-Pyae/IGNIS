@@ -7,7 +7,7 @@ import type { ChipStatus } from '../../lib/types';
  * ✓ same/exact · ≈ close/class · ≠ different · ⚠ not reported (the card) · ∅ untested (no catalog
  * evidence) · ⇥ outside catalog range · – not specified (the scenario). ⚠, ∅ and ⇥ are distinct
  * states and must never look alike. `text` values are the English defaults; pass `statusText`
- * (and `label`) from Part 3's t() helper to localize without forking.
+ * (and `label`) from Coder B's t() helper to localize without forking.
  */
 export const CHIP_STATUS: Record<ChipStatus, { symbol: string; text: string; className: string }> = {
   exact: { symbol: '✓', text: 'exact', className: 'text-success border-success/35' },
@@ -63,7 +63,7 @@ export function PresetChip({ active, className, type = 'button', ...rest }: Pres
       className={cx(
         'pressable inline-flex min-h-9 items-center gap-2 rounded-full border px-4 py-1.5 text-left text-[13px] transition-[color,background-color,border-color,box-shadow,filter,transform] duration-[180ms] ease-[var(--ease-out)]',
         active
-          ? 'border-amber bg-amber/10 text-text'
+          ? 'border-amber bg-amber/10 text-text shadow-[0_0_0_3px_color-mix(in_srgb,var(--color-amber)_12%,transparent),0_6px_18px_-8px_color-mix(in_srgb,var(--color-amber)_45%,transparent)]'
           : 'border-border bg-panel/70 text-dim can-hover:hover:border-raised can-hover:hover:text-text',
         className,
       )}
@@ -75,7 +75,7 @@ export function PresetChip({ active, className, type = 'button', ...rest }: Pres
 interface CitationChipProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'children'> {
   /** "E3" → renders [E3]. Render only AFTER server validation passed (§7.3). */
   evidenceId: string;
-  /** Accessible name (default "Evidence E3"). Localize via Part 3's t(). */
+  /** Accessible name (default "Evidence E3"). Localize via Coder B's t(). */
   label?: string;
 }
 

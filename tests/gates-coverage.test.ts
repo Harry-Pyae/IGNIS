@@ -85,7 +85,7 @@ describe('coverage (A4)', () => {
 });
 
 describe('verifier names (A2)', () => {
-  it.each(['', ' ', 'x', 'Part 1 lead (placeholder)', 'TBD', 'test', 'Unknown', 'Part 4'])('rejects %j', (n) =>
+  it.each(['', ' ', 'x', 'Part 1 lead (placeholder)', 'TBD', 'test', 'Unknown', 'Part 4', 'Coder A', 'R1'])('rejects %j', (n) =>
     expect(verifierNameProblem(n)).not.toBeNull(),
   );
   it.each(['Ada Lovelace', 'Pyae Sone Htut', 'Celeste Ng'])('accepts %j', (n) => expect(verifierNameProblem(n)).toBeNull());

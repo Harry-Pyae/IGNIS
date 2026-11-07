@@ -1,5 +1,5 @@
 /**
- * System prompts — IDENTICAL for every provider (§3). Part 2 owns refining the wording;
+ * System prompts — IDENTICAL for every provider (§3). Coder A owns refining the wording;
  * the output contracts (Zod schemas in src/lib/types.ts) are final.
  * Each prompt mentions JSON explicitly (required by Groq's json_object mode).
  * Bump PROMPT_VERSION on any change: it is part of the briefing-cache key.

@@ -3,7 +3,7 @@
  * Tailwind v4 turns every --color-* / --font-* / --radius-* here into utilities:
  *   bg-panel, border-border, text-dim, text-amber, font-mono, rounded-panel ...
  * Components use these utilities or var(--…) only — never a raw hex.
- * OWNER: Part 1. Request changes; don't edit on a part branch.
+ * OWNER: Coder A. Request changes; don't edit on the console/features branch.
  */
 /*
  * Self-hosted fonts (SIL OFL 1.1 — licenses in /public/fonts). Same origin, preloaded in

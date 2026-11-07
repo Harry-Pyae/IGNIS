@@ -2,7 +2,7 @@
  * Server-side extraction hygiene (round 2, A1). Every populated numeric draft field must
  * carry a quote, and every quote must actually occur in the pasted excerpt — otherwise the
  * value is nulled and reported. This checks source PRESENCE, not scientific correctness:
- * Part 4 still verifies units and interpretation.
+ * R1 still verifies units and interpretation.
  */
 import { EXTRACT_NUMERIC_FIELDS, type ExtractDraft } from './types.js';
 

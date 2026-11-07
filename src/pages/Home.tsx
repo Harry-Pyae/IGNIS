@@ -16,7 +16,7 @@ import { CatalogBlock } from '../components/CatalogStatus';
 import { useCatalogSummary } from '../lib/catalog';
 import { COPY } from '../lib/copy';
 
-/** §8.1 Scenario Builder templates. Presets carry their explicit material mapping (§5a) — Part 2/3 wire them. */
+/** §8.1 Scenario Builder templates. Presets carry their explicit material mapping (§5a) — Coder A/B wire them. */
 const PRESETS = [
   'Cabin wall panel (PMMA)',
   'Cable insulation',
@@ -256,7 +256,9 @@ function GuidedDemoPanel() {
           aria-hidden
           loading="lazy"
           decoding="async"
-          className="absolute inset-0 -z-10 size-full object-cover object-right"
+          // Fade the art out toward the bottom so its amber diagonal never runs through the preset pills;
+          // hidden on narrow screens, where the stretched diagonal would cross the copy.
+          className="absolute inset-0 -z-10 size-full object-cover object-right max-md:hidden [mask-image:linear-gradient(to_bottom,black_0%,black_30%,transparent_68%)]"
         />
         <div className="flex flex-col gap-8 p-6 sm:p-10 md:flex-row md:items-end md:justify-between">
           <div className="max-w-md">
@@ -266,17 +268,21 @@ function GuidedDemoPanel() {
               The guided demo runs the cabin-wall scenario end to end with a caption at every step — or pick a preset
               and explore on your own.
             </p>
-            {/* Part 3 wires the guided run (Part 6 writes the captions). */}
-            <Button variant="primary" size="lg" icon="play" className="mt-6" disabled title="Guided demo lands with Part 3">
+            {/* Coder B wires the guided run (R3 writes the captions). */}
+            <Button variant="primary" size="lg" icon="play" className="mt-6" disabled title="Guided demo lands with Coder B">
               Run the guided demo
             </Button>
           </div>
-          <div className="flex max-w-md flex-wrap gap-2 md:justify-end" role="group" aria-label="Scenario presets">
-            {PRESETS.map((p) => (
-              <PresetChip key={p} active={preset === p} onClick={() => setPreset(p)}>
-                {p}
-              </PresetChip>
-            ))}
+          {/* Presets sit in their own frosted tray: a calm, solid ground under the pills. */}
+          <div className="surface-inset w-full max-w-md rounded-2xl border border-border/70 p-4 backdrop-blur-md md:w-auto">
+            <p className="console-label mb-3 text-dim">Or pick a preset</p>
+            <div className="flex flex-wrap gap-2" role="group" aria-label="Scenario presets">
+              {PRESETS.map((p) => (
+                <PresetChip key={p} active={preset === p} onClick={() => setPreset(p)}>
+                  {p}
+                </PresetChip>
+              ))}
+            </div>
           </div>
         </div>
       </div>
@@ -296,7 +302,7 @@ function ConsoleSkeleton() {
   return (
     <div id="console" className="mx-auto flex max-w-6xl flex-col gap-6 px-4 pb-24 sm:px-6">
       <Panel as="section" aria-labelledby="s1" className="reveal">
-        <SectionHeader id="s1" step="01 · Describe" title="Mission scenario" aside={<Scaffold owner="part3-console" />} />
+        <SectionHeader id="s1" step="01 · Describe" title="Mission scenario" aside={<Scaffold owner="Coder B" />} />
         <div className="grid gap-8 lg:grid-cols-2">
           <div className="flex flex-col gap-4">
             <div className="flex flex-wrap gap-2">
@@ -307,7 +313,7 @@ function ConsoleSkeleton() {
               <Chip status="untested" label="Pressure" />
               <Chip status="outside_range" label="O₂ 32%" />
             </div>
-            <p className="console-label text-dim">Chip language preview · values arrive from part2-engine</p>
+            <p className="console-label text-dim">Chip language preview · values arrive from Coder A's engine</p>
           </div>
           <div className="flex flex-col gap-5">
             <Slider label="O₂" unit="%" min={14} max={30} value={o2} onChange={setO2} />
@@ -322,7 +328,7 @@ function ConsoleSkeleton() {
           id="s2"
           step="02 · Retrieve"
           title="Evidence map"
-          aside={<Scaffold owner="part3-console" />}
+          aside={<Scaffold owner="Coder B" />}
         />
         <EmptyState icon="map-scatter" title="The Evidence Map renders here">
           Verified experiments plotted by airflow × O₂, the scenario marker, match lines and hatched untested cells.
@@ -331,13 +337,13 @@ function ConsoleSkeleton() {
 
       <div className="grid gap-6 lg:grid-cols-2">
         <Panel as="section" aria-labelledby="s3" className="reveal">
-          <SectionHeader id="s3" step="03 · Why these" title="Match panel" aside={<Scaffold owner="part3" />} />
+          <SectionHeader id="s3" step="03 · Why these" title="Match panel" aside={<Scaffold owner="Coder B" />} />
           <EmptyState icon="match" title="Top matches appear here">
             Each card: chips, WHY THIS MATCHED, outcome, source and provenance. “Matched N of M parameters.”
           </EmptyState>
         </Panel>
         <Panel as="section" aria-labelledby="s4">
-          <SectionHeader id="s4" step="04 · Evidence-validated claims" title="Mission brief" aside={<Scaffold owner="part3" />} />
+          <SectionHeader id="s4" step="04 · Evidence-validated claims" title="Mission brief" aside={<Scaffold owner="Coder B" />} />
           <EmptyState icon="evidence" title="Validated claims appear here">
             Observed · Supported interpretation · Untested. {COPY.claimsGuarantee}
           </EmptyState>
@@ -345,7 +351,7 @@ function ConsoleSkeleton() {
       </div>
 
       <Panel as="section" aria-labelledby="s5" className="reveal">
-        <SectionHeader id="s5" step="05 · Research prioritization" title="Evidence gap radar" aside={<Scaffold owner="part3" />} />
+        <SectionHeader id="s5" step="05 · Research prioritization" title="Evidence gap radar" aside={<Scaffold owner="Coder B" />} />
         <EmptyState icon="gap" title="The largest untested regions appear here">
           {COPY.gapNote}
         </EmptyState>
@@ -372,11 +378,11 @@ function Footer() {
           <p>Illustrations on this page are branding — not NASA experiment imagery.</p>
         </div>
         <div className="flex flex-col items-start gap-3 md:items-end">
-          {/* Open dataset export (§8.1 item 6) — Part 2 builds the endpoint; enable once it lands. */}
-          <Button size="sm" icon="download" disabled title="Open dataset export lands with Part 2">
+          {/* Open dataset export (§8.1 item 6) — Coder A builds the endpoint; enable once it lands. */}
+          <Button size="sm" icon="download" disabled title="Open dataset export lands with Coder A">
             Open dataset (.json)
           </Button>
-          <a href="#top" className="console-label text-dim can-hover:hover:text-text">
+          <a href="#top" className="console-label text-dim transition-colors duration-200 can-hover:hover:text-text">
             Back to top
           </a>
         </div>

@@ -1,7 +1,7 @@
 /**
  * Deterministic per-parameter coverage (round 2, A4). Pure, no I/O, no LLM.
  * UNTESTED / outside-range copy is rendered from this result directly; the LLM may only
- * reference the gap ids it contains. Part 2 owns the o2×flow gap GRID (Gap Radar) separately.
+ * reference the gap ids it contains. Coder A builds the o2×flow gap GRID (Gap Radar) separately.
  *
  * Catalog-wide gaps (scope 'catalog') are about the whole gate-surviving verified catalog;
  * 'retrieved' gaps only say the top-k matches don't report a value the catalog does have.

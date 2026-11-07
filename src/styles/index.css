@@ -209,6 +209,70 @@
       }
     }
   }
+  /*
+   * App header: light and borderless over the top of the page, settling into a frosted bar with
+   * a hairline and soft shadow as you scroll (first 96px). Scroll-driven, off the main thread.
+   * Without support or with reduced motion, it simply shows the settled state.
+   */
+  .app-header {
+    background-color: color-mix(in srgb, var(--color-bg) 82%, transparent);
+    border-bottom: 1px solid color-mix(in srgb, var(--color-border) 70%, transparent);
+    box-shadow: 0 12px 32px -22px rgb(0 0 0 / 0.85);
+    -webkit-backdrop-filter: blur(14px) saturate(130%);
+    backdrop-filter: blur(14px) saturate(130%);
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    @supports (animation-timeline: scroll()) {
+      .app-header {
+        animation: ignis-header-settle linear both;
+        animation-timeline: scroll(root);
+        animation-range: 0 96px;
+      }
+    }
+  }
+  @keyframes ignis-header-settle {
+    from {
+      background-color: color-mix(in srgb, var(--color-bg) 35%, transparent);
+      border-bottom-color: transparent;
+      box-shadow: 0 0 0 0 transparent;
+    }
+  }
+
+  /*
+   * Data that arrives (catalog counts, provenance line) fades in instead of popping.
+   * Key the element to its value so each new value re-enters. Rare + informative → worth it.
+   */
+  .swap-in {
+    transition:
+      opacity 360ms var(--ease-out),
+      filter 360ms var(--ease-out);
+  }
+  @starting-style {
+    .swap-in {
+      opacity: 0;
+      filter: blur(3px);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .swap-in {
+      transition-property: opacity;
+      filter: none;
+    }
+  }
+
+  /* Slider thumb: the halo widens on hover so the grab target announces itself. */
+  .ignis-range::-webkit-slider-thumb {
+    /* One list for both: the press scale itself only happens under no-preference. */
+    transition:
+      box-shadow 200ms ease,
+      transform var(--dur-press) var(--ease-out);
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .ignis-range:hover::-webkit-slider-thumb {
+      box-shadow: 0 0 0 7px color-mix(in srgb, var(--color-amber) 22%, transparent);
+    }
+  }
+
   @keyframes ignis-reveal {
     from {
       opacity: 0;
@@ -273,7 +337,7 @@
     border: 3px solid var(--color-amber);
     box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-amber) 18%, transparent);
   }
-  /* Gap hatching (Part 3 uses this for untested map cells). */
+  /* Gap hatching (Coder B uses this for untested map cells). */
   .hatch {
     background-image: repeating-linear-gradient(
       135deg,

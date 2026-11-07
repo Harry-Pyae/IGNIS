@@ -1,6 +1,6 @@
 /**
  * Live catalog status: the header provenance pill and the landing "Catalog" block.
- * Presentational — pass a CatalogSummary (from useCatalogSummary, or a fixture in /kit). OWNER: Part 1.
+ * Presentational — pass a CatalogSummary (from useCatalogSummary, or a fixture in /kit). OWNER: Coder A.
  */
 import { type CatalogSummary, catalogLine } from '../lib/catalog';
 import { COPY } from '../lib/copy';
@@ -19,10 +19,14 @@ export function ProvenancePill({ summary, retry }: { summary: CatalogSummary; re
       aria-live="polite"
     >
       <Icon name={failed ? 'withheld' : 'provenance'} size={14} className={failed ? 'text-warn' : 'text-amber'} />
-      <span className="truncate sm:hidden">{catalogLine(summary, true)}</span>
-      <span className="hidden truncate sm:inline">{catalogLine(summary)}</span>
+      <span key={catalogLine(summary, true)} className="swap-in truncate sm:hidden">
+        {catalogLine(summary, true)}
+      </span>
+      <span key={catalogLine(summary)} className="swap-in hidden truncate sm:inline">
+        {catalogLine(summary)}
+      </span>
       {failed && retry && (
-        <button type="button" onClick={retry} className="text-amber underline-offset-2 can-hover:hover:underline">
+        <button type="button" onClick={retry} className="text-amber underline-offset-4 transition-[text-decoration-color] duration-200 can-hover:hover:underline">
           Retry
         </button>
       )}
@@ -33,7 +37,10 @@ export function ProvenancePill({ summary, retry }: { summary: CatalogSummary; re
 function Stat({ value, label, muted }: { value: string; label: string; muted?: boolean }) {
   return (
     <div className="surface-inset flex flex-col gap-3 rounded-2xl border border-border/70 p-4">
-      <span className={cx('text-[40px] leading-none font-semibold tracking-[-0.03em] tabular-nums', muted ? 'text-faint' : 'text-lit')}>
+      <span
+        key={value}
+        className={cx('swap-in text-[40px] leading-none font-semibold tracking-[-0.03em] tabular-nums', muted ? 'text-faint' : 'text-lit')}
+      >
         {value}
       </span>
       <span className="console-label text-dim">{label}</span>
@@ -80,7 +87,10 @@ export function CatalogBlock({ summary, retry }: { summary: CatalogSummary; retr
           <Stat value={stats ? String(stats.in_review) : '—'} label="Cards in review" muted={!stats} />
           <Stat value={stats ? String(stats.campaigns.length) : '—'} label="NASA campaigns" muted={!stats || verified === 0} />
           <div className="surface-inset flex flex-col justify-between gap-3 rounded-2xl border border-border/70 p-4">
-            <span className="text-[20px] leading-tight font-semibold tracking-[-0.02em] text-text tabular-nums">
+            <span
+              key={stats?.last_updated ?? 'none'}
+              className="swap-in text-[20px] leading-tight font-semibold tracking-[-0.02em] text-text tabular-nums"
+            >
               {date(stats?.last_updated ?? null)}
             </span>
             <span className="console-label text-dim">

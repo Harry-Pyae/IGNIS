@@ -1,5 +1,5 @@
 -- IGNIS round 2 (docs/DECISIONS-ROUND2.md). Additive only — 0001_init.sql stays verbatim §4.
--- Run AFTER 0001_init.sql and BEFORE seed.sql. OWNER: Part 1.
+-- Run AFTER 0001_init.sql and BEFORE seed.sql. OWNER: Coder A.
 
 -- ---------------------------------------------------------------------------
 -- Audit + revision columns, changing-condition qualifier (A2, B)

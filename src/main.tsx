@@ -9,7 +9,7 @@ import './styles/index.css';
 const Curate = lazy(() => import('./pages/Curate').then((m) => ({ default: m.Curate })));
 const Kit = lazy(() => import('./pages/Kit').then((m) => ({ default: m.Kit })));
 
-// ponytail: pathname switch, no router — add react-router if Part 3 needs nested routes.
+// ponytail: pathname switch, no router — add react-router if Coder B needs nested routes.
 const ROUTES: Record<string, () => React.JSX.Element> = {
   '/curate': () => <Curate />,
   '/kit': () => <Kit />,

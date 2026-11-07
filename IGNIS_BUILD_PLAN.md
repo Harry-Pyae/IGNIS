@@ -284,7 +284,7 @@ Script beats: Earth candle vs BASS flame sphere footage (0:00–0:20) → "20 ye
 
 ## 14. The Six Workstreams (each has one owner; pick at the kickoff meeting)
 
-> **Round 2 notice (docs/DECISIONS-ROUND2.md #1):** This numbering is obsolete. Ownership follows IGNIS_TEAM_PLAN.md (Part 1 = Foundation & Integration) and AGENTS.md.
+> **Round 2 notice (docs/DECISIONS-ROUND2.md #1):** This numbering is obsolete. Ownership follows IGNIS_TEAM_PLAN.md v2 (Coder A/B/C + R1–R3; was Part 1 = Foundation & Integration) and AGENTS.md.
 
 IGNIS splits into six self-contained parts. Every part has a clear mission, its own deliverables, and minimal blocking on the others — the two engineering parts (1–2) run in parallel with the three content parts (3–5) from hour one, and Part 6 ramps up as the build stabilizes. Five people, six parts: whoever ends up with two takes the pairing noted on their first pick.
 
