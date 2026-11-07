@@ -1,0 +1,183 @@
+/*
+ * IGNIS design tokens — IGNIS_BUILD_PLAN.md §8.3 (replicate, don't invent).
+ * Tailwind v4 turns every --color-* / --font-* / --radius-* here into utilities:
+ *   bg-panel, border-border, text-dim, text-amber, font-mono, rounded-panel ...
+ * Components use these utilities or var(--…) only — never a raw hex.
+ * OWNER: Part 1. Request changes; don't edit on a part branch.
+ */
+/*
+ * Metric-matched fallbacks: while the web fonts load, local fonts are scaled to the
+ * same box so the swap causes no layout shift (CLS). Measured from the real font files.
+ */
+@font-face {
+  font-family: 'Space Grotesk Fallback';
+  src: local('Arial'), local('Helvetica'), local('Roboto');
+  size-adjust: 107.51%;
+  ascent-override: 91.53%;
+  descent-override: 27.16%;
+  line-gap-override: 0%;
+}
+@font-face {
+  font-family: 'IBM Plex Mono Fallback';
+  src: local('Courier New'), local('Courier'), local('Roboto Mono');
+  size-adjust: 99.98%;
+  ascent-override: 102.52%;
+  descent-override: 27.5%;
+  line-gap-override: 0%;
+}
+
+@theme {
+  /* ---- Surfaces ---- */
+  --color-bg: #0c0f16;
+  --color-panel: #131824;
+  --color-border: #232b3a;
+  --color-raised: #3a4663; /* raised / matched border */
+
+  /* ---- Text ---- */
+  --color-text: #e8eaf0;
+  --color-dim: #9aa3b5;
+  --color-faint: #6e7891;
+
+  /* ---- Accents & outcomes ---- */
+  --color-amber: #f5a623; /* accent */
+  --color-flame: #f97316; /* sustained */
+  --color-blue: #4c8dff; /* extinguished — dot */
+  --color-blue-badge: #2f6bd8; /* extinguished — badge */
+  --color-violet: #a78bfa; /* transition — dot */
+  --color-violet-badge: #7c5cdb; /* transition — badge */
+  --color-success: #7fd08a;
+  --color-warn: #e8c468;
+
+  /* ---- Mission Brief blocks (bg / border) ---- */
+  --color-observed-bg: #15201a;
+  --color-observed-border: #2e4a36;
+  --color-interp-bg: #161d2c;
+  --color-interp-border: #3a4663;
+  --color-untested-bg: #241d10;
+  --color-untested-border: #6b5620;
+
+  /* ---- Type ---- */
+  --font-sans: 'Space Grotesk', 'Space Grotesk Fallback', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', 'IBM Plex Mono Fallback', ui-monospace, 'SFMono-Regular', monospace;
+  --tracking-console: 0.12em; /* mono labels: uppercase, 1–2px */
+
+  /* ---- Shape ---- */
+  --radius-panel: 16px;
+
+  /* ---- Easing (custom curves; never ease-in for UI) ---- */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+}
+
+:root {
+  /* ---- Motion durations (§8.3 motion inventory — exact mockup timings) ---- */
+  --dur-radar: 8s; /* radar sweep, linear */
+  --dur-pulse: 2.4s; /* scenario-marker pulse rings, two rings staggered -1.2s */
+  --dur-ants: 1.2s; /* match-line marching ants, linear — the FASTEST loop allowed */
+  --dur-flicker: 2.6s; /* flame-dot flicker on sustained matches, staggered */
+  --dur-ticker: 30s; /* telemetry ticker loop, linear */
+  --dur-glow: 2.6s; /* guided-demo button glow */
+  --dur-hover: 0.25s; /* card hover lift + amber border */
+  /* Live choreography (§8.3, Phase 5) */
+  --dur-glide: 300ms; /* scenario marker glide on slider drag */
+  --stagger-dot: 20ms; /* map dots stagger in */
+  --dur-press: 160ms; /* button press feedback */
+  /* The aurora drift (20s) + starfield live in /art/bg-glow.webp — no CSS duplicate layers. */
+}
+
+/*
+ * Motion inventory. EVERYTHING animated lives inside this guard, so
+ * reduced-motion users get a static console (§8.3).
+ * Restraint rules: nothing loops faster than 1.2s; ZERO animation inside the
+ * Mission Brief and UNTESTED blocks — the credibility moments stay still.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  .anim-radar {
+    animation: ignis-radar var(--dur-radar) linear infinite;
+    transform-origin: center;
+  }
+  .anim-pulse-ring {
+    animation: ignis-pulse var(--dur-pulse) var(--ease-out) infinite;
+  }
+  .anim-pulse-ring.is-second {
+    animation-delay: calc(var(--dur-pulse) / -2);
+  }
+  .anim-ants {
+    stroke-dasharray: 4 4;
+    animation: ignis-ants var(--dur-ants) linear infinite;
+  }
+  .anim-flicker {
+    animation: ignis-flicker var(--dur-flicker) ease-in-out infinite;
+    animation-delay: calc(var(--i, 0) * -0.37s);
+  }
+  .anim-ticker {
+    animation: ignis-ticker var(--dur-ticker) linear infinite;
+  }
+  .anim-glow {
+    animation: ignis-glow var(--dur-glow) ease-in-out infinite;
+  }
+  .anim-blink {
+    animation: ignis-blink 1.6s steps(2, jump-none) infinite;
+  }
+  /* Map dots: set style={{ '--i': index }} on each dot. */
+  .anim-dot-in {
+    animation: ignis-dot-in 400ms var(--ease-out) both;
+    animation-delay: calc(var(--i, 0) * var(--stagger-dot));
+  }
+  .anim-rise {
+    animation: ignis-rise 600ms var(--ease-out) both;
+    animation-delay: calc(var(--i, 0) * 70ms);
+  }
+
+  @keyframes ignis-radar {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  @keyframes ignis-pulse {
+    from {
+      transform: scale(0.6);
+      opacity: 0.7;
+    }
+    to {
+      transform: scale(2.4);
+      opacity: 0;
+    }
+  }
+  @keyframes ignis-ants {
+    to {
+      stroke-dashoffset: -16;
+    }
+  }
+  @keyframes ignis-flicker {
+    0%, 100% { opacity: 1; }
+    45% { opacity: 0.72; }
+    60% { opacity: 0.92; }
+  }
+  @keyframes ignis-ticker {
+    to {
+      transform: translateX(-50%);
+    }
+  }
+  @keyframes ignis-glow {
+    0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-amber) 0%, transparent); }
+    50% { box-shadow: 0 0 28px 2px color-mix(in srgb, var(--color-amber) 35%, transparent); }
+  }
+  @keyframes ignis-blink {
+    to {
+      opacity: 0.25;
+    }
+  }
+  @keyframes ignis-dot-in {
+    from {
+      opacity: 0;
+      transform: scale(0.6);
+    }
+  }
+  @keyframes ignis-rise {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+  }
+}
