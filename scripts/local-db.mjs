@@ -142,7 +142,7 @@ try {
   console.log(`\n✓ Disposable IGNIS database ready at http://127.0.0.1:${port} (migrations + seed applied)`);
   if (mode === 'test') {
     const code = await new Promise((resolve) =>
-      spawn('npx', ['vitest', 'run', '--mode', 'disposable', 'tests/db'], { stdio: 'inherit', shell: true }).on('exit', resolve),
+      spawn('npx', ['vitest', 'run', '--mode', 'disposable', '--no-file-parallelism', 'tests/db'], { stdio: 'inherit', shell: true }).on('exit', resolve),
     );
     proxy.close();
     down();
