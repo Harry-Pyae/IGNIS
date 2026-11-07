@@ -11,7 +11,7 @@ const TONES: Record<PanelTone, string> = {
   untested: 'bg-untested-bg border-untested-border',
 };
 
-/** Brief tones are credibility moments: they never animate, even when `interactive` is set. */
+/** Brief tones are credibility moments: they and everything inside them never move (decision 2). */
 const STILL: PanelTone[] = ['observed', 'interpretation', 'untested'];
 
 interface PanelProps extends HTMLAttributes<HTMLElement> {
@@ -30,7 +30,7 @@ export function Panel({ as: Tag = 'div', tone = 'default', interactive, padded =
         'rounded-panel border',
         TONES[tone],
         padded && 'p-5 sm:p-6',
-        interactive && !STILL.includes(tone) && 'hover-lift',
+        STILL.includes(tone) ? 'motion-still' : interactive && 'hover-lift',
         className,
       )}
       {...rest}

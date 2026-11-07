@@ -12,14 +12,16 @@ interface EmptyStateProps {
    * Mission Brief — those surfaces are reserved for data and real NASA material.
    */
   illustration?: boolean;
+  /** Localized illustration disclosure (default: COPY.illustration). */
+  illustrationNote?: string;
   className?: string;
 }
 
-export function EmptyState({ title, children, icon = 'search', illustration, className }: EmptyStateProps) {
+export function EmptyState({ title, children, icon = 'search', illustration, illustrationNote, className }: EmptyStateProps) {
   return (
     <div className={cx('flex flex-col items-center gap-3 px-4 py-10 text-center', className)}>
       {illustration ? (
-        <FlameSphereArt size={96} />
+        <FlameSphereArt size={96} note={illustrationNote} />
       ) : (
         <span className="grid size-11 place-items-center rounded-full border border-border text-faint">
           <Icon name={icon} size={20} />

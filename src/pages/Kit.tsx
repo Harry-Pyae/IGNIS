@@ -14,9 +14,119 @@ import {
   Select,
   Slider,
 } from '../components/ui';
-import type { ChipStatus } from '../lib/types';
+import { CatalogBlock, ProvenancePill } from '../components/CatalogStatus';
+import type { CatalogSummary } from '../lib/catalog';
+import { COPY } from '../lib/copy';
+import { FIXTURES, SEED_CARDS } from '../lib/fixtures';
+import type { Briefing, ChipStatus } from '../lib/types';
 
 /** /kit — living reference of tokens + primitives for Part 3. Not linked from the public app. */
+
+const EVIDENCE_STATES: [ChipStatus, string][] = [
+  ['not_reported', 'This card does not report the value. Other verified cards may still cover it.'],
+  ['untested', 'No eligible verified card in the catalog reports this parameter at all.'],
+  ['outside_range', "The scenario value is beyond the eligible catalog's min–max. Shown as-is, never clamped."],
+  ['not_specified', 'The scenario leaves this parameter blank, so there is nothing to compare.'],
+];
+
+const CATALOG_STATES: [string, CatalogSummary][] = [
+  ['loading', { state: 'loading' }],
+  ['unavailable', { state: 'unavailable', reason: 'error' }],
+  [
+    'in review',
+    { state: 'ready', stats: { verified: 0, in_review: 3, campaigns: [], last_updated: null, revision: 'empty' } },
+  ],
+  [
+    'ready',
+    {
+      state: 'ready',
+      stats: { verified: 3, in_review: 0, campaigns: ['BASS', 'BASS-II'], last_updated: '2026-11-08T09:00:00Z', revision: '3f9a2c1e77' },
+    },
+  ],
+  ['empty', { state: 'ready', stats: { verified: 0, in_review: 0, campaigns: [], last_updated: null, revision: 'empty' } }],
+  ['not connected', { state: 'unavailable', reason: 'not_configured' }],
+];
+
+const BRIEF_SECTIONS = [
+  ['OBSERVED', 'observed', 'Observed', 'text-success'],
+  ['SUPPORTED', 'interpretation', 'Supported interpretation', 'text-blue'],
+  ['UNTESTED', 'untested', 'Untested', 'text-warn'],
+] as const;
+
+/** Reference rendering of a Briefing from the contract — for Part 3, not the production Brief. */
+function BriefPreview({ briefing }: { briefing: Briefing }) {
+  return (
+    <div className="flex flex-col gap-3">
+      {briefing.status === 'fallback' && (
+        <p className="flex items-center gap-2 text-sm text-warn">
+          <Icon name="withheld" size={16} /> {COPY.fallback}
+        </p>
+      )}
+      {briefing.withheld_count > 0 && <Badge variant="warn">{COPY.withheld(briefing.withheld_count)}</Badge>}
+      {BRIEF_SECTIONS.map(([kind, tone, title, color]) => {
+        const claims = briefing.claims.filter((c) => c.classification === kind);
+        const gaps = kind === 'UNTESTED' ? briefing.coverage.gaps : [];
+        if (!claims.length && !gaps.length) return null;
+        return (
+          <Panel key={kind} tone={tone} className="!p-4">
+            <h4 className={`console-label ${color}`}>{title}</h4>
+            <ul className="mt-2 flex flex-col gap-2 text-sm text-text">
+              {claims.map((c, i) => (
+                <li key={i}>
+                  {c.text}{' '}
+                  {c.evidence_ids.map((e) => (
+                    <CitationChip key={e} evidenceId={e} className="ml-1 align-middle" />
+                  ))}
+                </li>
+              ))}
+              {claims.length === 0 && gaps.map((g) => <li key={g.id}>{g.message}</li>)}
+            </ul>
+          </Panel>
+        );
+      })}
+    </div>
+  );
+}
+
+function KeyboardCitations() {
+  const [target, setTarget] = useState<string | null>(null);
+  const cards = FIXTURES.withheldClaims.briefing.evidence;
+  return (
+    <div className="grid gap-4 md:grid-cols-2">
+      <div className="flex flex-col gap-3 text-sm text-dim">
+        <p>
+          Tab to a citation, press Enter or Space. Focus moves to the evidence card (it gets
+          <code className="mx-1 font-mono text-text">tabIndex=-1</code>and a static amber border — no animation).
+        </p>
+        <div className="flex gap-2">
+          {cards.map((c) => (
+            <CitationChip
+              key={c.evidence_id}
+              evidenceId={c.evidence_id}
+              onClick={() => {
+                setTarget(c.evidence_id);
+                document.getElementById(`kit-card-${c.evidence_id}`)?.focus();
+              }}
+            />
+          ))}
+        </div>
+      </div>
+      <div className="flex flex-col gap-2">
+        {cards.map((c) => (
+          <div
+            key={c.evidence_id}
+            id={`kit-card-${c.evidence_id}`}
+            tabIndex={-1}
+            className={`rounded-xl border p-3 text-sm ${target === c.evidence_id ? 'border-amber' : 'border-border'}`}
+          >
+            <span className="font-mono text-amber">[{c.evidence_id}]</span>{' '}
+            {SEED_CARDS.find((s) => s.id === c.experiment_id)?.test_id}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 const COLORS = [
   'bg', 'panel', 'border', 'raised', 'text', 'dim', 'faint', 'amber', 'flame', 'blue', 'blue-badge', 'violet',
@@ -155,6 +265,70 @@ export function Kit() {
               App-level states only — never inside map, matches or brief.
             </EmptyState>
           </Panel>
+        </div>
+      </Block>
+
+      <Block title="Evidence states — never conflate (round 2)">
+        <div className="grid gap-3 sm:grid-cols-2">
+          {EVIDENCE_STATES.map(([status, meaning]) => (
+            <div key={status} className="flex flex-col items-start gap-2 rounded-xl border border-border bg-bg/50 p-4">
+              <Chip status={status} label="Thickness" />
+              <p className="text-sm text-dim">{meaning}</p>
+            </div>
+          ))}
+        </div>
+        <p className="mt-4 text-sm text-dim">
+          Localize without forking: <code className="font-mono text-text">{'<Chip status="untested" label={t("thickness")} statusText={t("untested")} />'}</code>
+        </p>
+      </Block>
+
+      <Block title="Mission Brief — reference rendering (Part 3 owns the real one)">
+        <div className="grid gap-6 lg:grid-cols-2">
+          <div>
+            <p className="console-label mb-3 text-dim">FIXTURES.withheldClaims</p>
+            <BriefPreview briefing={FIXTURES.withheldClaims.briefing} />
+          </div>
+          <div>
+            <p className="console-label mb-3 text-dim">FIXTURES.totalProviderFailure</p>
+            <BriefPreview briefing={FIXTURES.totalProviderFailure.briefing} />
+          </div>
+        </div>
+        <p className="mt-4 text-sm text-dim">
+          Completely static for every user — no type-in, no chip pop, no press-scale (decision 2). Brief tones apply
+          <code className="mx-1 font-mono text-text">.motion-still</code>automatically.
+        </p>
+      </Block>
+
+      <Block title="Long identifiers wrap (260px container)">
+        <div className="flex max-w-[260px] flex-col gap-3 rounded-xl border border-dashed border-raised p-3">
+          <Chip status="outside_range" label="Oxygen 32 % vs catalog 18.7–21 %" />
+          <p className="text-sm font-medium break-words text-text">
+            Saffire-IV IV-2 sample 3 · SIBAL cotton/fiberglass · NTRS 20210011521 · p.3 · Table 1 · Figure 4
+          </p>
+          <div className="flex flex-wrap gap-1.5">
+            {['E1', 'E2', 'E3', 'E4', 'E5'].map((e) => (
+              <CitationChip key={e} evidenceId={e} />
+            ))}
+          </div>
+        </div>
+      </Block>
+
+      <Block title="Keyboard: citation → evidence card">
+        <KeyboardCitations />
+      </Block>
+
+      <Block title="Catalog states (provenance pill + Catalog block)">
+        <div className="flex flex-col gap-2">
+          {CATALOG_STATES.map(([name, summary]) => (
+            <div key={name} className="flex flex-wrap items-center gap-3">
+              <code className="w-28 shrink-0 font-mono text-[11px] text-dim">{name}</code>
+              <ProvenancePill summary={summary} retry={() => undefined} />
+            </div>
+          ))}
+        </div>
+        <div className="mt-6 grid gap-4 lg:grid-cols-2">
+          <CatalogBlock summary={CATALOG_STATES[2]![1]} />
+          <CatalogBlock summary={CATALOG_STATES[1]![1]} retry={() => undefined} />
         </div>
       </Block>
 
