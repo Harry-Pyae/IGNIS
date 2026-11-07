@@ -1,235 +1,247 @@
-# IGNIS — 7-Day Team Plan (six parts, six owners)
+# IGNIS — Team Plan v2 (2 coders + optional 3rd · 3 research/testing members)
 
-**NASA Space Apps · "Flame in Freefall" · Build window: 7 days**
+**NASA Space Apps · "Flame in Freefall" · Remaining build window: ~6 days**
 
-This file lives in the repo root next to `IGNIS_BUILD_PLAN.md` and divides the
-project into six parts, one per team member. The build plan holds the
-technical contracts (schema §4, matching §5, claims validation §7, visual
-language §8.3, security §10); this file holds who does what, when, and how the
-parts connect. Where the two disagree, `IGNIS_BUILD_PLAN.md` Core Principles
-win. The five principles every part obeys: no prediction ever · every AI claim
-is a validated evidence object · deterministic before generative · solid-material
+**Status:** the Foundation (old Part 1) is **COMPLETE** — both rounds: scaffold,
+schema + RLS, design tokens/primitives/icons, shared types with frozen
+contracts (GateResult, CoverageResult, changing-conditions qualifier,
+catalog_revision cache keys), LLM adapter + validated API routes,
+strengthened claim validation, draft→verify curation workflow, landing page,
+art pack, deployment runbook. This plan covers everything AFTER that.
+`IGNIS_BUILD_PLAN.md` remains the technical contract (Core Principles win
+every conflict) as amended by `docs/DECISIONS-ROUND2.md` — the superseded
+copy/motion/ownership decisions there are binding. This file replaces the
+previous six-part Team Plan.
+
+The five principles everyone obeys: no prediction ever · every AI claim is a
+validated evidence object · deterministic before generative · solid-material
 domain purity · honesty beats impressiveness.
 
-With 7 days instead of 48 hours, the former SHOULD-HAVE and WOW tiers are now
-**committed scope** (§ Expanded Scope below). The DO-NOT-BUILD list is
-unchanged — more time is not a reason to build a simulator.
-
 ---
 
-## Git & workflow (everyone)
+## The team
 
-- **`main` belongs to Part 1 (team lead).** Nobody else pushes or merges to
-  main — ever. Each part works on its own branch (`part2-engine`,
-  `part3-console`, …), small commits, PR to main when a task is done.
-- Part 1 merges in a **daily merge window** (evening). CI (typecheck, tests,
-  build) must be green before a PR is opened.
-- Cross-part changes (another part's files, shared types, schema) go through
-  Part 1 as a request, never edited directly.
-- The deployed preview updates from main daily — everyone checks their work
-  on the real URL, not just localhost.
-- Space Apps compliance: source lists and this plan are prep; code and card
-  extraction/verification happen during the event window as the rules require.
+| Role | Who | Owns |
+|---|---|---|
+| **Coder A — Engine & Integration** (team lead) | you | `main`, engine, API logic, deployment, merges |
+| **Coder B — Mission Console** | teammate | the public UI |
+| **Coder C — Features** *(optional — may not exist)* | teammate | flex feature list (§C) |
+| **R1 — Data & Science Research** | teammate | sources + extraction + verification (the catalog) |
+| **R2 — Media Research** | teammate | NASA footage, photos, card stills, the pitch video |
+| **R3 — Testing & Judge Experience** | teammate | QA, demo direction, captions/copy, Burmese review, submission |
 
-## The interfaces (what each part hands the others)
+## Git & workflow
+
+- **`main` belongs to Coder A.** Branches: `console` (Coder B), `features`
+  (Coder C if present). Research members never touch code — they work through
+  `/curate`, shared drives, and docs, and file issues/requests to Coder A.
+- PR to main when a task is done; CI green first; Coder A merges in a daily
+  evening window; main deploys daily; everyone checks the live URL, not
+  localhost.
+- Cross-ownership changes (shared types, schema, another branch's files) go
+  through Coder A as a request.
+- Space Apps compliance: card extraction/verification happens inside the
+  event window.
+
+## How work flows
 
 ```
-Part 5 (sources) → raw papers/links → Part 4 (verifies) → verified cards in DB
-Part 1 (foundation: schema, tokens, adapter, endpoints) → everyone builds on it
-Part 2 (engine) → typed match/claims results → Part 3 (renders them)
-Part 3 (console) → the working app → Part 6 (films, scripts, captions it)
-Part 6 → captions/translations/demo scenario choice → back into Parts 3 & 1
+R1 finds papers → drafts cards in /curate → verifies → verified catalog in DB
+R2 supplies footage/stills → card media + console imagery + video b-roll
+Coder A: engine + endpoints → typed results → Coder B renders them
+Coder C (if present): feature list on top of A+B's core
+R3 tests every build on the live URL, writes demo/captions → feeds fixes back
 ```
 
-Shared TypeScript types live in `src/lib/types.ts`, owned by Part 1; Parts 2
-and 3 code against them from day one.
+---
+
+## Coder A — Engine & Integration *(you — owns main)*
+
+**Mission:** the brain (the old Evidence Engine part) plus keeping the whole
+project merged, deployed and verified.
+
+**Build, in order:**
+1. **Matching engine** per BUILD_PLAN §5 on the frozen contracts: material
+   alias resolver (two dictionaries, visible "Resolved:" line, never
+   guesses), eligibility gates (extend the foundation's `gates.ts` — one
+   implementation, no fork), weighted similarity with the agreed zero-range/
+   all-null semantics, chips + "Matched N of M", outside-range distinct from
+   untested. Unit tests per rule, including the red test that SAME/FLEX can
+   never reach solid retrieval.
+2. **Gap detection + CoverageResult** (§6): the gap grid, Gap Radar data,
+   deterministic UNTESTED/outside-range rendering data — the LLM narrates
+   only server-supplied gap IDs.
+3. **Endpoint logic**: real parse-scenario and synthesize flows on the
+   validated-claims pipeline (typed references checked against cited cards),
+   briefing cache keyed by catalog_revision, warmed for the demo scenario;
+   extraction prompt with the worked BASS example; the export endpoint
+   (JSON + embedded schema README).
+4. **Integration duties all week**: daily merges, deploy checks, the live
+   RLS/endpoint verification suite, mid-week full-flow checkpoint, final
+   acceptance run (a non-coder runs the cabin-wall scenario and explains
+   UNTESTED unprompted; the one-sentence hallucination answer holds).
+
+**Done when:** every §5–§7 behavior has a passing test, the demo scenario
+returns ≥3 strong matches + one clean gap from the live DB, and main never
+has a red day.
+
+## Coder B — Mission Console
+
+**Mission:** the public app per BUILD_PLAN §8.1, built from the foundation's
+tokens/primitives — never a freelance aesthetic — with the Round-2 decisions
+applied (static Brief/UNTESTED, approved slider caption, catalog-bounded
+absence copy).
+
+**Build, in order:**
+1. Scenario Builder: presets with explicit material mappings, editable
+   parsed chips with the confirmation step, alias-resolution line /
+   unresolved-material picker, live sliders (retrieval semantics + approved
+   caption).
+2. **Evidence Map** — the signature visual: outcome dots, pulsing scenario
+   marker, match lines, hatched gap cells, outside-range treatment, hover
+   cards; §8.3 motion inventory with its restraint rules (reduced-motion
+   guard; nothing in Brief blocks moves).
+3. Match Panel: WHY-MATCHED chips, outcome badges, thumbnails (R2's stills),
+   provenance links.
+4. Mission Brief: OBSERVED / SUPPORTED / UNTESTED rendered statically from
+   validated claims, Evidence Chain click-through (chip → quote → provenance
+   → source), withheld badge, evidence-only fallback state.
+5. Gap Radar panel, provenance strip (visible at mobile widths), export
+   button wiring, Guided Demo (Judge Mode) with R3's captions, i18n plumbing
+   (`t()`, EN strings; MY merged only when R3 delivers the complete reviewed
+   set — partial translation never ships).
+6. The live choreography (dots stagger in, hatching last, marker glide,
+   cards crossfade) — AFTER everything above works.
+
+**Done when:** the live app matches the approved mockup boards at
+1440/1024/390 in both themes of content states, and the
+drag→glide→re-match→brief sequence runs clean on the deployed URL.
+
+## Coder C — Features *(optional; every item here has a fallback)*
+
+If Coder C exists, they take — in this order:
+1. **Telemetry sparklines + full-curve modal** for cards carrying
+   `telemetry` (R1 digitizes 3–5 curves).
+2. **Guided Demo auto-play captions** (R3 writes the copy).
+3. **Comparison animation** between scenarios.
+4. **/curate quality-of-life** for R1: draft list filters, field-quote
+   helpers, keyboard flow.
+5. **Boundary polyline** ONLY if R1 certifies a comparable measured series
+   per DECISIONS-ROUND2 — otherwise it stays cut.
+
+**If Coder C does not exist:** item 1 goes to Coder B on Day 5 if ahead of
+schedule; item 2 to Coder B (static captions acceptable); items 3–5 are cut
+by default. Nobody absorbs Coder C's list at the cost of their own
+done-when.
+
+## R1 — Data & Science Research *(the catalog — the project's credibility)*
+
+**Mission:** the old Catalog + Sources parts combined: find it, extract it,
+verify it, defend it.
+
+- **First task:** re-verify the three seed cards against NTRS 20150008962
+  and publish them under your name — including the GMT45-T4 changing-flow
+  qualifier (ignited 10 cm/s → reduced to 2.2). The public catalog count is
+  zero until you do this.
+- Source hunting in priority order (the GPT review's source table in
+  `reports/` is your starting list): BASS/BASS-II NTRS papers, PSI-25
+  dataset, Saffire I–IV reports (NTRS 20170008805, 20210011521), SoFIE/MIST
+  papers when obtainable. FLEX links for the roadmap slide only; SAME only
+  as `smoke_detection` context.
+- Workflow per card: draft in `/curate` (LLM extract or manual) → check
+  every value against the source → verbatim quote with original units →
+  provenance locators (quote page ≠ figure page) → ambiguity stays null →
+  verify under your name. 20-min/card timebox; never force non-ignition
+  rows into the outcome enum to inflate the count.
+- **Targets (one person, adjusted):** seeds re-verified Day 1 · 15 cards by
+  Day 2 · 25 by Day 4 · **30–40 by freeze** (40 is stretch, not required).
+- Telemetry: digitize one curve for 3–5 standout cards (WebPlotDigitizer),
+  labeled as digitized, with axes/units/method noted.
+- Maintain the coverage note for R3: what the demo scenario can safely hit,
+  where the one clean gap is.
+
+**Done when:** any sampled card survives line-by-line challenge against its
+source by the person whose name is on it.
+
+## R2 — Media Research *(photos, footage, video)*
+
+**Mission:** every real image and the film. Nothing AI-generated ever
+appears on evidence surfaces (the art pack covers branding only).
+
+- NASA public-domain pull (images.nasa.gov, NASA Glenn, NASA YouTube):
+  BASS flame spheres, Saffire burns, SoFIE; FLEX cool flames for the video
+  hook only. Keep a **media ledger**: origin URL, credit, campaign,
+  test association (only when verifiable — campaign footage is never
+  labeled as a specific test without proof), retrieval date.
+- Card stills: frame-grabs at 720px for as many verified cards as possible
+  (30+ goal), delivered as `media_url` values through R1's curation pass.
+- Console imagery support for Coder B (landing, empty states) from the
+  existing art pack — no new generation without checking the asset-prompts
+  honesty rules.
+- **The pitch video** (BUILD_PLAN §13 script beats): capture the live app
+  (≥50% of runtime), b-roll, VO with R3's presenter, edited backup
+  recording of the exact demo flow. Rough cut Day 5, final Day 6.
+- NASA credits end card; no NASA insignia in our branding; skip
+  third-party-music clips.
+
+**Done when:** 30+ cards carry stills, the ledger justifies every asset,
+and the final video can win judging even if the live demo dies.
+
+## R3 — Testing & Judge Experience *(QA + the room)*
+
+**Mission:** nothing ships untested, and the judge experience is scripted.
+
+- **Daily QA on the live URL** after each merge window: the full scenario
+  flow, mobile 390px / tablet / desktop, keyboard navigation,
+  reduced-motion, error/empty/fallback states (provider failure must show
+  the evidence-only fallback, never a crash). File issues with
+  screenshots + steps; verify fixes.
+- **Acceptance keeper:** run the formal checks — RLS behaviors on the live
+  site (drafts invisible), rate-limit 429, export file sanity, the §12
+  acceptance test — and keep a dated checklist in `docs/QA-LOG.md`.
+- **Judge experience:** Guided Demo captions + "how to explore" copy
+  (approved scientific wording only — catalog-bounded absence phrasing),
+  README judge quick-start, docs (demo-script, pitch + Q&A, references).
+- **Demo direction:** pick the demo scenario from R1's coverage note (≥3
+  strong matches + exactly one clean gap), run two timed rehearsals before
+  freeze, drill the three rehearsed answers (UNTESTED one-liner,
+  hallucination sentence, security sentence).
+- **Burmese:** draft the MY string set, get native review, deliver complete
+  or tell Coder B to ship EN-only.
+- **Submission:** filled on the final morning, never the final hour;
+  screenshots of everything.
+
+**Done when:** a judge who never meets the team gets the full story from
+video + live URL + README, and the QA log shows every acceptance check
+dated and passing.
 
 ---
 
-## Part 1 — Foundation & Integration *(team lead — owns `main`)*
-
-**Mission:** everything the other five build on, plus keeping the whole thing
-merged, deployed and verified all week.
-
-**Build (Days 1–2):**
-- Repo scaffold: Vite + React 18 + TS strict + Tailwind; ESLint; Vitest; CI
-  (typecheck, test, build) on every PR.
-- Supabase project + the full migration from BUILD_PLAN §4 **with RLS from
-  §10** (public reads only where `verified_by is not null`; all writes
-  server-side).
-- Design foundation per §8.3: `tokens.css` (colors, type, motion durations,
-  reduced-motion guard), the icon set, and shared UI primitives (Button,
-  Chip, Panel, Select) so Parts 2–3 never invent their own.
-- `llm.ts` provider adapter (Groq primary → Gemini failover, env-ordered,
-  identical prompts + Zod both sides) and the serverless endpoints
-  `/api/parse-scenario`, `/api/synthesize`, `/api/extract`,
-  `/api/curate-write` — stubs with Zod schemas and the claim-validation
-  pipeline wired (§7.4–7.5), real logic filled by Part 2.
-- `/curate` page skeleton (manual form first) + 3 hand-seeded cards from one
-  BASS paper, so Parts 2–4 are unblocked immediately.
-- Vercel deploy green with env vars (service-role key, LLM keys,
-  curator secret — server-side only) on Day 1.
-
-**All week:** daily merge window; resolving cross-part requests; keeping main
-always deployable; the Day-3 and Day-4 integration checkpoints; final
-acceptance run on Day 6 (the §12 acceptance test + the one-sentence
-hallucination answer).
-
-**Done when:** every other part built on the foundation without forking it,
-main deployed daily without a red day, and the final app passes the
-acceptance checks.
-
-## Part 2 — The Evidence Engine *(the brain)*
-
-**Mission:** every deterministic and AI-boundary mechanism, exactly per
-BUILD_PLAN §5–§7.
-
-- Material alias resolver (two dictionaries, never merged; visible
-  "Resolved:" output; never silently guesses).
-- Matching: gates → weighted similarity → chips → "Matched N of M";
-  outside-catalog-range as a distinct state from untested; score never shown.
-- Gap grid + Evidence Gap Radar data (top contiguous untested regions,
-  under-covered materials).
-- Real logic inside the endpoint stubs: parse-scenario, synthesize with
-  structured claims + evidence-ID validation + retry-at-0.1 + withheld
-  counting; extraction prompt for `/curate`.
-- Export endpoint (clean JSON + embedded schema README).
-- **7-day additions:** briefing cache warm for demo scenarios; per-IP rate
-  limiting; the flammability boundary polyline data (through actual data
-  points only, never beyond catalog extent); unit tests for every §5 rule and
-  a red test proving SAME/FLEX can never enter solid retrieval.
-
-**Done when:** a judge asks "how do you stop hallucination?" and the answer is
-one sentence backed by a passing test suite.
-
-## Part 3 — The Mission Console *(what judges see)*
-
-**Mission:** the public app, built to the §8.3 tokens and the approved
-mockup boards — never a freelance aesthetic.
-
-- All §8.1 sections in order: provenance strip, Scenario Builder (presets +
-  editable chips + live sliders with retrieval semantics + the no-prediction
-  caption), Evidence Map (outcome dots, pulsing marker, match lines, hatched
-  gap cells, outside-range treatment), Match Panel with WHY-MATCHED chips,
-  Mission Brief with Evidence Chain click-through + withheld badge,
-  Gap Radar, Export button, Guided Demo button.
-- The §8.3 motion inventory with its restraint rules (nothing faster than
-  1.2s; zero animation in Brief/UNTESTED blocks; reduced-motion guard) and
-  the live choreography (dots stagger in, hatching draws last, marker glides
-  on drag, briefing types in with chips popping on validation).
-- **7-day additions (now committed):** telemetry sparklines + full-curve
-  modal on cards that have `telemetry`; comparison animation when switching
-  scenarios; boundary polyline rendering; a polished landing/hero section
-  per the Landing mockup board; i18n plumbing (`t()` helper, EN source
-  strings, MY wired in from Part 6) with an `EN | မြန်မာ` toggle; the
-  read-only resilience cache (performance fallback only — never pitched as
-  offline readiness).
-
-**Done when:** the live app is indistinguishable from the mockup boards, at
-1440/1024/390 widths, and the drag→glide→re-match→retype sequence runs
-smoothly as the demo climax.
-
-## Part 4 — The Evidence Catalog *(the science)*
-
-**Mission:** chief curator — the project's credibility lives here.
-
-- Verify every card against its source: verbatim quote with original units,
-  normalized SI values, provenance (page/figure/table, NTRS id, DOI only if
-  real), ambiguity → null + note, never a guess. `verified_by` carries your
-  name — own it in Q&A.
-- **7-day targets:** 15 verified cards by end of Day 2 (minimum demo), 30 by
-  Day 3, **45–60 by Day 5** across BASS/BASS-II, Saffire I–IV, SoFIE/MIST
-  (SAME only as `smoke_detection` context cards). 20-min/card timebox;
-  thin verified beats rich unverified.
-- **Telemetry (committed now):** digitize one curve each for 6–8 standout
-  cards with WebPlotDigitizer, stored per the schema's `telemetry` shape.
-- Maintain the catalog-coverage note for Part 6 (what the demo scenario can
-  safely hit; where the one clean gap is).
-
-**Done when:** any sampled card's numbers can be defended line-by-line against
-its source by the person whose name is on it.
-
-## Part 5 — Source Intelligence & Media *(the hunt)*
-
-**Mission:** raw material in, imagery in — nobody upstream ever waits.
-
-- Day 1: the source pack — specific NTRS papers (ids + links + which contain
-  results tables), PSI investigation pages as provenance anchors, ordered by
-  extraction value. FLEX/droplet links collected for the roadmap slide only.
-- Feed the extraction queue continuously; do card data entry in `/curate`
-  (Part 4 verifies); flag hard papers instead of sinking time.
-- Media: pull NASA public-domain footage and stills (BASS flame spheres,
-  Saffire burns; FLEX cool flames for the video hook only) from
-  images.nasa.gov and NASA Glenn; produce `media_url` thumbnails for as many
-  cards as possible; supply Part 3's landing imagery and Part 6's b-roll.
-  No NASA insignia in our branding; skip clips with third-party music.
-
-**Done when:** Part 4 never idles waiting for material, 30+ cards carry
-thumbnails, and Part 6 has a full b-roll library by Day 5.
-
-## Part 6 — Broadcast & Judge Experience *(the room)*
-
-**Mission:** everything a judge experiences outside the raw app.
-
-- The 2.5-minute pitch video per BUILD_PLAN §13: script, VO, capture, edit —
-  product UI ≥50% of runtime; backup recording of the identical live flow.
-- Demo direction: pick the demo scenario FROM the finished catalog (≥3 strong
-  matches + exactly one clean gap, per Part 4's coverage note); run two timed
-  rehearsals before freeze; drill the three rehearsed answers (UNTESTED
-  one-liner, hallucination sentence, security sentence).
-- Guided Demo (Judge Mode) copy: step captions **(auto-play captions now
-  committed)** and the "how to explore" text.
-- **7-day additions:** draft the Burmese translation set for Part 3's i18n
-  (native-review before merge; partial translation never ships — EN-only
-  with clean structure if short), README judge quick-start, docs
-  (demo-script, pitch + Q&A, references with licenses), and the submission
-  form filled on **Day 7 morning, not the final hour**.
-
-**Done when:** a judge who never meets the team — video, live URL, README —
-gets the full story unassisted.
-
----
-
-## Expanded Scope (7-day window)
-
-**Promoted to committed** (formerly SHOULD/WOW): live sliders with real-time
-re-retrieval · gap-grid shading · Gap Radar panel · media thumbnails · 45+
-cards · briefing cache · provenance on most cards · Guided Demo with
-auto-play captions · telemetry sparklines/modal (6–8 cards) · comparison
-animation · boundary polyline (data extent only) · bilingual EN/MY ·
-resilience cache (performance only) · polished landing section.
-
-**Stretch (only if Day 5 ends on schedule):** Experiment Replay panel for 2–3
-flagship cards — NASA footage clip beside the card's structured conditions
-with observation captions (no invented timestamps) · print/PDF export of a
-briefing (claims + citations + provenance, for the "mission paperwork" feel).
-
-**Still DO NOT BUILD** (unchanged from BUILD_PLAN §11): prediction/simulator
-of any kind · free chat over the corpus · user PDF upload · droplet domain ·
-3D flame graphics · accounts beyond the curator secret · offline/PWA claims ·
-real-time PSI integration · LLM-generated match explanations.
-
-## 7-Day Timeline
+## Remaining schedule (~6 days)
 
 | Day | Milestone (end of day) |
 |---|---|
-| **1** | Foundation on main: scaffold, DB+RLS, tokens/primitives, adapter+endpoint stubs, `/curate` skeleton, 3 seed cards, deploy green. Source pack delivered. All branches created. |
-| **2** | Engine core (resolver, gates, similarity, chips) tested on seeds. Console static sections (builder, map, match panel) in tokens. **15 verified cards.** |
-| **3** | AI layer live end-to-end (parse → match → synthesize → validated claims → Brief UI). **Integration checkpoint #1:** full flow on the deployed URL. 30 cards. |
-| **4** | Honesty layer complete (gap shading, outside-range, provenance strip, export). Motion inventory + choreography. **Mid-week full demo run** — treat as dress rehearsal #0. |
-| **5** | Expanded features: telemetry modals, boundary polyline, comparison animation, bilingual toggle, Guided Demo captions, landing polish, resilience cache. **45+ cards.** Video shooting starts. Stretch items only if everything above is done. |
-| **6** | **Feature freeze (evening).** Video edit complete. Two timed rehearsals. Bug-fix only. Final acceptance run by Part 1. |
-| **7** | Buffer: deployed-URL smoke test on fresh devices, Q&A drill, submission completed in the morning, team sanity margin for the afternoon. |
+| **1** | Coder A: resolver + gates + similarity tested on seeds. Coder B: Scenario Builder + static Evidence Map. R1: seeds re-verified + 5 new cards. R2: source footage pull started, first stills. R3: QA checklist drafted, first pass on live URL. |
+| **2** | Engine complete (gaps, coverage, chips). Console: Match Panel + map interactions. **15 verified cards.** R3: captions draft. |
+| **3** | **Integration checkpoint:** full live flow — parse → match → synthesize → validated Brief on the deployed URL. Guided Demo wired. 20 cards. First full QA sweep. |
+| **4** | Honesty surfaces complete (gap shading, outside-range, provenance, export). Choreography. 25 cards + telemetry curves. R2: all card stills in. Dress rehearsal #0. |
+| **5** | Coder C list (or its fallback subset). 30+ cards. Video rough cut. Full QA regression. Demo scenario locked from coverage note. |
+| **6** | **Feature freeze (morning).** Video final. Two timed rehearsals. Bug-fix only. Final acceptance run + QA log complete. Submission prepared; submitted next morning with buffer. |
 
-**Cut order if a day slips** (first cut first): Experiment Replay → PDF export
-→ comparison animation → boundary polyline → telemetry count drops to 3 →
-bilingual ships EN-only with structure → card target drops to 30. Never cut:
-matching+chips, Evidence Map, claim validation, UNTESTED/outside-range
-states, Guided Demo button, the video.
+**Cut order when a day slips** (first cut first): boundary polyline →
+comparison animation → auto-play captions (static captions stay) →
+telemetry modal (sparklines stay) → card target 30→25 → MY ships EN-only →
+choreography reduced to slider-glide only. **Never cut:** matching + chips,
+Evidence Map, claim validation, UNTESTED/outside-range states, Guided Demo
+button, evidence-only fallback, the video.
+
+**Still DO NOT BUILD** (unchanged): prediction/simulator · free chat ·
+user PDF upload · droplet domain · 3D flames · accounts · offline/PWA
+claims · real-time PSI integration · LLM-generated match explanations.
 
 ## Daily rhythm
 
-One 15-minute sync at the start of each day: yesterday's done, today's one
-goal per part, blockers → Part 1. The merge window closes each evening with
-main deployed. The failure-mode table (BUILD_PLAN §15) is the shared
-troubleshooting reference — check it before improvising a fix.
+One 15-minute sync each morning: yesterday's done, today's one goal per
+person, blockers → Coder A. Evening merge window closes with main deployed
+and R3 notified to test. The failure-modes table (BUILD_PLAN §15) is the
+shared troubleshooting reference.
