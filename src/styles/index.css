@@ -87,14 +87,38 @@
     }
   }
 
-  /* Press feedback for anything tappable. */
+  /* Press feedback for anything tappable — motion only when the user allows it. */
   .pressable {
-    transition: transform var(--dur-press) var(--ease-out);
     touch-action: manipulation;
     user-select: none;
   }
-  .pressable:active:not(:disabled) {
-    transform: scale(0.97);
+  @media (prefers-reduced-motion: no-preference) {
+    .pressable {
+      transition: transform var(--dur-press) var(--ease-out);
+    }
+    .pressable:active:not(:disabled) {
+      transform: scale(0.97);
+    }
+    .ignis-range::-webkit-slider-thumb {
+      transition: transform var(--dur-press) var(--ease-out);
+    }
+    .ignis-range:active::-webkit-slider-thumb {
+      transform: scale(1.12);
+    }
+  }
+
+  /*
+   * Credibility surfaces (Mission Brief, UNTESTED, evidence quotes) are completely still for
+   * EVERY user — decision 2 in docs/DECISIONS-ROUND2.md. Panel adds this to its brief tones;
+   * wrap any other evidence container in it.
+   */
+  .motion-still,
+  .motion-still * {
+    animation: none !important;
+    transition: none !important;
+  }
+  .motion-still *:active {
+    transform: none !important;
   }
 
   /* Native range input, token-styled. --fill is set inline on the input itself. */
@@ -126,7 +150,6 @@
     background: var(--color-text);
     border: 3px solid var(--color-amber);
     box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-amber) 18%, transparent);
-    transition: transform var(--dur-press) var(--ease-out);
   }
   .ignis-range::-moz-range-thumb {
     width: 12px;
@@ -136,10 +159,6 @@
     border: 3px solid var(--color-amber);
     box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-amber) 18%, transparent);
   }
-  .ignis-range:active::-webkit-slider-thumb {
-    transform: scale(1.12);
-  }
-
   /* Gap hatching (Part 3 uses this for untested map cells). */
   .hatch {
     background-image: repeating-linear-gradient(

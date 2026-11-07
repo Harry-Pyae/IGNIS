@@ -14,8 +14,8 @@ interface SliderProps {
 
 /**
  * Live parameter slider (§8.1: O₂ 14–30 %, airflow 0–30 cm/s).
- * Semantics: it changes WHICH evidence is retrieved — it never paints predicted risk.
- * Pair it with the no-prediction caption. Native range input: keyboard, touch, a11y for free.
+ * Semantics: it changes WHICH verified evidence is retrieved — it never paints risk zones.
+ * Always pair it with COPY.sliderCaption (src/lib/copy.ts). Native range input: keyboard, touch, a11y for free.
  */
 export function Slider({ label, value, min, max, step = 1, unit, onChange, className }: SliderProps) {
   const id = useId();
