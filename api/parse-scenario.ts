@@ -16,6 +16,7 @@ export const POST = route(async (req) => {
       user: data.text,
       schema: ParsedScenarioSchema,
       temperature: 0.2,
+      timeoutMs: 9_000,
     });
     // The user confirms these chips (and the §5a alias resolution) BEFORE matching runs.
     return json({ scenario: result.data, provider: result.provider });
