@@ -1,0 +1,45 @@
+# Agent / AI tooling
+.claude/
+.agents/
+.cursor/
+.windsurf/
+.codex/
+.gemini/
+.aider*
+CLAUDE.md
+CLAUDE.local.md
+GEMINI.md
+.cursorrules
+.windsurfrules
+.github/copilot-instructions.md
+skills-lock.json
+PROMPT_PART1_FOUNDATION.md
+
+# Env
+.env
+.env.*
+!.env.example
+
+# Dependencies
+node_modules/
+
+# Build / test output
+dist/
+dist-ssr/
+build/
+coverage/
+.vite/
+.vercel/
+*.tsbuildinfo
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS / editor
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/*
+!.vscode/extensions.json
+.idea/
