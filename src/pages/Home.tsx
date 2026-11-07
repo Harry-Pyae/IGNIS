@@ -45,28 +45,19 @@ const rise = (i: number) => ({ style: { '--i': i } as CSSProperties });
 
 function Hero() {
   return (
-    <section className="relative isolate flex min-h-[min(86svh,760px)] items-center overflow-hidden">
-      {/* LCP image: eager, high priority, preloaded in index.html with the same srcset. Decor only. */}
-      <img
-        src="/art/hero-ops-room.webp"
-        srcSet="/art/hero-ops-room-sm.webp 960w, /art/hero-ops-room.webp 1672w"
-        sizes="100vw"
-        width={1672}
-        height={941}
-        alt=""
-        aria-hidden
-        {...{ fetchpriority: 'high' }} /* lowercase: React 18 passes it straight to the DOM */
-        decoding="async"
-        className="hero-drift absolute inset-0 -z-20 size-full origin-[68%_35%] object-cover object-[68%_center]"
-      />
-      {/* Left scrim rgba(12,15,22,.82) → transparent keeps §8.3 text contrast; bottom fade melts into the page. */}
+    <section className="relative isolate overflow-hidden xl:flex xl:min-h-[min(86svh,760px)] xl:items-center">
+      {/*
+        Wide screens (xl+): the art is a full-bleed background; a left scrim keeps the copy column on dark ground.
+        Below xl the copy column covers the busy screen + console lights, so the art moves into a framed
+        "window" under the copy instead of fighting it. Same <img>, same preload — only placement changes.
+      */}
       <div
         aria-hidden
-        className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,color-mix(in_srgb,var(--color-bg)_82%,transparent)_0%,color-mix(in_srgb,var(--color-bg)_62%,transparent)_42%,transparent_78%)] max-md:bg-[linear-gradient(180deg,color-mix(in_srgb,var(--color-bg)_55%,transparent)_0%,color-mix(in_srgb,var(--color-bg)_82%,transparent)_100%)]"
+        className="absolute inset-0 -z-10 max-xl:hidden bg-[linear-gradient(90deg,color-mix(in_srgb,var(--color-bg)_92%,transparent)_0%,color-mix(in_srgb,var(--color-bg)_86%,transparent)_40%,color-mix(in_srgb,var(--color-bg)_58%,transparent)_56%,color-mix(in_srgb,var(--color-bg)_18%,transparent)_70%,transparent_82%)]"
       />
-      <div aria-hidden className="absolute inset-x-0 bottom-0 -z-10 h-40 bg-gradient-to-b from-transparent to-bg" />
+      <div aria-hidden className="absolute inset-x-0 bottom-0 -z-10 h-40 bg-gradient-to-b from-transparent to-bg max-xl:hidden" />
 
-      <div className="mx-auto w-full max-w-6xl px-4 py-20 sm:px-6">
+      <div className="mx-auto w-full max-w-6xl px-4 pt-14 pb-16 sm:px-6 sm:pt-20 xl:py-20">
         <div className="max-w-2xl">
           <p {...rise(0)} className="anim-rise">
             <span className="console-label inline-flex items-center gap-2 text-amber">
@@ -101,8 +92,33 @@ function Hero() {
             ))}
           </ul>
         </div>
+
+        {/* The art: a framed window below the copy (< xl), the full-bleed hero background (xl+). Decor only. */}
+        <figure
+          {...rise(5)}
+          className="anim-rise surface relative mt-14 overflow-hidden rounded-panel border border-border xl:absolute xl:animate-none xl:inset-0 xl:-z-20 xl:mt-0 xl:rounded-none xl:border-0 xl:bg-transparent xl:shadow-none"
+        >
+          {/* LCP image: eager, high priority, preloaded in index.html with the same srcset + sizes. */}
+          <img
+            src="/art/hero-ops-room.webp"
+            srcSet="/art/hero-ops-room-sm.webp 960w, /art/hero-ops-room.webp 1672w"
+            sizes="(min-width: 1280px) 100vw, 92vw"
+            width={1672}
+            height={941}
+            alt=""
+            aria-hidden
+            {...{ fetchpriority: 'high' }} /* lowercase: React 18 passes it straight to the DOM */
+            decoding="async"
+            className="hero-drift aspect-[16/10] w-full origin-[68%_35%] object-cover object-[66%_center] xl:aspect-auto xl:size-full xl:object-[68%_center]"
+          />
+          {/* Inner vignette so the window reads as depth, not a pasted photo (hidden on xl: the scrim does that job). */}
+          <span
+            aria-hidden
+            className="pointer-events-none absolute inset-0 rounded-[inherit] shadow-[inset_0_0_60px_10px_color-mix(in_srgb,var(--color-bg)_70%,transparent)] xl:hidden"
+          />
+          <figcaption className="console-label absolute right-4 bottom-3 text-dim xl:bottom-4 xl:right-6">Illustration</figcaption>
+        </figure>
       </div>
-      <span className="console-label absolute right-4 bottom-4 text-dim sm:right-6">Illustration</span>
     </section>
   );
 }
@@ -153,7 +169,8 @@ function HowItWorks() {
   return (
     <section id="how-it-works" aria-labelledby="how-title" className="scroll-mt-20 px-4 py-20 sm:px-6">
       <div className="surface reveal relative isolate mx-auto max-w-6xl overflow-hidden rounded-panel border border-border">
-        {/* Decorative constellation (kept off the Evidence Map: its orange/blue dots read as data). */}
+        {/* Decorative constellation (kept off the Evidence Map: its dots read as data). Desktop only, masked to the
+            top-right corner so no dot sits behind a word; the step cards are near-opaque on top. */}
         <img
           src="/art/bg-constellation.webp"
           width={1672}
@@ -162,7 +179,7 @@ function HowItWorks() {
           aria-hidden
           loading="lazy"
           decoding="async"
-          className="absolute inset-0 -z-10 size-full object-cover object-right opacity-70 [mask-image:linear-gradient(to_right,transparent_15%,black_75%)]"
+          className="absolute inset-0 -z-10 size-full object-cover object-right opacity-80 max-lg:hidden [mask-composite:intersect] [mask-image:linear-gradient(to_right,transparent_35%,black_80%),linear-gradient(to_bottom,black_0%,black_28%,transparent_48%)]"
         />
         <div className="p-6 sm:p-10">
           <span className="console-label text-amber">How IGNIS works</span>
@@ -174,7 +191,7 @@ function HowItWorks() {
               <li
                 key={s.tag}
                 style={{ '--i': i } as CSSProperties}
-                className="surface-inset reveal flex flex-col gap-4 rounded-2xl border border-border/80 p-5 backdrop-blur-[2px]"
+                className="surface-inset reveal flex flex-col gap-4 rounded-2xl border border-border/80 bg-bg/92 p-5 backdrop-blur-md"
               >
                 <span className="surface grid size-10 place-items-center rounded-xl border border-border text-amber">
                   <Icon name={s.icon} size={19} />

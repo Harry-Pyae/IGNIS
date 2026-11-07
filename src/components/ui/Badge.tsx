@@ -37,7 +37,7 @@ export function Badge({ variant = 'neutral', children, className }: BadgeProps) 
   return (
     <span
       className={cx(
-        'console-label inline-flex h-6 items-center gap-1.5 rounded-full border px-2.5 tracking-[0.1em]',
+        'console-label inline-flex min-h-6 items-center gap-1.5 rounded-full border px-2.5 py-0.5 tracking-[0.1em]',
         VARIANTS[variant],
         className,
       )}
