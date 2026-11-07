@@ -1,0 +1,151 @@
+@import 'tailwindcss';
+@import './tokens.css';
+
+/* `can-hover:hover:…` — hover styles only on real pointers (no sticky hover on touch). */
+@custom-variant can-hover (@media (hover: hover) and (pointer: fine));
+
+@layer base {
+  html {
+    background-color: var(--color-bg);
+    color-scheme: dark;
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    @apply bg-bg font-sans text-text antialiased;
+    min-height: 100dvh;
+    text-rendering: optimizeLegibility;
+  }
+  ::selection {
+    background: color-mix(in srgb, var(--color-amber) 35%, transparent);
+    color: var(--color-text);
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-amber);
+    outline-offset: 2px;
+  }
+  h1, h2, h3 {
+    text-wrap: balance;
+  }
+  p {
+    text-wrap: pretty;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
+  }
+}
+
+@layer components {
+  /*
+   * App ambient background: /art/bg-glow.webp already contains the §8.3 aurora
+   * glows, grid and grain — it REPLACES the CSS starfield/aurora layers.
+   * A fixed layer (not body background) so `cover` maps to the viewport, not the long page.
+   */
+  .ambient {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background-color: var(--color-bg);
+    background-image: url('/art/bg-glow-sm.webp');
+    background-size: cover;
+    background-position: center top;
+  }
+  @media (min-width: 961px) {
+    .ambient {
+      background-image: url('/art/bg-glow.webp');
+    }
+  }
+
+  /* Console label: IBM Plex Mono, uppercase, 1–2px tracking (§8.3). */
+  .console-label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    line-height: 16px;
+    letter-spacing: var(--tracking-console);
+    text-transform: uppercase;
+  }
+
+  /* Card hover: 0.25s lift + amber border (§8.3). Pointer devices only; lift only when motion is OK. */
+  .hover-lift {
+    transition:
+      transform var(--dur-hover) var(--ease-out),
+      border-color var(--dur-hover) ease,
+      box-shadow var(--dur-hover) ease;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .hover-lift:hover {
+      border-color: var(--color-amber);
+      box-shadow: 0 12px 32px -16px color-mix(in srgb, var(--color-amber) 30%, transparent);
+    }
+  }
+  @media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+    .hover-lift:hover {
+      transform: translateY(-2px);
+    }
+  }
+
+  /* Press feedback for anything tappable. */
+  .pressable {
+    transition: transform var(--dur-press) var(--ease-out);
+    touch-action: manipulation;
+    user-select: none;
+  }
+  .pressable:active:not(:disabled) {
+    transform: scale(0.97);
+  }
+
+  /* Native range input, token-styled. --fill is set inline on the input itself. */
+  .ignis-range {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 24px;
+    background: transparent;
+    cursor: pointer;
+    touch-action: pan-y;
+  }
+  .ignis-range::-webkit-slider-runnable-track {
+    height: 4px;
+    border-radius: 999px;
+    background: linear-gradient(to right, var(--color-amber) var(--fill), var(--color-border) var(--fill));
+  }
+  .ignis-range::-moz-range-track {
+    height: 4px;
+    border-radius: 999px;
+    background: linear-gradient(to right, var(--color-amber) var(--fill), var(--color-border) var(--fill));
+  }
+  .ignis-range::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    margin-top: -7px;
+    border-radius: 999px;
+    background: var(--color-text);
+    border: 3px solid var(--color-amber);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-amber) 18%, transparent);
+    transition: transform var(--dur-press) var(--ease-out);
+  }
+  .ignis-range::-moz-range-thumb {
+    width: 12px;
+    height: 12px;
+    border-radius: 999px;
+    background: var(--color-text);
+    border: 3px solid var(--color-amber);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-amber) 18%, transparent);
+  }
+  .ignis-range:active::-webkit-slider-thumb {
+    transform: scale(1.12);
+  }
+
+  /* Gap hatching (Part 3 uses this for untested map cells). */
+  .hatch {
+    background-image: repeating-linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--color-faint) 35%, transparent) 0 1px,
+      transparent 1px 7px
+    );
+  }
+}
