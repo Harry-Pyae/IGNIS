@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { rateLimit, requireCurator } from '../src/server/http';
 
 const reqFrom = (ip: string, headers: Record<string, string> = {}) =>
@@ -15,8 +15,13 @@ describe('rateLimit', () => {
 });
 
 describe('requireCurator', () => {
-  afterEach(() => {
+  const saved = process.env.CURATOR_SECRET;
+  beforeEach(() => {
     delete process.env.CURATOR_SECRET;
+  });
+  afterEach(() => {
+    if (saved === undefined) delete process.env.CURATOR_SECRET;
+    else process.env.CURATOR_SECRET = saved;
   });
   it('503s when the secret is not configured', () => expect(requireCurator(reqFrom('x'))?.status).toBe(503));
   it('401s on a wrong secret and passes the right one', () => {
