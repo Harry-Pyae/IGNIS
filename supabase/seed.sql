@@ -12,16 +12,20 @@
 --   p.9 Appendix table rows: GMT96-T8 2.2 | 5 | 21 | BASS · GMT96-T7 2.2 | 10 | 21 | BASS
 --        · GMT45-T4 2.2 | 10→2.2 | 18.7 | Quenched (BASS-II)
 --
--- verified_by is a PLACEHOLDER for the team lead. Part 4 (chief curator) must re-check each
--- field against the PDF and replace it with their own name. spread_rate_mm_s is null on
--- purpose: the paper plots spread rates (Fig. 4) but never states them as numbers.
+-- PUBLICATION STATUS (round 2, A2): all three rows are DRAFTS (verified_by = null), so they are
+-- invisible to the public API until Part 4 (chief curator) re-checks every field against the PDF
+-- and publishes them from /curate under their own name. Nobody publishes on someone else's behalf.
+-- spread_rate_mm_s is null on purpose: the paper plots spread rates (Fig. 4) but never states numbers.
+-- Quote pages and figure pages differ: Fig. 2 is on p.4, Fig. 3 on p.5, Figs. 5/6 on p.6.
+--
+-- Requires migrations 0001_init.sql AND 0002_round2.sql (condition_changes column).
 
 insert into experiments (
   domain, campaign, test_id, fuel_material, material_class, fuel_form,
   thickness_mm, o2_pct, flow_cm_s, pressure_kpa, ignition_method, outcome, spread_rate_mm_s,
   key_observation_quote, observation_summary,
   source_title, source_url, psi_investigation, source_page, source_figure, source_table, source_section,
-  ntrs_id, doi, media_url, telemetry, verified_by, notes
+  ntrs_id, doi, media_url, telemetry, condition_changes, verified_by, notes
 ) values
 (
   'solid_flammability', 'BASS', 'BASS GMT96-T7', 'cotton_fiberglass', 'fabric', 'fabric',
@@ -31,8 +35,8 @@ insert into experiments (
   'Concurrent flame growth, spread and extinction over composite fabric samples in low speed purely forced flow in microgravity',
   'https://ntrs.nasa.gov/citations/20150008962', 'BASS', 3, 'Figure 2',
   'Appendix: Test summary of flat SIBAL fabrics in concurrent flow in BASS and BASS II', '3. Results and Discussion',
-  '20150008962', null, null, null, 'Part 1 lead (placeholder)',
-  'Sample 2.2 cm wide x 10 cm. Thickness "about 0.32 mm". 1 atm -> 101.325 kPa. Figure 2 linked to GMT96-T7 as the only appendix row (p.9) with 2.2 cm / 10 cm/s / 21% O2. Spread rate only plotted (Fig. 4).'
+  '20150008962', null, null, null, null, null,
+  'Sample 2.2 cm wide x 10 cm. Thickness "about 0.32 mm". 1 atm -> 101.325 kPa. Figure 2 linked to GMT96-T7 as the only appendix row (p.9) with 2.2 cm / 10 cm/s / 21% O2. Spread rate only plotted (Fig. 4). Quote p.3; Figure 2 itself is on p.4.'
 ),
 (
   'solid_flammability', 'BASS', 'BASS GMT96-T8', 'cotton_fiberglass', 'fabric', 'fabric',
@@ -42,7 +46,7 @@ insert into experiments (
   'Concurrent flame growth, spread and extinction over composite fabric samples in low speed purely forced flow in microgravity',
   'https://ntrs.nasa.gov/citations/20150008962', 'BASS', 4, 'Figure 3',
   'Appendix: Test summary of flat SIBAL fabrics in concurrent flow in BASS and BASS II', '3. Results and Discussion',
-  '20150008962', null, null, null, 'Part 1 lead (placeholder)',
+  '20150008962', null, null, null, null, null,
   'Figure 3 linked to GMT96-T8 as the only appendix row (p.9) with 2.2 cm / 5 cm/s / 21% O2. Outcome "sustained" rests on "burn the whole sample". Bright smoldering spots reported behind the flame base.'
 ),
 (
@@ -53,6 +57,6 @@ insert into experiments (
   'Concurrent flame growth, spread and extinction over composite fabric samples in low speed purely forced flow in microgravity',
   'https://ntrs.nasa.gov/citations/20150008962', 'BASS-II', 5, 'Figures 5 and 6',
   'Appendix: Test summary of flat SIBAL fabrics in concurrent flow in BASS and BASS II', '3. Results and Discussion',
-  '20150008962', null, null, null, 'Part 1 lead (placeholder)',
-  'Flow NOT constant: ignited at 10 cm/s, reduced to 2.2 cm/s "and held there for the remainder of the test"; flow_cm_s stores the held value. Appendix (p.9) lists GMT45-T4 as 10->2.2 cm/s, 18.7% O2, Quenched.'
+  '20150008962', null, null, null, '[{"parameter":"flow_cm_s","from":10,"to":2.2,"stored":"final_held","note":"ignited at 10 cm/s, reduced incrementally after ignition to 2.2 cm/s and held for the remainder of the test (p.5)"}]'::jsonb, null,
+  'Flow NOT constant: ignited at 10 cm/s, reduced to 2.2 cm/s "and held there for the remainder of the test"; flow_cm_s stores the held value. Appendix (p.9) lists GMT45-T4 as 10->2.2 cm/s, 18.7% O2, Quenched. OPEN QUESTION FOR PART 4: should a changing-flow quenching test be carded with the held flow (current choice, flagged in condition_changes) or kept out of constant-flow comparisons entirely?'
 );
