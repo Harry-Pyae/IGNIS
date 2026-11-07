@@ -9,6 +9,8 @@ DevNote — LLM providers: all LLM calls are proxied through serverless function
 
 ## 1. Product Identity
 
+> **Round 2 notice (docs/DECISIONS-ROUND2.md #4):** Absence copy is "No matching verified evidence in the current IGNIS catalog." — never "what NASA has never tested".
+
 - **Name:** IGNIS
 - **Subtitle:** Evidence-first fire-safety intelligence for human spaceflight
 - **One-sentence pitch:** Describe a spacecraft fire scenario in mission terms and IGNIS retrieves NASA's closest real microgravity combustion experiments, explains what was actually observed, and explicitly shows what NASA has never tested.
@@ -148,6 +150,8 @@ These render differently (∅ vs ⇥ chip + distinct copy) and are never conflat
 
 ## 6. Gap Detection (deterministic)
 
+> **Round 2 notice (docs/DECISIONS-ROUND2.md #4):** Gap copy is bounded to the current IGNIS catalog (`COPY.absence`, `COPY.gapNote`); per-parameter coverage is the typed `CoverageResult`.
+
 - Grid the (o2_pct × flow_cm_s) plane into cells (suggested: o2 1%-steps 14–30, flow 2 cm/s-steps 0–30).
 - A cell is **tested** if ≥1 verified experiment falls in it (after gates for the currently selected material class, or globally when no scenario is active).
 - Untested cells render as hatched/dim shading on the Evidence Map; regions beyond the catalog's min/max envelope render with the distinct outside-range treatment (§5d).
@@ -194,6 +198,8 @@ System prompt: schema with field descriptions + rules: only explicitly stated va
 ## 8. UI — Pages & Components
 
 ### 8.1 Public app (single page, mission-console aesthetic)
+
+> **Round 2 notice (docs/DECISIONS-ROUND2.md #3):** Slider caption is "Sliders change which verified NASA experiments IGNIS retrieves." (`COPY.sliderCaption`).
 Dark theme, amber/orange accents on near-black, monospace labels for parameter readouts; think flight console, not SaaS dashboard. Layout top-to-bottom:
 
 0. **Provenance strip (header):** `XX verified experiments · X NASA campaigns · NTRS / PSI sources` — click expands a compact panel listing campaigns with source links. Reinforces "curated evidence catalog, not generated knowledge." No separate documentation portal.
@@ -211,6 +217,8 @@ Paste paper text/table → Extract (LLM draft) → side-by-side: draft fields (e
 
 ### 8.3 Visual design language (build to this, not from scratch)
 
+> **Round 2 notice (docs/DECISIONS-ROUND2.md #2):** The Mission Brief and UNTESTED blocks render completely and statically; the type-in / chip-pop choreography applies only outside Brief blocks.
+
 The approved look lives on the design canvas "IGNIS product mockups" (dashboard + landing boards) — replicate it; do not invent a new aesthetic. Tokens and rules:
 
 - **Color tokens:** bg `#0C0F16` · panel `#131824` · border `#232B3A` · raised/matched border `#3A4663` · text `#E8EAF0` · dim `#9AA3B5` · faint `#6E7891` · accent amber `#F5A623` · flame orange `#F97316` (sustained) · blue `#4C8DFF` dot / `#2F6BD8` badge (extinguished) · violet `#A78BFA` dot / `#7C5CDB` badge (transition) · success green `#7FD08A` · warn `#E8C468`. Brief blocks: OBSERVED `#15201A`/`#2E4A36`, INTERPRETATION `#161D2C`/`#3A4663`, UNTESTED `#241D10`/`#6B5620`.
@@ -222,6 +230,8 @@ The approved look lives on the design canvas "IGNIS product mockups" (dashboard 
 - **Live choreography (real app only, Phase 5):** on load, map dots stagger in (~20ms apart), gap hatching draws last so absence-of-evidence visibly appears; on slider drag, the scenario marker glides (~300ms ease), match lines re-snap, match cards crossfade; on briefing arrival, claims type in line-by-line and each citation chip pops on only after server validation passes. This drag→glide→re-match→retype sequence is the demo climax — budget real Phase 5 time for it.
 
 ## 9. Data Strategy (first 24 hours, content team)
+
+> **Round 2 notice (docs/DECISIONS-ROUND2.md #1):** Schedule and targets are superseded by IGNIS_TEAM_PLAN.md (7-day plan). The verification rules here still apply.
 
 - **Sources, priority order:** (1) BASS / BASS-II results papers on NTRS (tabulated burn tests — richest extraction target), (2) Saffire I–IV summary reports (large-scale, best footage, clear outcomes), (3) SoFIE/MIST recent results, (4) SAME cards optionally, stored under domain `smoke_detection` for context display only — they never enter solid-flammability retrieval. PSI (psi.nasa.gov) investigation pages are the authoritative `source_url`/`psi_investigation` anchors; NTRS PDFs are the extraction substrate (record `ntrs_id`; record `doi` only when one exists). FLEX/droplets: collect links for the roadmap slide only — do not card them.
 - **Targets:** 15 verified cards by end of hour 12 (minimum viable demo), 30 by hour 24 (comfortable), 40 = stretch. 3 curators × ~10 cards each is realistic with the curation view.
@@ -241,6 +251,8 @@ The approved look lives on the design canvas "IGNIS product mockups" (dashboard 
 
 ## 11. Scope Tiers (ruthless)
 
+> **Round 2 notice (docs/DECISIONS-ROUND2.md #1):** Tiers are superseded by the Team Plan's Expanded Scope + cut order; boundary polyline deferred (#6).
+
 **MUST HAVE (demo dies without):** 15+ verified cards · Scenario Builder with templates + editable chips · parse-scenario with user confirmation · deterministic material-alias resolution with visible "Resolved:" line · matching engine with gates + chips + WHY THIS MATCHED · Evidence Map with outcome dots + scenario marker + match lines · Mission Brief from validated structured claims + Evidence Chain click-through · UNTESTED state (and outside-range state distinct) · provenance strip · Export Dataset button · RLS + server-side secrets · deployed public URL.
 
 **SHOULD HAVE:** live sliders with real-time re-retrieval · gap-grid shading on the map · Gap Radar panel · media thumbnails on cards · 30 cards · briefing cache · provenance fields filled on most cards · Guided Demo (Judge Mode) button with one-click preset scenarios.
@@ -250,6 +262,8 @@ The approved look lives on the design canvas "IGNIS product mockups" (dashboard 
 **DO NOT BUILD:** any predicted-risk overlay or simulator · free-chat over the corpus · user PDF upload · droplet domain · 3D flame graphics · accounts/auth beyond the curator secret · full offline/PWA infrastructure or "runs 100% locally on crew hardware" claims (roadmap slide only: "catalog is ~200 KB; architecture is designed to be deployable on crew hardware") · real-time PSI API integration · LLM-generated match explanations.
 
 ## 12. Build Phases (for Claude Code execution)
+
+> **Round 2 notice (docs/DECISIONS-ROUND2.md #1):** Phases and hours are superseded by the Team Plan timeline.
 
 **Phase 0 — Scaffold (≤1 h):** Vite+React+Tailwind init; Supabase project + migration from §4 **+ RLS policies from §10**; env wiring (secrets server-side only); serverless function stubs; deploy pipeline green with a hello page.
 **Phase 1 — Curation path (hours 1–4):** `/curate` page (manual form first, LLM extract second) writing through the protected server route; seed 3 hand-made cards from a BASS paper to unblock frontend work immediately.
@@ -263,10 +277,14 @@ Acceptance test after Phase 4: a teammate who hasn't seen the app can run the ca
 
 ## 13. Demo (2.5 min) + Failure Fallback
 
+> **Round 2 notice (docs/DECISIONS-ROUND2.md #4):** The UNTESTED line becomes "IGNIS tells you what NASA saw — and refuses to guess where the current catalog has no matching verified evidence."
+
 Script beats: Earth candle vs BASS flame sphere footage (0:00–0:20) → "20 years of NASA fire research, unsearchable at 2 a.m." with scattered-papers visual (0:20–0:35) → live: pick *Cabin wall panel* template, parsed chips + resolution line confirmed (0:35–0:50) → **slider moment:** drag O₂ 21→25 %, marker glides, new experiments light up live (0:50–1:15) → Match Panel: three real tests, WHY THIS MATCHED chips, footage stills (1:15–1:35) → Brief renders from validated claims; click a citation chip → quote → `p.12 · Table 4 · NTRS` → source (1:35–1:55) → linger on amber UNTESTED box; line: *"IGNIS tells you what NASA saw — and refuses to guess what NASA never tested."* (1:55–2:10) → zoom out to hatched gap zones: "the gaps are a research roadmap for Artemis" + Export button beat (2:10–2:25) → close card (2:25–2:30).
 **Demo-scenario rule:** choose the demo scenario FROM the finished catalog so it yields ≥3 strong matches and exactly one clean gap. **Async judging:** the same rehearsed flow is available to judges on the live URL via the Guided Demo button (§8.1 item 7). **Fallback:** pre-recorded 1080p screen capture of the identical flow, synced to the same VO; cache the demo briefing in `briefings_cache` so even the live run needs no cold LLM call; if synthesis fails live, the deterministic match panel + "showing matched evidence only" fallback still demos.
 
 ## 14. The Six Workstreams (each has one owner; pick at the kickoff meeting)
+
+> **Round 2 notice (docs/DECISIONS-ROUND2.md #1):** This numbering is obsolete. Ownership follows IGNIS_TEAM_PLAN.md (Part 1 = Foundation & Integration) and AGENTS.md.
 
 IGNIS splits into six self-contained parts. Every part has a clear mission, its own deliverables, and minimal blocking on the others — the two engineering parts (1–2) run in parallel with the three content parts (3–5) from hour one, and Part 6 ramps up as the build stabilizes. Five people, six parts: whoever ends up with two takes the pairing noted on their first pick.
 
@@ -289,6 +307,8 @@ NASA footage pull (public domain: BASS flame spheres, FLEX cool flames for the h
 The live demo script and its rehearsal direction, the VO/presenter delivery, Guided Demo (Judge Mode) copy and captions, the demo-scenario selection per §13's rule, and Q&A drilling for the whole team — especially the three rehearsed lines: the UNTESTED one-liner, the hallucination answer, and the security answer. Deliverable: two full rehearsals before freeze, timed under 2:30.
 
 ## 15. Top Failure Modes → Mitigations
+
+> **Round 2 notice (docs/DECISIONS-ROUND2.md #3):** Item 9 caption is replaced by `COPY.sliderCaption`.
 
 1. Too few clean cards → manual-entry-first curation, thin-card rule, 12 h checkpoint (if <10 cards, cut telemetry + reduce templates to 2).
 2. LLM evidence drift → structured claims + Zod + server-side evidence-ID validation + low-temp retry + visible withheld badge (feature-ize the failure).

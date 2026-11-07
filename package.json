@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "type": "module",
   "engines": {
-    "node": ">=20"
+    "node": "24.x"
   },
   "scripts": {
     "dev": "vite",
@@ -13,7 +13,10 @@
     "test": "vitest run",
     "lint": "eslint .",
     "typecheck": "tsc",
-    "test:smoke": "vitest run --mode smoke tests/llm.smoke.test.ts"
+    "test:smoke": "vitest run --mode smoke tests/llm.smoke.test.ts",
+    "db:local": "node scripts/local-db.mjs",
+    "dev:local": "vite --mode disposable",
+    "test:db": "node scripts/local-db.mjs test"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.119.0",
