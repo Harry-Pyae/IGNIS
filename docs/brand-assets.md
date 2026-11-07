@@ -31,3 +31,6 @@ are for the team, not the app: `mission-patch.png` (transparent) and `mission-pa
 `public/favicon.ico` (16/32/48), `icon-192.png`, `icon-512.png` (Lanczos from `logo-flame.webp`, cropped to the
 ring) and `public/og-image.png` (1200×630: `bg-grid-accent` + logo + "IGNIS" in Space Grotesk Bold + tagline in
 IBM Plex Mono). Regenerate only if the masters change.
+
+`public/art/logo-flame-64.webp` (1.5 KB, 64 px Lanczos derivative for the 30 px header and footer marks; the master is untouched).
+`public/fonts/` holds the self-hosted Space Grotesk (variable, 300–700) and IBM Plex Mono 400/500 latin subsets, under SIL OFL 1.1 (license files alongside).

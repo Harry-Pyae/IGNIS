@@ -32,8 +32,10 @@ export function ProvenancePill({ summary, retry }: { summary: CatalogSummary; re
 
 function Stat({ value, label, muted }: { value: string; label: string; muted?: boolean }) {
   return (
-    <div className="flex flex-col gap-1">
-      <span className={cx('font-mono text-3xl font-medium tabular-nums', muted ? 'text-faint' : 'text-text')}>{value}</span>
+    <div className="surface-inset flex flex-col gap-3 rounded-2xl border border-border/70 p-4">
+      <span className={cx('text-[40px] leading-none font-semibold tracking-[-0.03em] tabular-nums', muted ? 'text-faint' : 'text-lit')}>
+        {value}
+      </span>
       <span className="console-label text-dim">{label}</span>
     </div>
   );
@@ -48,7 +50,7 @@ export function CatalogBlock({ summary, retry }: { summary: CatalogSummary; retr
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <span className="console-label text-amber">The catalog</span>
-          <h2 id="catalog-title" className="mt-2 text-2xl font-semibold tracking-[-0.01em]">
+          <h2 id="catalog-title" className="display text-lit mt-3 text-[clamp(26px,3vw,34px)] leading-[1.1]">
             Verified NASA experiments, nothing else.
           </h2>
           <p className="mt-2 max-w-xl text-[15px] text-dim">
@@ -73,12 +75,14 @@ export function CatalogBlock({ summary, retry }: { summary: CatalogSummary; retr
           )}
         </div>
       ) : (
-        <div className="grid grid-cols-2 gap-6 sm:grid-cols-4" aria-busy={summary.state === 'loading'}>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4" aria-busy={summary.state === 'loading'}>
           <Stat value={stats ? String(stats.verified) : '—'} label="Verified experiments" muted={!stats || verified === 0} />
           <Stat value={stats ? String(stats.in_review) : '—'} label="Cards in review" muted={!stats} />
           <Stat value={stats ? String(stats.campaigns.length) : '—'} label="NASA campaigns" muted={!stats || verified === 0} />
-          <div className="flex flex-col gap-1">
-            <span className="font-mono text-lg text-text tabular-nums">{date(stats?.last_updated ?? null)}</span>
+          <div className="surface-inset flex flex-col justify-between gap-3 rounded-2xl border border-border/70 p-4">
+            <span className="text-[20px] leading-tight font-semibold tracking-[-0.02em] text-text tabular-nums">
+              {date(stats?.last_updated ?? null)}
+            </span>
             <span className="console-label text-dim">
               Last updated{stats && stats.revision !== 'empty' ? ` · rev ${stats.revision.slice(0, 7)}` : ''}
             </span>

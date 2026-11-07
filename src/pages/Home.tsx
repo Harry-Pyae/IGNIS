@@ -57,7 +57,7 @@ function Hero() {
         aria-hidden
         {...{ fetchpriority: 'high' }} /* lowercase: React 18 passes it straight to the DOM */
         decoding="async"
-        className="absolute inset-0 -z-20 size-full object-cover object-[68%_center]"
+        className="hero-drift absolute inset-0 -z-20 size-full origin-[68%_35%] object-cover object-[68%_center]"
       />
       {/* Left scrim rgba(12,15,22,.82) → transparent keeps §8.3 text contrast; bottom fade melts into the page. */}
       <div
@@ -67,19 +67,19 @@ function Hero() {
       <div aria-hidden className="absolute inset-x-0 bottom-0 -z-10 h-40 bg-gradient-to-b from-transparent to-bg" />
 
       <div className="mx-auto w-full max-w-6xl px-4 py-20 sm:px-6">
-        <div className="max-w-xl">
+        <div className="max-w-2xl">
           <p {...rise(0)} className="anim-rise">
             <span className="console-label inline-flex items-center gap-2 text-amber">
               <span aria-hidden className="h-px w-6 bg-amber max-sm:hidden" />
               NASA Space Apps 2026 · Flame in Freefall
             </span>
           </p>
-          <h1 {...rise(1)} className="anim-rise mt-5 text-[44px] leading-[1.02] font-bold tracking-[-0.02em] sm:text-6xl">
-            What NASA saw.
+          <h1 {...rise(1)} className="anim-rise display mt-6 text-[clamp(44px,6.2vw,78px)]">
+            <span className="text-lit">What NASA saw.</span>
             <br />
-            <span className="text-dim">Nothing it didn&apos;t.</span>
+            <span className="text-lit-dim">Nothing it didn&apos;t.</span>
           </h1>
-          <p {...rise(2)} className="anim-rise mt-6 max-w-lg text-[17px] leading-relaxed text-dim">
+          <p {...rise(2)} className="anim-rise mt-7 max-w-lg text-[17px] leading-[1.65] text-dim sm:text-[18px]">
             Describe a spacecraft fire scenario in mission terms. IGNIS retrieves the closest verified NASA
             microgravity combustion experiments, explains what they actually observed — and marks where the current
             catalog has no matching evidence.
@@ -152,7 +152,7 @@ const STEPS: { icon: IconName; tag: string; title: string; lines: [string, strin
 function HowItWorks() {
   return (
     <section id="how-it-works" aria-labelledby="how-title" className="scroll-mt-20 px-4 py-20 sm:px-6">
-      <div className="relative isolate mx-auto max-w-6xl overflow-hidden rounded-panel border border-border bg-panel">
+      <div className="surface reveal relative isolate mx-auto max-w-6xl overflow-hidden rounded-panel border border-border">
         {/* Decorative constellation (kept off the Evidence Map: its orange/blue dots read as data). */}
         <img
           src="/art/bg-constellation.webp"
@@ -166,20 +166,24 @@ function HowItWorks() {
         />
         <div className="p-6 sm:p-10">
           <span className="console-label text-amber">How IGNIS works</span>
-          <h2 id="how-title" className="mt-3 max-w-xl text-3xl font-semibold tracking-[-0.01em] sm:text-4xl">
+          <h2 id="how-title" className="display text-lit mt-4 max-w-xl text-[clamp(30px,3.6vw,44px)] leading-[1.06]">
             An evidence catalog, not a simulator.
           </h2>
           <ol className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {STEPS.map((s) => (
-              <li key={s.tag} className="flex flex-col gap-3 rounded-xl border border-border bg-bg/80 p-5">
-                <span className="grid size-10 place-items-center rounded-xl border border-border bg-panel text-amber">
+            {STEPS.map((s, i) => (
+              <li
+                key={s.tag}
+                style={{ '--i': i } as CSSProperties}
+                className="surface-inset reveal flex flex-col gap-4 rounded-2xl border border-border/80 p-5 backdrop-blur-[2px]"
+              >
+                <span className="surface grid size-10 place-items-center rounded-xl border border-border text-amber">
                   <Icon name={s.icon} size={19} />
                 </span>
                 <div>
                   <span className="console-label text-dim">{s.tag}</span>
-                  <h3 className="mt-0.5 text-[17px] font-semibold">{s.title}</h3>
+                  <h3 className="mt-1 text-[17px] font-semibold tracking-[-0.015em]">{s.title}</h3>
                 </div>
-                <p className="text-[14px] leading-relaxed text-dim">
+                <p className="text-[14px] leading-[1.6] text-dim">
                   {s.lines[0]} <span className="text-text">{s.lines[1]}</span>
                 </p>
               </li>
@@ -195,7 +199,7 @@ function CatalogSection() {
   const { summary, retry } = useCatalogSummary();
   return (
     <div id="catalog" className="scroll-mt-20 px-4 pb-20 sm:px-6">
-      <div className="mx-auto max-w-6xl">
+      <div className="reveal mx-auto max-w-6xl">
         <CatalogBlock summary={summary} retry={retry} />
       </div>
     </div>
@@ -208,12 +212,15 @@ function Principle() {
   return (
     <section className="px-4 pb-20 sm:px-6">
       <div className="mx-auto grid max-w-6xl items-center gap-10 md:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
-        <FlameSphereArt size={220} className="justify-self-center" />
+        <FlameSphereArt size={220} className="reveal justify-self-center" />
         <div>
-          <span className="console-label text-amber">The one idea</span>
-          <blockquote className="mt-3 text-2xl leading-snug font-medium sm:text-[32px]">
-            IGNIS refuses to guess. It renders the absence of evidence as a visible, first-class feature.
-          </blockquote>
+          <div className="reveal">
+            <span className="console-label text-amber">The one idea</span>
+            <blockquote className="display text-lit mt-4 text-[clamp(26px,3vw,38px)] leading-[1.15] font-medium tracking-[-0.025em]">
+              IGNIS refuses to guess. It renders the absence of evidence as a visible, first-class feature.
+            </blockquote>
+          </div>
+          {/* Brief-tone legend: static on purpose (decision 2) — no reveal on this grid. */}
           <div className="mt-8 grid gap-3 sm:grid-cols-3">
             <Panel tone="observed" className="!p-4">
               <span className="console-label text-success">Observed</span>
@@ -240,7 +247,7 @@ function GuidedDemoPanel() {
   const [preset, setPreset] = useState<string>(PRESETS[0]);
   return (
     <section id="guided-demo" className="scroll-mt-20 px-4 pb-16 sm:px-6">
-      <div className="relative isolate mx-auto max-w-6xl overflow-hidden rounded-panel border border-border">
+      <div className="surface reveal relative isolate mx-auto max-w-6xl overflow-hidden rounded-panel border border-border">
         <img
           src="/art/bg-grid-accent.webp"
           width={1672}
@@ -254,7 +261,7 @@ function GuidedDemoPanel() {
         <div className="flex flex-col gap-8 p-6 sm:p-10 md:flex-row md:items-end md:justify-between">
           <div className="max-w-md">
             <Badge variant="amber">Judge mode</Badge>
-            <h2 className="mt-4 text-3xl font-semibold tracking-[-0.01em]">See the golden path in 60 seconds.</h2>
+            <h2 className="display text-lit mt-5 text-[clamp(28px,3.2vw,38px)] leading-[1.08]">See the golden path in 60 seconds.</h2>
             <p className="mt-3 text-[15px] leading-relaxed text-dim">
               The guided demo runs the cabin-wall scenario end to end with a caption at every step — or pick a preset
               and explore on your own.
@@ -288,7 +295,7 @@ function ConsoleSkeleton() {
   const [flow, setFlow] = useState(10);
   return (
     <div id="console" className="mx-auto flex max-w-6xl flex-col gap-6 px-4 pb-24 sm:px-6">
-      <Panel as="section" aria-labelledby="s1">
+      <Panel as="section" aria-labelledby="s1" className="reveal">
         <SectionHeader id="s1" step="01 · Describe" title="Mission scenario" aside={<Scaffold owner="part3-console" />} />
         <div className="grid gap-8 lg:grid-cols-2">
           <div className="flex flex-col gap-4">
@@ -310,7 +317,7 @@ function ConsoleSkeleton() {
         </div>
       </Panel>
 
-      <Panel as="section" aria-labelledby="s2">
+      <Panel as="section" aria-labelledby="s2" className="reveal">
         <SectionHeader
           id="s2"
           step="02 · Retrieve"
@@ -323,7 +330,7 @@ function ConsoleSkeleton() {
       </Panel>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <Panel as="section" aria-labelledby="s3">
+        <Panel as="section" aria-labelledby="s3" className="reveal">
           <SectionHeader id="s3" step="03 · Why these" title="Match panel" aside={<Scaffold owner="part3" />} />
           <EmptyState icon="match" title="Top matches appear here">
             Each card: chips, WHY THIS MATCHED, outcome, source and provenance. “Matched N of M parameters.”
@@ -337,7 +344,7 @@ function ConsoleSkeleton() {
         </Panel>
       </div>
 
-      <Panel as="section" aria-labelledby="s5">
+      <Panel as="section" aria-labelledby="s5" className="reveal">
         <SectionHeader id="s5" step="05 · Research prioritization" title="Evidence gap radar" aside={<Scaffold owner="part3" />} />
         <EmptyState icon="gap" title="The largest untested regions appear here">
           {COPY.gapNote}
@@ -353,9 +360,9 @@ function Footer() {
       <div className="mx-auto grid max-w-6xl gap-8 text-[13px] text-dim md:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
         <div className="flex flex-col gap-3">
           <p className="flex flex-wrap items-center gap-2 text-text">
-            <img src="/art/logo-flame.webp" width={20} height={20} alt="" aria-hidden loading="lazy" className="size-5 rounded-full" />
+            <img src="/art/logo-flame-64.webp" width={20} height={20} alt="" aria-hidden loading="lazy" className="size-5 rounded-full" />
             <span className="font-semibold tracking-[0.14em]">IGNIS</span>
-            <span className="text-dim">· Team IGNIS · NASA Space Apps 2026</span>
+            <span className="text-dim">by Team AstroFlare · NASA Space Apps 2026</span>
           </p>
           <p>
             Experiment data: NASA Technical Reports Server (NTRS) and NASA Physical Sciences Informatics (PSI). Each card

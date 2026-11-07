@@ -4,11 +4,11 @@ import { cx } from '../../lib/cx';
 export type PanelTone = 'default' | 'raised' | 'observed' | 'interpretation' | 'untested';
 
 const TONES: Record<PanelTone, string> = {
-  default: 'bg-panel border-border',
-  raised: 'bg-panel border-raised',
-  observed: 'bg-observed-bg border-observed-border',
-  interpretation: 'bg-interp-bg border-interp-border',
-  untested: 'bg-untested-bg border-untested-border',
+  default: 'surface border-border',
+  raised: 'surface surface-raised border-raised',
+  observed: 'bg-observed-bg surface-tinted border-observed-border',
+  interpretation: 'bg-interp-bg surface-tinted border-interp-border',
+  untested: 'bg-untested-bg surface-tinted border-untested-border',
 };
 
 /** Brief tones are credibility moments: they and everything inside them never move (decision 2). */
@@ -22,7 +22,7 @@ interface PanelProps extends HTMLAttributes<HTMLElement> {
   padded?: boolean;
 }
 
-/** 16px-radius surface on the near-black ground (§8.3). */
+/** 16px-radius surface on the near-black ground (§8.3): lit from above, translucent, soft shadow. */
 export function Panel({ as: Tag = 'div', tone = 'default', interactive, padded = true, className, ...rest }: PanelProps) {
   return (
     <Tag
