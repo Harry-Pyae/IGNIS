@@ -13,7 +13,7 @@ GEMINI.md
 .windsurfrules
 .github/copilot-instructions.md
 skills-lock.json
-PROMPT_PART1_FOUNDATION.md
+PROMPT_PART1_*.md
 
 # Env
 .env
