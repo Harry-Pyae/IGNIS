@@ -5,8 +5,18 @@ import { createClient } from '@supabase/supabase-js';
  * scripts/local-db.mjs writes into .env.disposable (a throwaway database). Never set it in a
  * normal .env — `npm test` must not touch whatever project a developer's .env points at.
  */
-const { SUPABASE_URL: url, SUPABASE_ANON_KEY: anonKey, SUPABASE_SERVICE_ROLE_KEY: serviceKey, IGNIS_DB_TESTS } = process.env;
-export const dbTestsEnabled = IGNIS_DB_TESTS === '1' && Boolean(url && anonKey && serviceKey);
+const {
+  SUPABASE_URL: url,
+  SUPABASE_ANON_KEY: anonKey,
+  SUPABASE_SERVICE_ROLE_KEY: serviceKey,
+  IGNIS_DB_TESTS,
+  IGNIS_DB_TESTS_REMOTE,
+} = process.env;
+// Local databases only — unless the remote project ref is named explicitly for this one run,
+// e.g. `IGNIS_DB_TESTS_REMOTE=abcd1234 npx vitest run tests/db`. A stray flag in .env can't hit prod.
+const isLocal = /^https?:\/\/(127\.0\.0\.1|localhost)(:\d+)?\/?$/.test(url ?? '');
+const remoteNamed = Boolean(IGNIS_DB_TESTS_REMOTE && url?.includes(`//${IGNIS_DB_TESTS_REMOTE}.`));
+export const dbTestsEnabled = IGNIS_DB_TESTS === '1' && Boolean(url && anonKey && serviceKey) && (isLocal || remoteNamed);
 
 const opts = { auth: { persistSession: false } };
 export const anon = () => createClient(url!, anonKey!, opts);
