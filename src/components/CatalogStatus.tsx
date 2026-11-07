@@ -3,7 +3,6 @@
  * Presentational — pass a CatalogSummary (from useCatalogSummary, or a fixture in /kit). OWNER: Coder A.
  */
 import { type CatalogSummary, catalogLine } from '../lib/catalog';
-import { COPY } from '../lib/copy';
 import { cx } from '../lib/cx';
 import { Badge, Button, Icon, Panel } from './ui';
 
@@ -65,7 +64,17 @@ export function CatalogBlock({ summary, retry }: { summary: CatalogSummary; retr
           </p>
         </div>
         {summary.state === 'ready' && verified === 0 && stats!.in_review > 0 && (
-          <Badge variant="warn">{COPY.inReview(stats!.in_review)}</Badge>
+          // A status line, not a pill: it wraps cleanly at 390px and reads as state, not a button.
+          <p
+            key={stats!.in_review}
+            className="swap-in flex max-w-full items-start gap-2.5 rounded-xl border border-warn/30 bg-warn/[0.07] px-3.5 py-2.5 text-[13px] leading-snug text-warn sm:max-w-xs"
+          >
+            <span aria-hidden className="mt-[5px] size-2 shrink-0 rounded-full bg-warn shadow-[0_0_0_3px_color-mix(in_srgb,var(--color-warn)_18%,transparent)]" />
+            <span>
+              <span className="font-medium">Catalog in verification</span>
+              <span className="text-dim"> — {stats!.in_review} card{stats!.in_review === 1 ? '' : 's'} in review</span>
+            </span>
+          </p>
         )}
       </div>
 
