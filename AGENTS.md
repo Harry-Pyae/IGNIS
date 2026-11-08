@@ -61,6 +61,10 @@ before writing code. Where they disagree, the Build Plan's Core Principles win.
   DB tests only run with `IGNIS_DB_TESTS=1`; never put that in a `.env` that points at a real project.
 - Approved copy, decisions and the claim-validation guarantee: `docs/DECISIONS-ROUND2.md`.
 
+## Open handoffs
+
+- **R1 → Coder A, to activate two presets** (`SCENARIO_PRESETS`, `src/engine/aliases.ts`): verify ≥1 `solid_flammability` card of a real wire/cable insulation material (`material_class = insulation`) for *Cable insulation*, and ≥1 card of the cargo packaging material its source actually names for *Cargo packaging*, then send Coder A each card's exact `fuel_material`. Until then both presets open the material picker.
+
 ## Guardrails (violations are bugs)
 
 - Nothing predicts: no function, comment or copy uses "predict" / "will burn" / "would burn".
