@@ -68,20 +68,41 @@ describe('logging', () => {
 });
 
 describe('probeProviders', () => {
-  it('configured / reachable / status / model, and never the key', async () => {
+  it('real minimal generation; on failure: provider message (key redacted) + available models', async () => {
     const urls: string[] = [];
     const health = await probeProviders({
       env: { GROQ_API_KEY: KEY },
       fetchFn: fake((u) => {
         urls.push(u);
-        return new Response('', { status: 404 });
+        if (u.endsWith('/chat/completions'))
+          return new Response(JSON.stringify({ error: { message: `model decommissioned (key ${KEY})` } }), { status: 404 });
+        return new Response(JSON.stringify({ data: [{ id: 'z-model', active: true }, { id: 'old', active: false }, { id: 'a-model' }] }));
       }),
     });
-    expect(health).toEqual([
-      { provider: 'groq', configured: true, reachable: false, status: 404, elapsed_ms: expect.any(Number), model: 'llama-3.3-70b-versatile', failure: 'http_other' },
-      { provider: 'gemini', configured: false, reachable: false, status: null, elapsed_ms: 0, model: 'gemini-2.5-flash', failure: 'env_var_missing' },
-    ]);
-    expect(urls).toEqual(['https://api.groq.com/openai/v1/models/llama-3.3-70b-versatile']); // metadata only, no completion
+    expect(health[0]).toEqual({
+      provider: 'groq',
+      configured: true,
+      reachable: false,
+      status: 404,
+      elapsed_ms: expect.any(Number),
+      model: 'llama-3.3-70b-versatile',
+      failure: 'http_other',
+      provider_message: 'model decommissioned (key [redacted])',
+      available_models: ['a-model', 'z-model'],
+    });
+    expect(health[1]).toMatchObject({ provider: 'gemini', configured: false, failure: 'env_var_missing', available_models: null });
+    expect(urls).toEqual(['https://api.groq.com/openai/v1/chat/completions', 'https://api.groq.com/openai/v1/models']);
     expect(JSON.stringify(health)).not.toContain('SUPERSECRET');
+  });
+
+  it('healthy provider: reachable, no model list fetched', async () => {
+    const urls: string[] = [];
+    const ok = fake((u) => {
+      urls.push(u);
+      return new Response(JSON.stringify({ choices: [{ message: { content: '{"ok":true}' } }] }));
+    });
+    const [groq] = await probeProviders({ env: { GROQ_API_KEY: KEY }, fetchFn: ok });
+    expect(groq).toMatchObject({ reachable: true, status: 200, failure: null, available_models: null });
+    expect(urls).toEqual(['https://api.groq.com/openai/v1/chat/completions']);
   });
 });

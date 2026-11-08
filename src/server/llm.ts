@@ -57,6 +57,8 @@ class ProviderError extends Error {
   constructor(
     readonly failure: FailureClass,
     readonly status: number | null,
+    /** Provider's own error message (e.g. "model decommissioned"). Shown to curators only, never logged. */
+    readonly detail: string | null = null,
   ) {
     super(failure);
   }
@@ -65,19 +67,39 @@ class ProviderError extends Error {
 const httpFailure = (status: number): FailureClass =>
   status === 401 || status === 403 ? 'auth_401_403' : status === 429 ? 'rate_limit_429' : 'http_other';
 
+/** Non-2xx → ProviderError carrying the provider's message (both APIs use {error: {message}}). */
+async function httpError(res: Response): Promise<ProviderError> {
+  const body = (await res.json().catch(() => null)) as { error?: { message?: string; status?: string } } | null;
+  const detail = body?.error?.message ?? body?.error?.status ?? null;
+  return new ProviderError(httpFailure(res.status), res.status, detail ? detail.slice(0, 240) : null);
+}
+
 type Env = Record<string, string | undefined>;
 type Call = (key: string, model: string, req: LlmRequest<unknown>, fetchFn: typeof fetch) => Promise<string>;
 
 const CONFIG: Record<
   ProviderName,
-  { keyVar: string; modelVar: string; defaultModel: string; modelUrl: (m: string) => string; auth: (k: string) => Record<string, string>; call: Call }
+  {
+    keyVar: string;
+    modelVar: string;
+    defaultModel: string;
+    /** Lists the models this key can generate with (ids only) — health-llm, when the configured one fails. */
+    listModels: (key: string, fetchFn: typeof fetch) => Promise<string[]>;
+    call: Call;
+  }
 > = {
   groq: {
     keyVar: 'GROQ_API_KEY',
     modelVar: 'GROQ_MODEL',
     defaultModel: 'llama-3.3-70b-versatile',
-    modelUrl: (m) => `https://api.groq.com/openai/v1/models/${encodeURIComponent(m)}`,
-    auth: (key) => ({ authorization: `Bearer ${key}` }),
+    listModels: async (key, fetchFn) => {
+      const res = await fetchFn('https://api.groq.com/openai/v1/models', {
+        headers: { authorization: `Bearer ${key}` },
+        signal: AbortSignal.timeout(5_000),
+      });
+      const body = (await res.json().catch(() => ({}))) as { data?: { id?: string; active?: boolean }[] };
+      return (body.data ?? []).filter((m) => m.id && m.active !== false).map((m) => m.id!);
+    },
     call: async (key, model, req, fetchFn) => {
       const res = await fetchFn('https://api.groq.com/openai/v1/chat/completions', {
         method: 'POST',
@@ -93,7 +115,7 @@ const CONFIG: Record<
         }),
         signal: AbortSignal.timeout(req.timeoutMs ?? 20_000),
       });
-      if (!res.ok) throw new ProviderError(httpFailure(res.status), res.status);
+      if (!res.ok) throw await httpError(res);
       const body = (await res.json().catch(() => ({}))) as { choices?: { message?: { content?: string } }[] };
       const text = body.choices?.[0]?.message?.content;
       if (!text) throw new ProviderError('invalid_json_on_200', res.status);
@@ -104,9 +126,17 @@ const CONFIG: Record<
     keyVar: 'GEMINI_API_KEY',
     modelVar: 'GEMINI_MODEL',
     defaultModel: 'gemini-2.5-flash',
-    modelUrl: (m) => `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(m)}`,
     // Header, not ?key= — keeps the key out of URLs and any request logs.
-    auth: (key) => ({ 'x-goog-api-key': key }),
+    listModels: async (key, fetchFn) => {
+      const res = await fetchFn('https://generativelanguage.googleapis.com/v1beta/models?pageSize=200', {
+        headers: { 'x-goog-api-key': key },
+        signal: AbortSignal.timeout(5_000),
+      });
+      const body = (await res.json().catch(() => ({}))) as { models?: { name?: string; supportedGenerationMethods?: string[] }[] };
+      return (body.models ?? [])
+        .filter((m) => m.name && m.supportedGenerationMethods?.includes('generateContent'))
+        .map((m) => m.name!.replace(/^models\//, ''));
+    },
     call: async (key, model, req, fetchFn) => {
       const res = await fetchFn(
         `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`,
@@ -121,7 +151,7 @@ const CONFIG: Record<
           signal: AbortSignal.timeout(req.timeoutMs ?? 20_000),
         },
       );
-      if (!res.ok) throw new ProviderError(httpFailure(res.status), res.status);
+      if (!res.ok) throw await httpError(res);
       const body = (await res.json().catch(() => ({}))) as { candidates?: { content?: { parts?: { text?: string }[] } }[] };
       const text = body.candidates?.[0]?.content?.parts?.[0]?.text;
       if (!text) throw new ProviderError('invalid_json_on_200', res.status);
@@ -178,21 +208,28 @@ export async function completeJson<T>(
 }
 
 // ---------------------------------------------------------------------------
-// Health probe (/api/health-llm). Asks each provider's model-metadata endpoint whether it
-// accepts the key and knows the model — no tokens spent, no prompt sent.
+// Health probe (/api/health-llm). A REAL minimal generation per provider (a few tokens),
+// because model metadata can answer 200 for a model that no longer generates.
+// On failure it lists the models the key can use, so the fix is a fact, not a guess.
 // ---------------------------------------------------------------------------
 export interface ProviderHealth {
   provider: ProviderName;
   /** The key var is present (non-blank). Its value is never echoed. */
   configured: boolean;
-  /** The provider accepted the key and knows the model. */
+  /** A minimal JSON generation succeeded with the configured model. */
   reachable: boolean;
   status: number | null;
   elapsed_ms: number;
-  /** Model id in use (not secret): a retired model shows up as http_other / 404. */
+  /** Model id in use (not secret). */
   model: string;
   failure: FailureClass | null;
+  /** Provider's own error message, key text redacted. */
+  provider_message: string | null;
+  /** Only on failure: model ids this key can generate with. */
+  available_models: string[] | null;
 }
+
+const PING = { system: 'Return JSON only.', user: 'Return {"ok":true}', temperature: 0 } as const;
 
 export async function probeProviders(
   deps: { env?: Env; fetchFn?: typeof fetch; timeoutMs?: number } = {},
@@ -204,15 +241,26 @@ export async function probeProviders(
       const cfg = CONFIG[provider];
       const model = modelOf(env, provider);
       const key = readVar(env, cfg.keyVar);
-      if (!key)
-        return { provider, configured: false, reachable: false, status: null, elapsed_ms: 0, model, failure: 'env_var_missing' };
+      const base = { provider, model, provider_message: null, available_models: null };
+      if (!key) return { ...base, configured: false, reachable: false, status: null, elapsed_ms: 0, failure: 'env_var_missing' };
+      const redact = (s: string | null) => (s ? s.split(key).join('[redacted]') : null);
       const started = Date.now();
       try {
-        const res = await fetchFn(cfg.modelUrl(model), { headers: cfg.auth(key), signal: AbortSignal.timeout(deps.timeoutMs ?? 5_000) });
-        const failure = res.ok ? null : httpFailure(res.status);
-        return { provider, configured: true, reachable: res.ok, status: res.status, elapsed_ms: Date.now() - started, model, failure };
+        // call() returns raw text; schema validation is completeJson's job, so none is needed here.
+        await cfg.call(key, model, { ...PING, schema: null as unknown as z.ZodType<unknown>, timeoutMs: deps.timeoutMs ?? 8_000 }, fetchFn);
+        return { ...base, configured: true, reachable: true, status: 200, elapsed_ms: Date.now() - started, failure: null };
       } catch (e) {
-        return { provider, configured: true, reachable: false, ...failureOf(e), elapsed_ms: Date.now() - started, model };
+        const elapsed_ms = Date.now() - started;
+        const available_models = await cfg.listModels(key, fetchFn).catch(() => [] as string[]);
+        return {
+          ...base,
+          configured: true,
+          reachable: false,
+          ...failureOf(e),
+          elapsed_ms,
+          provider_message: redact(e instanceof ProviderError ? e.detail : null),
+          available_models: available_models.sort(),
+        };
       }
     }),
   );
