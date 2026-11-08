@@ -12,7 +12,6 @@ export const POST = route(async (req) => {
   if (response) return response;
 
   try {
-    // TODO(coder-a): add the one worked BASS example to the prompt (§7.6).
     const result = await completeJson({
       system: EXTRACT_SYSTEM,
       user: `EXCERPT:\n${data.text}`,
