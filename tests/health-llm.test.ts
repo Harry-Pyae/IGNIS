@@ -52,6 +52,14 @@ describe('GET /api/health-llm', () => {
   });
 });
 
+describe('GET /api/health-llm?groq_model=…', () => {
+  const probe = async (query: string) =>
+    (await (await health(new Request(`http://x/api/health-llm${query}`, { headers: { 'x-curator-secret': SECRET, 'x-forwarded-for': `10.9.2.${++ip}` } }))).json())
+      .providers[0].model;
+  it('tries a candidate model for this probe only', async () => expect(await probe('?groq_model=qwen/qwen3.8-27b')).toBe('qwen/qwen3.8-27b'));
+  it('ignores junk', async () => expect(await probe('?groq_model=%3Cscript%3E')).toBe('openai/gpt-oss-120b'));
+});
+
 describe('llm_unavailable 502 debug detail', () => {
   it('plain 502 for the public, even with the debug header alone', async () => {
     for (const h of [{}, { 'x-ignis-debug': '1' }, { 'x-ignis-debug': '1', 'x-curator-secret': 'wrong' }] as Record<string, string>[]) {

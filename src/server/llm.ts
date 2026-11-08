@@ -91,7 +91,7 @@ const CONFIG: Record<
   groq: {
     keyVar: 'GROQ_API_KEY',
     modelVar: 'GROQ_MODEL',
-    defaultModel: 'llama-3.3-70b-versatile',
+    defaultModel: 'openai/gpt-oss-120b', // llama-3.3-70b-versatile was retired (health-llm, 2026-11-09)
     listModels: async (key, fetchFn) => {
       const res = await fetchFn('https://api.groq.com/openai/v1/models', {
         headers: { authorization: `Bearer ${key}` },
@@ -125,7 +125,7 @@ const CONFIG: Record<
   gemini: {
     keyVar: 'GEMINI_API_KEY',
     modelVar: 'GEMINI_MODEL',
-    defaultModel: 'gemini-2.5-flash',
+    defaultModel: 'gemini-3.8-flash', // gemini-2.5-flash closed to new keys (health-llm, 2026-11-09)
     // Header, not ?key= — keeps the key out of URLs and any request logs.
     listModels: async (key, fetchFn) => {
       const res = await fetchFn('https://generativelanguage.googleapis.com/v1beta/models?pageSize=200', {

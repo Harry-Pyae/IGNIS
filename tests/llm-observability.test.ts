@@ -85,7 +85,7 @@ describe('probeProviders', () => {
       reachable: false,
       status: 404,
       elapsed_ms: expect.any(Number),
-      model: 'llama-3.3-70b-versatile',
+      model: 'openai/gpt-oss-120b',
       failure: 'http_other',
       provider_message: 'model decommissioned (key [redacted])',
       available_models: ['a-model', 'z-model'],
