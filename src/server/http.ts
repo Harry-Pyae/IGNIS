@@ -43,24 +43,6 @@ export function clientIp(req: Request): string {
   return req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || req.headers.get('x-real-ip') || 'unknown';
 }
 
-// ponytail: in-memory per serverless instance (resets on cold start); move to Vercel KV/Upstash if abused.
-const hits = new Map<string, { count: number; resetAt: number }>();
-
-/** Per-IP fixed-window limiter for the public routes (§10). Returns a 429 response or null. */
-export function rateLimit(req: Request, bucket: string, limit = 20, windowMs = 60_000, now = Date.now()): Response | null {
-  if (hits.size > 10_000) hits.clear();
-  const key = `${bucket}:${clientIp(req)}`;
-  const entry = hits.get(key);
-  if (!entry || entry.resetAt <= now) {
-    hits.set(key, { count: 1, resetAt: now + windowMs });
-    return null;
-  }
-  if (++entry.count <= limit) return null;
-  const res = apiError(429, 'rate_limited', 'Too many requests — try again in a minute');
-  res.headers.set('retry-after', String(Math.ceil((entry.resetAt - now) / 1000)));
-  return res;
-}
-
 /** Constant-time check of `x-curator-secret`. false when CURATOR_SECRET is unset. */
 export function isCurator(req: Request): boolean {
   const secret = process.env.CURATOR_SECRET;

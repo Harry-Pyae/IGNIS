@@ -48,7 +48,7 @@ describe.skipIf(!dbTestsEnabled)('RLS access matrix', () => {
   });
 
   it('anon cannot read or write the private tables', async () => {
-    for (const table of ['scenarios_log', 'briefings_cache']) {
+    for (const table of ['scenarios_log', 'briefings_cache', 'rate_limits']) {
       const read = await anon().from(table).select('*').limit(1);
       expect(read.error ?? read.data?.length === 0).toBeTruthy();
       const write = await anon().from(table).insert({});
@@ -66,5 +66,16 @@ describe.skipIf(!dbTestsEnabled)('RLS access matrix', () => {
     expect(error).toBeNull();
     expect(Object.keys(data).sort()).toEqual(['campaigns', 'in_review', 'last_updated', 'revision', 'verified']);
     expect(data.in_review).toBeGreaterThanOrEqual(1);
+  });
+
+  it('rate_limit_hit (0003): anon cannot call it; the service role counts, then denies', async () => {
+    const key = `test-${tag}`;
+    expect((await anon().rpc('rate_limit_hit', { p_key: key, p_limit: 1, p_window_s: 60 })).error).not.toBeNull();
+    const first = await service().rpc('rate_limit_hit', { p_key: key, p_limit: 1, p_window_s: 60 });
+    const second = await service().rpc('rate_limit_hit', { p_key: key, p_limit: 1, p_window_s: 60 });
+    expect(first.data).toMatchObject({ allowed: true });
+    expect(second.data).toMatchObject({ allowed: false });
+    expect(second.data.retry_after_s).toBeGreaterThanOrEqual(1);
+    await service().from('rate_limits').delete().eq('key', key);
   });
 });

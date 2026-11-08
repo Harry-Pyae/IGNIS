@@ -7,7 +7,8 @@
  * ?groq_model=…&gemini_model=… tries a candidate model for THIS probe only (no deploy needed
  * to test a replacement). Production traffic keeps using GROQ_MODEL / GEMINI_MODEL / defaults.
  */
-import { json, rateLimit, requireCurator, route } from '../src/server/http.js';
+import { json, requireCurator, route } from '../src/server/http.js';
+import { rateLimit } from '../src/server/rateLimit.js';
 import { LLM_ENV_VARS, probeProviders, providerOrder } from '../src/server/llm.js';
 
 const EXPECTED = new Set<string>(LLM_ENV_VARS);
@@ -20,7 +21,7 @@ const misnamedVars = (env: NodeJS.ProcessEnv) =>
 export const GET = route(async (req) => {
   const denied = requireCurator(req);
   if (denied) return denied; // before ANY probe or env read
-  const limited = rateLimit(req, 'health-llm', 10);
+  const limited = await rateLimit(req, 'health-llm', 10);
   if (limited) return limited;
 
   const q = new URL(req.url).searchParams;
