@@ -12,6 +12,11 @@ export const COPY = {
   claimsGuarantee:
     'Observed and supported statements cite retrieved experiments, and the server checks each cited value against its card. Gaps are marked separately.',
   fallback: 'Briefing unavailable — showing matched evidence only.',
+  materialUnresolved: 'Material unresolved — select a catalog material',
+  weakEvidence: 'weak evidence — material match only',
+  outsideRange:
+    "Your value is outside the range NASA's verified solid-flammability catalog currently covers — IGNIS cannot cite evidence here.",
+  matched: (n: number, m: number) => `Matched ${n} of ${m} parameters.`,
   illustration: 'Illustration — not NASA experiment imagery.',
   withheld: (n: number) => `${n} statement${n === 1 ? '' : 's'} withheld (failed evidence validation)`,
   inReview: (n: number) => `Catalog in verification — ${n} card${n === 1 ? '' : 's'} in review`,
