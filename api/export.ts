@@ -2,10 +2,11 @@
 import { CatalogStatsSchema, ExperimentSchema } from '../src/lib/types.js';
 import { anonClient } from '../src/server/db.js';
 import { buildExport } from '../src/server/export.js';
-import { apiError, rateLimit, route } from '../src/server/http.js';
+import { apiError, route } from '../src/server/http.js';
+import { rateLimit } from '../src/server/rateLimit.js';
 
 export const GET = route(async (req) => {
-  const limited = rateLimit(req, 'export', 10);
+  const limited = await rateLimit(req, 'export', 10);
   if (limited) return limited;
   const db = anonClient();
   if (!db) return apiError(503, 'not_configured', 'Supabase is not configured on the server');

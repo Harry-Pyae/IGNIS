@@ -4,13 +4,14 @@ import { readCachedBriefing, writeCachedBriefing } from '../src/server/briefingC
 import { briefingCacheKey } from '../src/server/cacheKey.js';
 import { runClaimPipeline } from '../src/server/claims.js';
 import { anonClient, serviceClient } from '../src/server/db.js';
-import { apiError, json, rateLimit, readJson, route } from '../src/server/http.js';
+import { apiError, json, readJson, route } from '../src/server/http.js';
+import { rateLimit } from '../src/server/rateLimit.js';
 import { completeJson } from '../src/server/llm.js';
 import { SYNTHESIZE_SYSTEM } from '../src/server/prompts.js';
 import { prepareSynthesis } from '../src/server/synthesis.js';
 
 export const POST = route(async (req) => {
-  const limited = rateLimit(req, 'synthesize', 10);
+  const limited = await rateLimit(req, 'synthesize', 10);
   if (limited) return limited;
   const { data, response } = await readJson(req, SynthesizeRequestSchema);
   if (response) return response;

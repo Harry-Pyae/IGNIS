@@ -18,6 +18,7 @@ const { POST: parseScenario } = await import('../api/parse-scenario');
 
 beforeEach(() => {
   vi.stubEnv('CURATOR_SECRET', SECRET);
+  vi.stubEnv('SUPABASE_SERVICE_ROLE_KEY', ''); // no limiter round-trip to a real database from unit tests
   vi.stubEnv('GROQ_API_KEY', KEY);
   vi.stubEnv('GEMINI_API_KEY', '');
   vi.stubEnv('VITE_GEMINI_API_KEY', 'AIza_ALSO_SECRET'); // the classic misname

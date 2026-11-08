@@ -1,11 +1,12 @@
 /** POST /api/parse-scenario — LLM Job A (§7.2). Public, rate-limited. */
 import { ParseScenarioRequestSchema, ParsedScenarioSchema } from '../src/lib/types.js';
-import { json, llmUnavailable, rateLimit, readJson, route } from '../src/server/http.js';
+import { json, llmUnavailable, readJson, route } from '../src/server/http.js';
+import { rateLimit } from '../src/server/rateLimit.js';
 import { completeJson, LlmUnavailableError } from '../src/server/llm.js';
 import { PARSE_SCENARIO_SYSTEM } from '../src/server/prompts.js';
 
 export const POST = route(async (req) => {
-  const limited = rateLimit(req, 'parse-scenario');
+  const limited = await rateLimit(req, 'parse-scenario');
   if (limited) return limited;
   const { data, response } = await readJson(req, ParseScenarioRequestSchema);
   if (response) return response;
