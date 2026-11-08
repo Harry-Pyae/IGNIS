@@ -1,7 +1,7 @@
 /** POST /api/extract — LLM Job C (§7.6). Curator-only. Returns a DRAFT; never writes. */
 import { sanitizeDraft } from '../src/lib/extract.js';
 import { ExtractDraftSchema, ExtractRequestSchema } from '../src/lib/types.js';
-import { apiError, json, readJson, requireCurator, route } from '../src/server/http.js';
+import { json, llmUnavailable, readJson, requireCurator, route } from '../src/server/http.js';
 import { completeJson, LlmUnavailableError } from '../src/server/llm.js';
 import { EXTRACT_SYSTEM } from '../src/server/prompts.js';
 
@@ -12,7 +12,6 @@ export const POST = route(async (req) => {
   if (response) return response;
 
   try {
-    // TODO(coder-a): add the one worked BASS example to the prompt (§7.6).
     const result = await completeJson({
       system: EXTRACT_SYSTEM,
       user: `EXCERPT:\n${data.text}`,
@@ -24,7 +23,7 @@ export const POST = route(async (req) => {
     const { draft, dropped } = sanitizeDraft(result.data, data.text);
     return json({ draft, dropped, provider: result.provider });
   } catch (e) {
-    if (e instanceof LlmUnavailableError) return apiError(502, 'llm_unavailable', 'Extraction is unavailable — use manual entry');
+    if (e instanceof LlmUnavailableError) return llmUnavailable(req, e, 'Extraction is unavailable — use manual entry');
     throw e;
   }
 });

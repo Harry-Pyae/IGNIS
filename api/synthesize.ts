@@ -1,7 +1,9 @@
 /** POST /api/synthesize — LLM Job B (§7.3) behind gates (A4) and claim validation (§7.4, A3). Public, rate-limited. */
 import { CatalogStatsSchema, ExperimentSchema, LlmBriefingSchema, SynthesizeRequestSchema } from '../src/lib/types.js';
+import { readCachedBriefing, writeCachedBriefing } from '../src/server/briefingCache.js';
+import { briefingCacheKey } from '../src/server/cacheKey.js';
 import { runClaimPipeline } from '../src/server/claims.js';
-import { anonClient } from '../src/server/db.js';
+import { anonClient, serviceClient } from '../src/server/db.js';
 import { apiError, json, rateLimit, readJson, route } from '../src/server/http.js';
 import { completeJson } from '../src/server/llm.js';
 import { SYNTHESIZE_SYSTEM } from '../src/server/prompts.js';
@@ -27,12 +29,18 @@ export const POST = route(async (req) => {
   const prepared = prepareSynthesis(data.scenario, data.experiment_ids, catalog, revision);
   if (!prepared.ok) return apiError(prepared.status, prepared.code, prepared.message, prepared.issues);
 
-  // TODO(coder-a): look up / store briefings_cache with briefingCacheKey() (src/server/cacheKey.ts).
+  // Cache AFTER the gates: a cached briefing is only served for evidence that is still verified + eligible.
+  const cacheDb = serviceClient();
+  const key = briefingCacheKey({ scenario: data.scenario, experiment_ids: data.experiment_ids, catalog_revision: revision });
+  const cached = await readCachedBriefing(cacheDb, key, revision);
+  if (cached) return json(cached);
+
   const user = `SCENARIO:\n${JSON.stringify(data.scenario)}\n\n${prepared.ctx.text}`;
   const briefing = await runClaimPipeline(
     (temperature) =>
       completeJson({ system: SYNTHESIZE_SYSTEM, user, schema: LlmBriefingSchema, temperature, timeoutMs: 9_000 }),
     prepared.ctx,
   );
+  await writeCachedBriefing(cacheDb, key, briefing);
   return json(briefing);
 });
