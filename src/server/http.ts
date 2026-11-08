@@ -2,6 +2,7 @@
 import { createHash, timingSafeEqual } from 'node:crypto';
 import type { z } from 'zod';
 import type { ApiErrorCode } from '../lib/types.js';
+import type { LlmUnavailableError } from './llm.js';
 
 export function json(data: unknown, status = 200): Response {
   return new Response(JSON.stringify(data), {
@@ -60,13 +61,27 @@ export function rateLimit(req: Request, bucket: string, limit = 20, windowMs = 6
   return res;
 }
 
+/** Constant-time check of `x-curator-secret`. false when CURATOR_SECRET is unset. */
+export function isCurator(req: Request): boolean {
+  const secret = process.env.CURATOR_SECRET;
+  if (!secret) return false;
+  const digest = (s: string) => createHash('sha256').update(s).digest();
+  return timingSafeEqual(digest(req.headers.get('x-curator-secret') ?? ''), digest(secret));
+}
+
 /** Curator gate for protected routes (§10): shared secret in `x-curator-secret`, checked server-side. */
 export function requireCurator(req: Request): Response | null {
-  const secret = process.env.CURATOR_SECRET;
-  if (!secret) return apiError(503, 'not_configured', 'CURATOR_SECRET is not set on the server');
-  const digest = (s: string) => createHash('sha256').update(s).digest();
-  const ok = timingSafeEqual(digest(req.headers.get('x-curator-secret') ?? ''), digest(secret));
-  return ok ? null : apiError(401, 'unauthorized', 'Invalid curator secret');
+  if (!process.env.CURATOR_SECRET) return apiError(503, 'not_configured', 'CURATOR_SECRET is not set on the server');
+  return isCurator(req) ? null : apiError(401, 'unauthorized', 'Invalid curator secret');
+}
+
+/**
+ * 502 for "every provider failed". Per-provider records (class/status/ms — never keys or prompts)
+ * are added as `providers_tried` only for `x-ignis-debug: 1` WITH a valid curator secret.
+ */
+export function llmUnavailable(req: Request, e: LlmUnavailableError, message: string): Response {
+  const debug = req.headers.get('x-ignis-debug') === '1' && isCurator(req);
+  return json({ error: { code: 'llm_unavailable', message, ...(debug && { providers_tried: e.attempts }) } }, 502);
 }
 
 /** Wrap a handler so unexpected errors become a controlled 500 (message only — never secrets). */

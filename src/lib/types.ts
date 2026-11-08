@@ -494,6 +494,17 @@ export const ApiErrorSchema = z.object({
     code: ApiErrorCodeSchema,
     message: z.string(),
     issues: z.array(z.object({ path: z.string(), message: z.string() })).optional(),
+    /** llm_unavailable only, and only for `x-ignis-debug: 1` + a valid curator secret. Never key material. */
+    providers_tried: z
+      .array(
+        z.object({
+          provider: z.enum(['groq', 'gemini']),
+          failure: z.string(),
+          status: z.number().int().nullable(),
+          elapsed_ms: z.number().min(0),
+        }),
+      )
+      .optional(),
   }),
 });
 export type ApiErrorCode = z.infer<typeof ApiErrorCodeSchema>;

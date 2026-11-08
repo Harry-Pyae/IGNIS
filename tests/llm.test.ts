@@ -39,9 +39,9 @@ describe('completeJson', () => {
     const fetchFn = fake((url) => (url.includes('groq') ? groqOk('{"ok":"yes"}') : geminiOk('{"ok":"yes"}')));
     const err = await completeJson(req, { env, fetchFn }).catch((e: unknown) => e);
     expect(err).toBeInstanceOf(LlmUnavailableError);
-    expect((err as LlmUnavailableError).attempts).toEqual([
-      { provider: 'groq', reason: 'schema_mismatch' },
-      { provider: 'gemini', reason: 'schema_mismatch' },
+    expect((err as LlmUnavailableError).attempts).toMatchObject([
+      { provider: 'groq', failure: 'zod_schema_on_200', status: 200 },
+      { provider: 'gemini', failure: 'zod_schema_on_200', status: 200 },
     ]);
   });
 
@@ -52,6 +52,9 @@ describe('completeJson', () => {
 
   it('skips providers without keys', async () => {
     const err = await rejection<LlmUnavailableError>(completeJson(req, { env: {}, fetchFn: fake(() => groqOk('{"ok":true}')) }));
-    expect(err.attempts.map((a) => a.reason)).toEqual(['no_key', 'no_key']);
+    expect(err.attempts).toEqual([
+      { provider: 'groq', failure: 'env_var_missing', status: null, elapsed_ms: 0 },
+      { provider: 'gemini', failure: 'env_var_missing', status: null, elapsed_ms: 0 },
+    ]);
   });
 });
