@@ -15,6 +15,7 @@ noted.
 | 5 | **Review §5's source order goes to R1** (seed sign-off → complete BASS-II runs → Saffire I/II/IV → obtainable MIST papers), as an acquisition order, not a promised card yield. | R1 |
 | 6 | **R2: a correctly associated, ledgered still beats thumbnail count.** Campaign imagery without a verified test association is labeled "campaign context". | R2 |
 | 7 | **Async Brief + revision binding is Coder B's contract.** Every Brief request is tagged with its scenario and `catalog_revision`. Late responses never overwrite current results; synthesis follows confirmed or settled input, not every slider frame (deterministic retrieval may follow sliders). Coder A guarantees the other half: every `/api/synthesize` response carries `catalog_revision` and an `evidence` array mapping each positional `E1..Ek` label to a stable experiment UUID, so citation targets resolve through that response only. | Coder B console, Coder A API |
+| 8 | **Canonical airflow parsing:** "still air", "quiescent" or "no ventilation" parses as `flow_cm_s: 0` (a stated zero); no airflow mention at all parses as `null` (unstated). One rule in the single parse prompt every provider receives (`PARSE_SCENARIO_SYSTEM`, `prompts-v4`), with worked examples rendered from `AIRFLOW_PARSE_FIXTURES`, so the same words cannot retrieve differently by provider. Parsed values are still confirmed by the user before matching (§7.2). | Parse prompt, fixtures, Coder B chips |
 
 ## Shipped with these decisions (Coder A, round 3)
 

@@ -4,7 +4,9 @@
  * Each prompt mentions JSON explicitly (required by Groq's json_object mode).
  * Bump PROMPT_VERSION on any change: it is part of the briefing-cache key.
  */
-export const PROMPT_VERSION = 'prompts-v3';
+import { AIRFLOW_PARSE_FIXTURES } from '../lib/fixtures.js';
+
+export const PROMPT_VERSION = 'prompts-v4';
 
 export const PARSE_SCENARIO_SYSTEM = `You convert a spacecraft fire scenario description into JSON.
 Return ONLY a JSON object with exactly these keys:
@@ -14,7 +16,11 @@ Rules:
 - domain is always "solid_flammability".
 - fuel_material_raw is the user's own words for the material, copied as written. Do NOT map it to a catalog material.
 - Use null for anything the user did not state. Never guess or fill defaults.
-- Convert units only when the user gave units (e.g. 1 atm = 101.325 kPa, 0.1 m/s = 10 cm/s).`;
+- Convert units only when the user gave units (e.g. 1 atm = 101.325 kPa, 0.1 m/s = 10 cm/s).
+- Airflow: "still air", "quiescent" or "no ventilation" means a stated airflow of zero: flow_cm_s is 0.
+  If the text does not mention airflow at all, flow_cm_s is null.
+Examples:
+${AIRFLOW_PARSE_FIXTURES.map((f) => `"${f.text}" -> ${JSON.stringify(f.scenario)}`).join('\n')}`;
 
 export const SYNTHESIZE_SYSTEM = `You write an evidence briefing as JSON from NASA microgravity combustion experiment cards.
 You may ONLY use the CARDS (ids E1..Ek) and GAPS (ids G1..Gn) provided. Return ONLY:
