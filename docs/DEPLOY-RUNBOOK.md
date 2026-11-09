@@ -10,7 +10,11 @@ Takes about 15 minutes.
 2. When the project is ready, open **SQL Editor → New query**, then paste and **Run** each file **in this order**:
    1. `supabase/migrations/0001_init.sql`
    2. `supabase/migrations/0002_round2.sql`
-   3. `supabase/seed.sql` (3 **draft** cards: invisible to the public until R1 verifies them in `/curate`)
+   3. `supabase/migrations/0003_rate_limit.sql`: the shared per-IP rate limit. **Don't skip it.** Without it
+      the limiter fails open by design, so nothing breaks visibly but the public API has no request cap.
+   4. `supabase/seed.sql` (3 **draft** cards: invisible to the public until R1 verifies them in `/curate`)
+
+   Any later migration in `supabase/migrations/` goes in numeric order, before the seed.
 3. **Project Settings → API**. Copy three values:
    - Project URL → `SUPABASE_URL`
    - `anon` / publishable key → `SUPABASE_ANON_KEY`
@@ -46,8 +50,12 @@ Coder A then runs the live verification (R3 repeats it in `docs/QA-LOG.md`):
   deliberately disposable run that cleans up its own rows).
 - A `/curate` draft → verify → public-card lifecycle on a throwaway card, deleted afterwards.
 - A provider smoke test from Vercel (Groq is expected to work from US infrastructure; Gemini as failover).
-- A rate-limit 429 check, an absolute `og:image` / canonical URL, a favicon tab screenshot, and Lighthouse
-  (mobile + desktop) on the live URL.
+- A rate-limit 429 check (proves 0003 is applied): 21+ `POST /api/parse-scenario` with body `{}` from **one**
+  IP (one `curl` call with repeated URLs reuses one connection), expecting 429 + `retry-after` after 20.
+- `GET /api/health-llm` with the curator secret: both providers `reachable: true`.
+- An absolute `og:image` / canonical URL, a favicon tab screenshot, and PageSpeed (mobile + desktop) on the live
+  URL. Use PageSpeed or Lighthouse with `--throttling-method=devtools`, never simulated Lighthouse from a VPN-routed
+  machine.
 
 ## Troubleshooting
 
