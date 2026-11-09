@@ -12,7 +12,7 @@ import {
   Slider,
   type IconName,
 } from '../components/ui';
-import { CatalogBlock } from '../components/CatalogStatus';
+import { CatalogBlock, ExportButton } from '../components/CatalogStatus';
 import { useCatalogSummary } from '../lib/catalog';
 import { COPY } from '../lib/copy';
 
@@ -378,6 +378,7 @@ function ConsoleSkeleton() {
 }
 
 function Footer() {
+  const { summary } = useCatalogSummary();
   return (
     <footer className="border-t border-border/70 px-4 py-12 sm:px-6">
       <div className="mx-auto grid max-w-6xl gap-8 text-[13px] text-dim md:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
@@ -395,10 +396,8 @@ function Footer() {
           <p>Illustrations on this page are branding — not NASA experiment imagery.</p>
         </div>
         <div className="flex flex-col items-start gap-3 md:items-end">
-          {/* Open dataset export (§8.1 item 6) — Coder A builds the endpoint; enable once it lands. */}
-          <Button size="sm" icon="download" disabled title="Open dataset export lands with Coder A">
-            Open dataset (.json)
-          </Button>
+          {/* Open dataset export (§8.1 item 6): verified cards only, honest README-only file when empty. */}
+          <ExportButton summary={summary} label="Open dataset (.json)" />
           <a href="#top" className="console-label text-dim transition-colors duration-200 can-hover:hover:text-text">
             Back to top
           </a>

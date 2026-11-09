@@ -1,6 +1,5 @@
 import { useCatalogSummary } from '../lib/catalog';
-import { ProvenancePill } from './CatalogStatus';
-import { Button } from './ui';
+import { ExportButton, ProvenancePill } from './CatalogStatus';
 
 /** App shell header: brand mark + wordmark (left), live provenance pill + export (right). */
 export function AppHeader() {
@@ -18,11 +17,8 @@ export function AppHeader() {
         <div className="ml-auto flex min-w-0 items-center gap-2">
           {/* Provenance strip (§8.1 item 0). Coder B expands it into the campaign/source panel. */}
           <ProvenancePill summary={summary} retry={retry} />
-          {/* §8.1 item 6. Coder A builds the export endpoint; enable once it lands. */}
-          <Button size="sm" variant="secondary" icon="download" disabled title="Open dataset export lands with Coder A">
-            <span className="hidden md:inline">Export dataset</span>
-            <span className="sr-only md:hidden">Export dataset</span>
-          </Button>
+          {/* §8.1 item 6: the verified-only open dataset (/api/export). */}
+          <ExportButton summary={summary} label="Export dataset" compact />
         </div>
       </div>
     </header>
