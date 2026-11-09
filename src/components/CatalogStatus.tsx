@@ -2,8 +2,10 @@
  * Live catalog status: the header provenance pill and the landing "Catalog" block.
  * Presentational — pass a CatalogSummary (from useCatalogSummary, or a fixture in /kit). OWNER: Coder A.
  */
+import { useState } from 'react';
 import { type CatalogSummary, catalogLine } from '../lib/catalog';
 import { cx } from '../lib/cx';
+import { downloadCatalogExport } from '../lib/exportDownload';
 import { Badge, Button, Icon, Panel } from './ui';
 
 const date = (iso: string | null) =>
@@ -120,5 +122,54 @@ export function CatalogBlock({ summary, retry }: { summary: CatalogSummary; retr
       )}
       <p className="console-label text-dim">Sources · NASA Technical Reports Server (NTRS) · Physical Sciences Informatics (PSI)</p>
     </Panel>
+  );
+}
+
+/**
+ * "Export Open Dataset (.json)" (§8.1 item 6): downloads every verified card with its provenance
+ * from /api/export. Zero verified cards → the honest README-only file, and the label says so.
+ * Disabled only when the database is not connected in this environment.
+ */
+export function ExportButton({
+  summary,
+  label,
+  compact = false,
+  variant = 'secondary',
+}: {
+  summary: CatalogSummary;
+  label: string;
+  /** Header on small screens: icon only (the label stays for screen readers). */
+  compact?: boolean;
+  variant?: 'primary' | 'secondary' | 'ghost';
+}) {
+  const [state, setState] = useState<'idle' | 'busy' | 'failed' | 'rate_limited'>('idle');
+  const notConnected = summary.state === 'unavailable' && summary.reason === 'not_configured';
+  const verified = summary.state === 'ready' ? summary.stats.verified : null;
+  const title = notConnected
+    ? 'The catalog database is not connected in this environment'
+    : state === 'rate_limited'
+      ? 'Too many downloads — try again in a minute'
+      : state === 'failed'
+        ? 'The export could not be downloaded — try again'
+        : verified === 0
+          ? 'Downloads the schema README with 0 verified experiments — the catalog is still in verification'
+          : 'Download every verified card with its NASA source provenance (.json)';
+  const text = state === 'busy' ? 'Preparing…' : state === 'failed' || state === 'rate_limited' ? 'Export failed — retry' : label;
+  const run = async () => {
+    setState('busy');
+    const r = await downloadCatalogExport();
+    setState(r.ok ? 'idle' : r.reason === 'rate_limited' ? 'rate_limited' : 'failed');
+  };
+  return (
+    <Button size="sm" variant={variant} icon="download" disabled={notConnected || state === 'busy'} title={title} onClick={run} aria-live="polite">
+      {compact ? (
+        <>
+          <span className="hidden md:inline">{text}</span>
+          <span className="sr-only md:hidden">{text}</span>
+        </>
+      ) : (
+        text
+      )}
+    </Button>
   );
 }

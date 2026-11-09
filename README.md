@@ -72,14 +72,22 @@ All bodies are JSON, validated with Zod (`src/lib/types.ts`). Errors are always
 | `POST /api/extract` 🔒 | `{ text }` | `{ draft: ExtractDraft, dropped, provider }` |
 | `POST /api/curate-write` 🔒 | `{ action: 'save_draft', id?, record }` · `{ action: 'publish', id?, record, verified_by }` | `201/200 { experiment }` |
 | `GET /api/curate-cards` 🔒 | `?id=` optional | `{ items }` or `{ experiment }` |
+| `GET /api/export` | none | Download `ignis-catalog-<rev>.json`: `{ format, readme, catalog_revision, exported_at, count, experiments }` (verified cards only; `count: 0` + README when the catalog is empty) |
+| `GET /api/health-llm` 🔒 | `?groq_model=` / `?gemini_model=` optional (try a candidate model for this probe only) | `{ deployment, provider_order, vars_present, misnamed_vars, providers[] }`: per provider `{ configured, reachable, status, elapsed_ms, model, failure, provider_message, available_models }`. Never returns a key or env var value. |
 
 🔒 = header `x-curator-secret`. Synthesize re-reads the catalog as the public role and applies the eligibility gates
 before any provider call (`ineligible_evidence` 400 otherwise), so clients can never inject or mis-scope evidence.
+Synthesize, export and the browser loader read rows + `catalog_revision` as one snapshot (`src/lib/snapshot.ts`);
+`db_error` 503 means the catalog kept changing during the read, so retry. Public routes are rate-limited per IP
+(parse-scenario 20/min, synthesize 10, export 10) by the shared Postgres counter from migration 0003.
 
 ## Database setup (once, Coder A)
 
-1. Create a Supabase project. In **SQL Editor**, run `supabase/migrations/0001_init.sql`, then `0002_round2.sql`,
-   then `supabase/seed.sql` (3 **draft** cards — public only after R1 verifies them in `/curate`).
+1. Create a Supabase project. In **SQL Editor**, run every migration **in order**, then the seed:
+   `supabase/migrations/0001_init.sql` → `0002_round2.sql` → `0003_rate_limit.sql` → `supabase/seed.sql`
+   (3 **draft** cards, public only after R1 verifies them in `/curate`). Skipping 0003 is silent: the rate
+   limiter deliberately fails open, so the site works but has **no shared request cap**. Check with a real 429
+   after deploy (runbook §3).
 2. Put the URL + anon + service-role keys in `.env` and in Vercel.
 3. Locally, `npm run test:db` proves the RLS matrix and the draft→publish lifecycle on a throwaway database.
 
