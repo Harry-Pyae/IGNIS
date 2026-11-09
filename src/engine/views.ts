@@ -1,0 +1,46 @@
+/**
+ * The four populations the console renders, from one catalog snapshot (round 3, item 1). OWNER: Coder A.
+ * Coder B renders these counts and lists; it never recomputes eligibility or plotting rules.
+ *
+ *   all_verified  every verified card in the snapshot (any domain)
+ *   eligible      solid-flammability cards that pass the scenario's gates (all solid cards when
+ *                 no scenario is active). SAME never enters.
+ *   plotted       eligible cards that report BOTH o2_pct and flow_cm_s (the map's axes). A card
+ *                 missing either stays in `eligible` and the table; null never becomes zero.
+ *   top_k         retrieve()'s ranked matches (k ≤ 5), with chips; empty without a scenario.
+ */
+import { eligibleCards } from '../lib/gates.js';
+import type { CoverageResult, Experiment, MatchResult, ResolvedScenario } from '../lib/types.js';
+import { retrieve } from './match.js';
+
+export interface EvidenceViews {
+  revision: string;
+  all_verified: Experiment[];
+  eligible: Experiment[];
+  plotted: Experiment[];
+  /** eligible cards that cannot be plotted, with the axis they lack. */
+  not_plotted: { experiment: Experiment; missing: ('o2_pct' | 'flow_cm_s')[] }[];
+  top_k: MatchResult[];
+  /** Per-parameter coverage for the active scenario; null without one. */
+  coverage: CoverageResult | null;
+}
+
+export function evidenceViews(
+  catalog: Experiment[],
+  scenario: ResolvedScenario | null,
+  revision: string,
+  k = 5,
+): EvidenceViews {
+  const all_verified = catalog.filter((c) => c.verified_by != null);
+  const solid = all_verified.filter((c) => c.domain === 'solid_flammability');
+  const eligible = scenario ? eligibleCards(scenario, solid) : solid;
+  const plotted = eligible.filter((c) => c.o2_pct != null && c.flow_cm_s != null);
+  const not_plotted = eligible
+    .filter((c) => c.o2_pct == null || c.flow_cm_s == null)
+    .map((experiment) => ({
+      experiment,
+      missing: (['o2_pct', 'flow_cm_s'] as const).filter((p) => experiment[p] == null),
+    }));
+  const r = scenario ? retrieve(scenario, all_verified, revision, k) : null;
+  return { revision, all_verified, eligible, plotted, not_plotted, top_k: r?.matches ?? [], coverage: r?.coverage ?? null };
+}
