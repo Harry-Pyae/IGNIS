@@ -74,6 +74,11 @@ before writing code. Where they disagree, the Build Plan's Core Principles win.
   briefing cache) for testing: not labeled, not for seconds, not "cleaned up afterwards". Round-trip tests without
   verified data run on the disposable DB (`npm run test:db`, CI `db` job) or wait for R1's signed cards. Never point
   `IGNIS_DB_TESTS_REMOTE` at the production project. Production checks are read-only or use real verified data.
+- **Don't spend Gemini flash quota on tests.** Diagnostic probes against Gemini use a lite model
+  (`GET /api/health-llm?gemini_model=<lite model>`) or a single plain `GET /api/health-llm` only: no ad-hoc
+  parse/synthesize loops against Gemini. Each health-llm call makes one real generation per provider on the configured
+  model, so call it **once per check, never in a polling loop**. To see whether a flash model is back, probe it once with
+  `?gemini_model=<flash model>`.
 - The LLM never classifies materials, never explains matches, never touches ranking (§7.1).
 - SAME stays domain `smoke_detection`; FLEX is never carded.
 - No accounts, no PWA/offline claims, no new dependencies beyond Build Plan §3 without a stated reason in the PR.
