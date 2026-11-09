@@ -6,7 +6,7 @@
  * the engine's own tests own the exact scoring numbers. OWNER: Coder A.
  */
 import { COPY } from './copy.js';
-import type { Briefing, CoverageResult, Experiment, MatchResult, ResolvedScenario } from './types.js';
+import type { Briefing, CoverageResult, Experiment, MatchResult, ParsedScenario, ResolvedScenario } from './types.js';
 
 const base = {
   created_at: '2026-11-07T00:00:00Z',
@@ -246,3 +246,38 @@ export const FIXTURES = {
     } satisfies Briefing,
   },
 } as const;
+
+/**
+ * Canonical airflow parsing (DECISIONS-ROUND3 #8). Without one rule, providers read "still air"
+ * differently (one gave flow_cm_s 0, one null), so retrieval could differ by provider for the same words.
+ *   "still air" / "quiescent" / "no ventilation" → flow_cm_s: 0 (a stated airflow of zero)
+ *   no airflow mentioned at all                  → flow_cm_s: null (unstated)
+ * These two cases are rendered verbatim into PARSE_SCENARIO_SYSTEM as worked examples, so the prompt
+ * (identical for every provider) and this contract cannot drift apart.
+ */
+export const AIRFLOW_PARSE_FIXTURES: readonly { text: string; scenario: ParsedScenario }[] = [
+  {
+    text: 'Cotton-fiberglass fabric in still air at 21% oxygen',
+    scenario: {
+      domain: 'solid_flammability',
+      fuel_material_raw: 'Cotton-fiberglass fabric',
+      fuel_form: 'fabric',
+      thickness_mm: null,
+      o2_pct: 21,
+      flow_cm_s: 0,
+      pressure_kpa: null,
+    },
+  },
+  {
+    text: 'Cotton-fiberglass fabric at 21% oxygen',
+    scenario: {
+      domain: 'solid_flammability',
+      fuel_material_raw: 'Cotton-fiberglass fabric',
+      fuel_form: 'fabric',
+      thickness_mm: null,
+      o2_pct: 21,
+      flow_cm_s: null,
+      pressure_kpa: null,
+    },
+  },
+];
