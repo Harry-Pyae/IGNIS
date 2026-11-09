@@ -242,21 +242,18 @@
    * Data that arrives (catalog counts, provenance line) fades in instead of popping.
    * Key the element to its value so each new value re-enters. Rare + informative → worth it.
    */
-  .swap-in {
-    transition:
-      opacity 360ms var(--ease-out),
-      filter 360ms var(--ease-out);
-  }
-  @starting-style {
+  /* Reduced motion: no transition and no starting style, so the new value is simply there (round 3, item 9). */
+  @media (prefers-reduced-motion: no-preference) {
     .swap-in {
-      opacity: 0;
-      filter: blur(3px);
+      transition:
+        opacity 360ms var(--ease-out),
+        filter 360ms var(--ease-out);
     }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .swap-in {
-      transition-property: opacity;
-      filter: none;
+    @starting-style {
+      .swap-in {
+        opacity: 0;
+        filter: blur(3px);
+      }
     }
   }
 
