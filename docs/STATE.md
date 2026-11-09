@@ -1,41 +1,47 @@
-# IGNIS — state handoff (2026-11-09)
+# IGNIS — state handoff (2026-11-09, after round 3)
 
-Snapshot written by Coder A at the end of the engine sprint. Overwrite on the next handoff.
+Snapshot written by Coder A at the end of the round-3 patch. Overwrite on the next handoff.
 
 ## Main and the live site
 
-- **main:** `2d07075` (all code). This file lands in the commit right after it, a docs-only change.
-- **Live:** <https://ignisprototype01.vercel.app>. Vercel Production deploys from `main`. Every commit on `main` has green CI (check + db) and a green Vercel deploy.
+- **main:** `e3267a0` (all code: Merge #8, round 3). This file lands in the docs-only commit right after it.
+- **Live:** <https://ignisprototype01.vercel.app>, serving `e3267a0`. Vercel Production deploys from `main`; CI (check + disposable-DB) is green on every `main` commit. Vercel builds one at a time, so a merge can wait ~15 min behind branch previews.
 - **Deployed:** the landing page and app shell, `/curate`, `/kit`, plus the API routes:
   - `parse-scenario` (LLM)
   - `synthesize` (validated claims + briefing cache keyed by `catalog_revision`)
   - `extract` (curator only; worked BASS example in the prompt)
   - `curate-write` / `curate-cards` (curator only)
-  - `export` (verified cards + schema README)
+  - `export` (verified cards + schema README; wired to the header and footer buttons)
   - `health-llm` (curator only)
-
-  The deterministic engine (`src/engine/`: alias resolver, matching, gap grid + radar) is on `main` for the console to import.
-- **LLM:** Groq `openai/gpt-oss-120b` first, then Gemini `gemini-3.5-flash`. The old defaults are retired. `GROQ_MODEL` / `GEMINI_MODEL` override them; `GET /api/health-llm?groq_model=…` tries a candidate without a deploy.
-- **Database:** Supabase project `zvzofutgfwzptlbfibpz`, migrations 0001–0003 applied. Catalog: **0 verified, 3 drafts**.
+- **For the console (Coder B), all on `main`:**
+  - `useVerifiedCatalog()`: validated verified rows + their revision. States: loading · unavailable (not_configured | error | changing) · empty · ready. Loaded lazily, so Zod stays off the landing path.
+  - `evidenceViews()`: all verified / eligible / plotted / not plotted / top-k, plus coverage.
+  - The engine: `retrieve()`, `whyMatched()`, `resolveMaterial()`, `SCENARIO_PRESETS`, `gapGrid()` / `gapRadar()` (with `availability`).
+- **One snapshot:** synthesize, export and the browser loader read rows + `catalog_revision` together (`src/lib/snapshot.ts`). Header and body share one catalog summary store, and counts and rows reconcile to one revision.
+- **LLM:** Groq `openai/gpt-oss-120b` first, then Gemini `gemini-3.5-flash`. `GROQ_MODEL` / `GEMINI_MODEL` override; `GET /api/health-llm?groq_model=…` tries a candidate without a deploy. **Gemini returned 429 (quota) at the end of round 3**, so failover is currently unavailable. Groq carries all traffic.
+- **Database:** Supabase project `zvzofutgfwzptlbfibpz`, migrations 0001–0003 applied. Catalog: **0 verified, 3 drafts** (measured live at the end of round 3).
 - **History** was rewritten on 2026-11-09 (all branches). If your clone predates that, stash your work, then run `git fetch origin && git reset --hard origin/<branch>`.
+- **Decisions:** `docs/DECISIONS-ROUND2.md`, then `docs/DECISIONS-ROUND3.md`. The round-3 review inputs are kept outside the repo; DECISIONS-ROUND3 carries what the team acts on.
 
 ## Pull requests
 
-**No PRs are open.** #2, #4, #5 and #6 are merged; #1 and #3 were closed by a branch rename and continued as #4 and #5. The `llm-models` fixes (`3fc20e2`, `e26a3bd`, `12bea64`) went to `main` without a PR, to unblock the provider check. The branches `cache-and-export`, `live-urls`, `llm-models`, `matching-engine` and `rate-limit` are fully merged and can be deleted.
+**No PRs are open.** #8 (round 3) is merged. Earlier: #2, #4, #5, #6, #7 merged; #1 and #3 were closed by a branch rename and continued as #4 and #5. Fully merged branches that can be deleted: `cache-and-export`, `live-urls`, `llm-models`, `matching-engine`, `rate-limit`, `state-doc`, `round3`.
 
 ## Live-check scoreboard
 
 | Check | Result |
 |---|---|
-| health-llm | ✅ groq 200 (~300 ms), gemini 200 (~1.3 s); responses carry no key material |
-| Provider smoke test + parse-scenario round trip | ✅ 200 via Groq; unstated values stay null; raw material phrase passed to the resolver |
-| RLS: drafts hidden, verified visible, anon writes denied | ✅ 14/14 DB tests against the live project; catalog left unchanged |
+| Synthesize round trip (disposable card, deleted afterwards) | ✅ round 3: status ok via Groq, 0 withheld; `catalog_revision` matches the catalog; `E1` maps to the card's UUID; second call served from cache under the same revision |
+| Verified-catalog loader against production (anon) | ✅ round 3: `empty`, revision `empty`, 0 invalid; not-configured and error paths distinct; radar `no_plottable_evidence` |
+| Export (header + footer, live) | ✅ round 3: `ignis-catalog-empty.json`, `count: 0`, 33-field README, no fixtures |
+| health-llm | ⚠️ round 3: groq 200 (~300 ms); gemini 429 quota. No key material in responses |
+| Disposable-DB CI job (RLS + lifecycle, migrations 0001–0003) | ✅ round 3: 15/15 |
+| Provider smoke test + parse-scenario round trip | ✅ 200 via Groq |
+| RLS against the live project | ✅ 14/14 DB tests; catalog left unchanged |
 | `/curate` draft → publish → correction un-publishes (live API) | ✅ throwaway card deleted afterwards |
-| Export | ✅ attachment + 33-field README |
 | Rate-limit 429 (0003 applied) | ✅ 20 allowed, then 429 with `retry-after`. Fails open if the counter is unreachable. |
 | og:image / canonical / og:url | ✅ absolute `https://ignisprototype01.vercel.app` URLs |
-| PageSpeed mobile (Google servers) | ✅ FCP 0.8 s · LCP 2.1 s · TBT 0 ms · CLS 0.001 · SI 1.1 s |
-| Synthesize + briefing cache, live | ⏳ needs verified cards (catalog is 0) |
+| PageSpeed mobile (Google servers) | ✅ FCP 0.8 s · LCP 2.1 s · TBT 0 ms · CLS 0.001 · SI 1.1 s (before round 3) |
 | Favicon tab screenshot | ⏳ R3, in the QA checklist |
 
 **Measurement rule:** PageSpeed or Lighthouse with `--throttling-method=devtools` is the reference. Never use simulated Lighthouse from a VPN-routed dev machine.
@@ -44,12 +50,13 @@ Snapshot written by Coder A at the end of the engine sprint. Overwrite on the ne
 
 | Owner | Action |
 |---|---|
-| **R1** | Re-verify the 3 seed cards against NTRS 20150008962 and publish them in `/curate` under your own name. The public catalog stays at 0 until then. Also decide the open question in `docs/DECISIONS-ROUND2.md` about GMT45-T4 (changing flow). |
-| **R1** | Card a real wire/cable insulation material and a real cargo packaging material, then send Coder A each card's `fuel_material`. This activates two presets (see AGENTS.md → Open handoffs). |
-| **Coder B** | Rebase `console` (`git reset --hard origin/console` after the rewrite). Build the console against the frozen contracts and fixtures (`src/lib/types.ts`, `src/lib/fixtures.ts`) and the engine (`retrieve()`, `whyMatched()`, `resolveMaterial()` / `resolutionLine()`, `SCENARIO_PRESETS`, `gapGrid()` / `gapRadar()`). Preset values (21 % O₂ / 101.325 kPa) must render as editable scenario inputs, with `COPY.sliderCaption`, never as evidence. |
-| **R3** | Daily QA on the live URL; favicon tab screenshot; pick the demo scenario from R1's coverage note once cards exist. |
-| **Team lead (Coder A role)** | Nothing pending: migration 0003 is applied and verified. |
-| **Coder A (next patch, waits for the explicit kick-off)** | (1) Client loader for the verified catalog (anon read in `src/lib/catalog.ts`) so the console can feed `retrieve()`. (2) Once cards exist: warm the briefing cache for the demo scenario, then run the full live flow parse → match → synthesize → validated Brief (the integration checkpoint). (3) Final acceptance run (Build Plan §12). (4) Low priority, only alongside other work: PageSpeed "render-blocking ~150 ms" (fonts are self-hosted, so likely the app CSS) and "cache lifetimes 7 KiB" (check the `/art/(.*)` header rule in `vercel.json` matches the served paths). |
+| **R1** | Re-verify the 3 seed cards against NTRS 20150008962 and publish them in `/curate` under your own name. The public catalog stays at 0 until then. Decide the GMT45-T4 changing-flow question (`docs/DECISIONS-ROUND2.md`). Next sources in order: complete BASS-II runs → Saffire I/II/IV → obtainable MIST papers (DECISIONS-ROUND3 #5). |
+| **R1** | Card a real wire/cable insulation material and a real cargo packaging material, then send Coder A each card's `fuel_material`. This activates two presets (AGENTS.md → Open handoffs). |
+| **R2** | A few correctly associated, ledgered stills before thumbnail count (DECISIONS-ROUND3 #6). |
+| **Coder B** | Reset `console` to `origin/main`'s lineage (history was rewritten). Build the console on `useVerifiedCatalog()` + `evidenceViews()` + the engine, never on fixtures in public UI. The async Brief contract (DECISIONS-ROUND3 #7): tag each Brief request with scenario + `catalog_revision`, drop late responses, synthesize on confirmed/settled input, and resolve citations through the response's `evidence` mapping. Review §3 is input, not commitment. Preset values (21 % O₂ / 101.325 kPa) render as editable inputs with `COPY.sliderCaption`. |
+| **R3** | Daily QA on the live URL (390/1024/1440, reduced motion, export, empty/error/retry states); favicon tab screenshot; pick the demo scenario from R1's coverage note once cards exist. |
+| **Team lead: environment setup** | Nothing pending in the *environment*: Vercel env vars set, migrations 0001–0003 applied and verified. This does **not** mean product integration is finished; see the next row. Optional: check the Gemini key's quota or billing to restore failover. |
+| **Coder A (next patch, waits for the explicit kick-off)** | (1) Once R1 publishes cards: warm the briefing cache for the catalog-supported demo scenario (not necessarily PMMA), then run the integration checkpoint parse → confirm → resolve → retrieve → synthesize → cite source, including cache hit, provider failure and a correction/unpublish in an isolated environment. (2) Final acceptance run (Build Plan §12). (3) Low priority, only alongside other work: PageSpeed "render-blocking ~150 ms" (fonts are self-hosted, so likely the app CSS) and "cache lifetimes 7 KiB" (check the `/art/(.*)` header rule in `vercel.json`). |
 
 ## Deliberate deferrals left in code (no TODO or stub markers)
 
