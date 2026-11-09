@@ -4,8 +4,8 @@ Snapshot written by Coder A at the end of the round-3 patch. Overwrite on the ne
 
 ## Main and the live site
 
-- **main:** `e3267a0` (all code: Merge #8, round 3). This file lands in the docs-only commit right after it.
-- **Live:** <https://ignisprototype01.vercel.app>, serving `e3267a0`. Vercel Production deploys from `main`; CI (check + disposable-DB) is green on every `main` commit. Vercel builds one at a time, so a merge can wait ~15 min behind branch previews.
+- **main:** `de36ffd` (all code: Merge #12, the curator-only provider switch, on top of round 3). This file lands in the docs-only commit right after it.
+- **Live:** <https://ignisprototype01.vercel.app>, serving `de36ffd`. Vercel Production deploys from `main`; CI (check + disposable-DB) is green on every `main` commit. Vercel builds one at a time, so a merge can wait ~15 min behind branch previews.
 - **Deployed:** the landing page and app shell, `/curate`, `/kit`, plus the API routes:
   - `parse-scenario` (LLM)
   - `synthesize` (validated claims + briefing cache keyed by `catalog_revision`)
@@ -13,6 +13,7 @@ Snapshot written by Coder A at the end of the round-3 patch. Overwrite on the ne
   - `curate-write` / `curate-cards` (curator only)
   - `export` (verified cards + schema README; wired to the header and footer buttons)
   - `health-llm` (curator only)
+  - Failover rehearsal: `x-ignis-provider: groq|gemini` + curator secret forces one provider on parse-scenario and synthesize; forced synthesize bypasses the briefing cache. Steps: DEPLOY-RUNBOOK §3 (R3's demo-day checklist).
 - **For the console (Coder B), all on `main`:**
   - `useVerifiedCatalog()`: validated verified rows + their revision. States: loading · unavailable (not_configured | error | changing) · empty · ready. Loaded lazily, so Zod stays off the landing path.
   - `evidenceViews()`: all verified / eligible / plotted / not plotted / top-k, plus coverage.
@@ -25,7 +26,7 @@ Snapshot written by Coder A at the end of the round-3 patch. Overwrite on the ne
 
 ## Pull requests
 
-**No PRs are open.** #8 (round 3) is merged. Earlier: #2, #4, #5, #6, #7 merged; #1 and #3 were closed by a branch rename and continued as #4 and #5. Fully merged branches that can be deleted: `cache-and-export`, `live-urls`, `llm-models`, `matching-engine`, `rate-limit`, `state-doc`, `round3`.
+**No PRs are open.** #8 (round 3) and #12 (provider switch) are merged. Earlier: #2, #4, #5, #6, #7 merged; #1 and #3 were closed by a branch rename and continued as #4 and #5. Fully merged branches that can be deleted: `cache-and-export`, `live-urls`, `llm-models`, `matching-engine`, `rate-limit`, `state-doc`, `round3`, `state-round3`, `prod-data-rule`, `gemini-quota-rule`, `provider-switch`, `failover-docs`.
 
 ## Live-check scoreboard
 
@@ -34,7 +35,9 @@ Snapshot written by Coder A at the end of the round-3 patch. Overwrite on the ne
 | Synthesize round trip | ✅ round 3: status ok via Groq, 0 withheld; `catalog_revision` matches the catalog; `E1` maps to the card's UUID; second call served from cache. ⚠️ Used a temporary test card in production. **Not to be repeated** (new rule below): the next production run uses R1's real cards. |
 | Verified-catalog loader against production (anon) | ✅ round 3: `empty`, revision `empty`, 0 invalid; not-configured and error paths distinct; radar `no_plottable_evidence` |
 | Export (header + footer, live) | ✅ round 3: `ignis-catalog-empty.json`, `count: 0`, 33-field README, no fixtures |
-| health-llm | ⚠️ round 3: groq 200 (~300 ms); gemini 429 quota. No key material in responses |
+| health-llm | ✅ `de36ffd`: groq 200 (261 ms), gemini `gemini-3.5-flash-lite` 200 (556 ms). No key material in responses |
+| Failover rehearsal: forced Gemini parse-scenario | ✅ 200, `provider: "gemini"`, schema-valid, resolves via the deterministic resolver. Header without the secret is ignored (`provider: "groq"`, no mention of the switch) |
+| Failover rehearsal: forced Gemini synthesize | ⏳ needs R1's first signed card (no test cards in production). Covered by `tests/provider-switch.test.ts` (validated briefing, no cache read or write) |
 | Disposable-DB CI job (RLS + lifecycle, migrations 0001–0003) | ✅ round 3: 15/15 |
 | Provider smoke test + parse-scenario round trip | ✅ 200 via Groq |
 | RLS + `/curate` lifecycle | ✅ 15/15 on the disposable DB in CI (every push). Earlier live-project runs wrote test rows, so they are **not to be repeated**; production gets read-only checks only. |
@@ -51,7 +54,7 @@ Snapshot written by Coder A at the end of the round-3 patch. Overwrite on the ne
 
 | Risk | Impact | Owner / next step |
 |---|---|---|
-| **Gemini flash quota exhausted** (429 on `gemini-3.5-flash` and `gemini-3.6-flash` since 2026-11-09; likely drained by today's health-llm probes, each of which is a real generation). | **Mitigated:** `GEMINI_MODEL=gemini-3.5-flash-lite` set in Production + Preview. health-llm 2026-11-09 05:58Z: groq 200, gemini (lite) 200, so failover is reachable again. **Not yet proven:** a full parse-scenario round trip on Gemini; the adapter has no per-request provider override (order comes only from `LLM_PROVIDER_ORDER`). | Team lead: decide how to run the forced-failover proof, and whether to revert to flash once it recovers. Coder A: one targeted probe on 2026-11-10 (`?gemini_model=gemini-3.5-flash`, a single call) and report. |
+| **Gemini flash quota exhausted** (429 on `gemini-3.5-flash` / `gemini-3.6-flash` since 2026-11-09; likely drained by that day's health-llm probes). | **Mitigated:** `GEMINI_MODEL=gemini-3.5-flash-lite`. **Parse failover proven on production** (2026-11-09 06:09 UTC, `de36ffd`): a forced-Gemini parse-scenario round trip returned 200, `provider: "gemini"`, fields passing `ParseScenarioResponseSchema`, and chained into the resolver (`"Astronaut flight suit fabric" → Nomex / aramid fabric`). **Synthesize failover: proven in tests only** (forced Gemini briefing validates; the cache is bypassed). The production proof waits for R1's first signed card, because the catalog has 0 verified and the production-data rule forbids a test card. | Coder A: run the forced synthesize step from the runbook rehearsal once real cards exist; one targeted flash probe on 2026-11-10. Team lead: revert or keep the lite override once flash recovers. |
 
 ## Next actions
 

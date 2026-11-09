@@ -80,6 +80,9 @@ before any provider call (`ineligible_evidence` 400 otherwise), so clients can n
 Synthesize, export and the browser loader read rows + `catalog_revision` as one snapshot (`src/lib/snapshot.ts`);
 `db_error` 503 means the catalog kept changing during the read, so retry. Public routes are rate-limited per IP
 (parse-scenario 20/min, synthesize 10, export 10) by the shared Postgres counter from migration 0003.
+Failover rehearsal: `x-ignis-provider: groq|gemini` **with** `x-curator-secret` forces one provider on parse-scenario
+and synthesize (forced synthesize bypasses the briefing cache). Without the secret the header is ignored. Steps are in
+the deploy runbook §3.
 
 ## Database setup (once, Coder A)
 

@@ -59,6 +59,17 @@ writes cards runs on the disposable database; production checks are read-only or
 - A rate-limit 429 check (proves 0003 is applied): 21+ `POST /api/parse-scenario` with body `{}` from **one**
   IP (one `curl` call with repeated URLs reuses one connection), expecting 429 + `retry-after` after 20.
 - `GET /api/health-llm` with the curator secret: both providers `reachable: true`.
+- **Failover rehearsal (R3's demo-day checklist):** proves the backup provider completes real requests, not just a
+  ping. Run each step **once** (AGENTS.md Gemini quota rule). The header only works with the curator secret; without
+  it, it is silently ignored.
+  1. Parse on Gemini: `curl -X POST https://<live-url>/api/parse-scenario -H 'content-type: application/json'
+     -H 'x-ignis-provider: gemini' -H 'x-curator-secret: <secret>' -d '{"text":"PMMA panel at 21% oxygen, 10 cm/s airflow"}'`.
+     Expect 200 with `"provider":"gemini"` and filled scenario fields.
+  2. Synthesize on Gemini, **only with R1's real verified cards** (never a test card): same two headers on
+     `POST /api/synthesize` with a real scenario and real `experiment_ids`. Expect `"status":"ok"` and
+     `"provider":"gemini"`. Forced runs bypass the briefing cache (no read, no write), so a rehearsal never changes
+     what the public is served.
+  3. Then one unforced parse (no headers): `"provider":"groq"`, confirming normal order is back.
 - An absolute `og:image` / canonical URL, a favicon tab screenshot, and PageSpeed (mobile + desktop) on the live
   URL. Use PageSpeed or Lighthouse with `--throttling-method=devtools`, never simulated Lighthouse from a VPN-routed
   machine.
