@@ -46,9 +46,15 @@ Takes about 15 minutes.
 Send Coder A (privately): the production URL, and confirmation that all 7 variables are set for Production + Preview.
 Coder A then runs the live verification (R3 repeats it in `docs/QA-LOG.md`):
 
-- RLS on the real database: drafts invisible, verified visible, anon writes denied (`IGNIS_DB_TESTS=1` scoped to a
-  deliberately disposable run that cleans up its own rows).
-- A `/curate` draft → verify → public-card lifecycle on a throwaway card, deleted afterwards.
+**Production holds real data only (AGENTS.md guardrail):** no test records, labeled or temporary, ever. Anything that
+writes cards runs on the disposable database; production checks are read-only or use R1's real verified cards.
+
+- RLS + the `/curate` draft → verify → publish → correction lifecycle: on the **disposable** database only
+  (`npm run test:db` locally, or the CI `db` job, which runs it on every push). Never with `IGNIS_DB_TESTS_REMOTE`
+  pointed at production.
+- Read-only RLS check on production: as anon, `GET /rest/v1/experiments` returns only verified rows (drafts
+  invisible) and `catalog_stats()` returns counts only; an anon insert is rejected (nothing is written).
+- Synthesize + briefing-cache round trip on production: only once R1 has published real verified cards.
 - A provider smoke test from Vercel (Groq is expected to work from US infrastructure; Gemini as failover).
 - A rate-limit 429 check (proves 0003 is applied): 21+ `POST /api/parse-scenario` with body `{}` from **one**
   IP (one `curl` call with repeated URLs reuses one connection), expecting 429 + `retry-after` after 20.

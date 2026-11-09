@@ -70,6 +70,10 @@ before writing code. Where they disagree, the Build Plan's Core Principles win.
 - Nothing predicts: no function, comment or copy uses "predict" / "will burn" / "would burn".
 - Absence is bounded: "No matching verified evidence in the current IGNIS catalog." — never "NASA has never tested".
 - Publication is a named human: never publish a card under someone else's name or a placeholder.
+- **Production holds real data only.** Never create, publish, edit or delete records in the production catalog (or its
+  briefing cache) for testing: not labeled, not for seconds, not "cleaned up afterwards". Round-trip tests without
+  verified data run on the disposable DB (`npm run test:db`, CI `db` job) or wait for R1's signed cards. Never point
+  `IGNIS_DB_TESTS_REMOTE` at the production project. Production checks are read-only or use real verified data.
 - The LLM never classifies materials, never explains matches, never touches ranking (§7.1).
 - SAME stays domain `smoke_detection`; FLEX is never carded.
 - No accounts, no PWA/offline claims, no new dependencies beyond Build Plan §3 without a stated reason in the PR.
