@@ -4,16 +4,19 @@
  * Protection is SERVER-SIDE (curator secret checked in /api/*); hiding this route is not the protection.
  * OWNER: Coder A.
  */
-import { useCallback, useEffect, useState, type FormEvent } from 'react';
+import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
 import { Badge, Button, Panel, Select } from '../components/ui';
 import {
   applyExtraction,
   CARRYABLE_FIELDS,
+  createFormSessions,
+  type Editing,
   EMPTY_FORM,
   FIELD_KINDS,
   type FormValues,
   recordToValues,
   valuesToRecord,
+  writeBody,
 } from '../lib/curation';
 import { cx } from '../lib/cx';
 import {
@@ -57,7 +60,7 @@ function readSecret() {
 export function Curate() {
   const [secret, setSecret] = useState(readSecret);
   const [values, setValues] = useState<FormValues>(EMPTY_FORM);
-  const [editing, setEditing] = useState<{ id: string; status: 'draft' | 'published' } | null>(null);
+  const [editing, setEditing] = useState<Editing>(null);
   const [verifiedBy, setVerifiedBy] = useState('');
   const [excerpt, setExcerpt] = useState('');
   const [carry, setCarry] = useState<string[]>([]);
@@ -66,6 +69,8 @@ export function Curate() {
   const [cards, setCards] = useState<CurateListItem[] | null>(null);
   const [status, setStatus] = useState<Status>(null);
   const [busy, setBusy] = useState(false);
+  // Item 4: responses only land on the form session that requested them.
+  const sessions = useRef(createFormSessions()).current;
 
   const set = (name: string, value: string) => setValues((v) => ({ ...v, [name]: value }));
   const saveSecret = (s: string) => {
@@ -123,6 +128,7 @@ export function Curate() {
   }, [secret, call]);
 
   const newCard = () => {
+    sessions.switchForm();
     setValues(EMPTY_FORM);
     setEditing(null);
     setQuotes({});
@@ -131,9 +137,12 @@ export function Curate() {
     setStatus(null);
   };
 
-  const reopen = (id: string) =>
-    run(async () => {
+  const reopen = (id: string) => {
+    sessions.switchForm();
+    const live = sessions.begin();
+    return run(async () => {
       const { experiment } = (await call(`/api/curate-cards?id=${id}`)) as { experiment: Experiment };
+      if (!live()) return; // the curator moved on to another card meanwhile
       setValues(recordToValues(experiment));
       setEditing({ id, status: experiment.verified_by ? 'published' : 'draft' });
       setQuotes({});
@@ -146,10 +155,14 @@ export function Curate() {
           : `Reopened draft ${experiment.test_id}.`,
       });
     });
+  };
 
-  const extract = () =>
-    run(async () => {
+  const extract = () => {
+    sessions.switchForm();
+    const live = sessions.begin();
+    return run(async () => {
       const { draft, dropped } = (await call('/api/extract', { text: excerpt })) as { draft: ExtractDraft; dropped: Dropped };
+      if (!live()) return;
       // A1: a clean draft every time — only ticked carry-forward fields survive.
       setValues((v) => applyExtraction(v, draft, carry));
       setEditing(null);
@@ -157,19 +170,27 @@ export function Curate() {
       setDropped(dropped);
       setStatus({ tone: 'success', text: 'New draft filled from the excerpt. Check EVERY field against the source before saving.' });
     });
+  };
 
-  const save = (publish: boolean) =>
-    run(async () => {
+  const save = (publish: boolean) => {
+    const live = sessions.begin();
+    return run(async () => {
       const result = valuesToRecord(values);
       if ('errors' in result) throw new Error(result.errors.join('\n'));
       if (publish) {
         const problem = verifierNameProblem(verifiedBy);
         if (problem) throw new Error(problem);
       }
-      const body = publish
-        ? { action: 'publish', id: editing?.id, record: result.record, verified_by: verifiedBy.trim() }
-        : { action: 'save_draft', id: editing?.id, record: result.record };
-      const { experiment } = (await call('/api/curate-write', body)) as { experiment: Experiment };
+      const { experiment } = (await call('/api/curate-write', writeBody(result.record, editing, publish, verifiedBy))) as {
+        experiment: Experiment;
+      };
+      await refresh(); // the list is right whichever card the form shows now
+      // Item 4: if the curator pressed New (or reopened another card) meanwhile, this response must
+      // NOT re-bind the form to the saved card — the next save would then overwrite it.
+      if (!live()) {
+        setStatus({ tone: 'success', text: `Saved ${experiment.test_id} (${experiment.id}). The form was switched meanwhile, so it stays on the new card.` });
+        return;
+      }
       setEditing({ id: experiment.id, status: experiment.verified_by ? 'published' : 'draft' });
       setStatus({
         tone: 'success',
@@ -177,8 +198,8 @@ export function Curate() {
           ? `Published ${experiment.test_id}, verified by ${experiment.verified_by}. It is now visible to the public.`
           : `Saved draft ${experiment.test_id} (${experiment.id}). Drafts are private until a curator verifies them.`,
       });
-      await refresh();
     });
+  };
 
   const onSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -217,7 +238,7 @@ export function Curate() {
             <Button size="sm" disabled={busy || !secret} onClick={() => run(refresh)}>
               Refresh
             </Button>
-            <Button size="sm" variant="primary" onClick={newCard}>
+            <Button size="sm" variant="primary" disabled={busy} title={busy ? 'Wait for the current operation to finish' : undefined} onClick={newCard}>
               New card
             </Button>
           </div>

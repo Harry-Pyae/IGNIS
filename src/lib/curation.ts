@@ -90,3 +90,32 @@ export function valuesToRecord(v: FormValues): { record: CurateRecord } | { erro
     ? { record: parsed.data }
     : { errors: parsed.error.issues.map((i) => `${i.path.join('.')}: ${i.message}`) };
 }
+
+/** The card the form is currently bound to (null = a new, unsaved card). */
+export type Editing = { id: string; status: 'draft' | 'published' } | null;
+
+/** /api/curate-write body. The ONLY place a card id enters a write: from the form's current binding. */
+export function writeBody(record: CurateRecord, editing: Editing, publish: boolean, verifiedBy: string) {
+  return publish
+    ? { action: 'publish' as const, id: editing?.id, record, verified_by: verifiedBy.trim() }
+    : { action: 'save_draft' as const, id: editing?.id, record };
+}
+
+/**
+ * Round 3, item 4 (review §2C): a pending save / reopen / extract must never attach its response
+ * to a form the curator has switched away from. Every switch (New card, Reopen, Extract) starts a
+ * new session; an operation captures its session when it starts and applies its result only if
+ * that session is still the current one. (The UI also disables switching while busy.)
+ */
+export function createFormSessions() {
+  let current = 0;
+  return {
+    /** The form now describes something else: everything still in flight is superseded. */
+    switchForm: () => void ++current,
+    /** Capture the session at the start of an operation; call the result before applying a response. */
+    begin: () => {
+      const mine = current;
+      return () => mine === current;
+    },
+  };
+}
