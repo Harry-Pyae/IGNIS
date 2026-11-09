@@ -186,3 +186,30 @@ describe('gap grid + radar (§6)', () => {
     expect(gapRadar(grid, catalog).thin_materials.map((m) => m.fuel_material)).toEqual(['kapton', 'PMMA']);
   });
 });
+
+describe('gap radar with nothing plottable (round 3, item 6)', () => {
+  it('empty catalog: 240 untested cells, null envelope, and NO ranked regions', () => {
+    const grid = gapGrid([], null);
+    expect(grid.cells.flat()).toHaveLength(240);
+    expect(grid.cells.flat().every((c) => c.state === 'untested')).toBe(true);
+    expect([grid.envelope, grid.population, grid.plotted]).toEqual([null, 0, 0]);
+    const radar = gapRadar(grid, []);
+    expect(radar).toEqual({ availability: 'no_plottable_evidence', regions: [], thin_materials: [] });
+  });
+
+  it('eligible cards that lack an axis: population counted, nothing plotted, still not ranked', () => {
+    const noAxes = [card({ test_id: 'A', o2_pct: null }), card({ test_id: 'B', flow_cm_s: null })];
+    const grid = gapGrid(noAxes, null);
+    expect([grid.population, grid.plotted, grid.envelope]).toEqual([2, 0, null]);
+    const radar = gapRadar(grid, noAxes);
+    expect(radar.availability).toBe('no_plottable_evidence');
+    expect(radar.regions).toEqual([]);
+    expect(radar.thin_materials).toEqual([{ fuel_material: 'cotton_fiberglass', material_class: 'fabric', count: 2 }]);
+  });
+
+  it('a real envelope still ranks', () => {
+    const grid = gapGrid(SEED_CARDS, null);
+    expect(grid.plotted).toBe(3);
+    expect(gapRadar(grid, SEED_CARDS).availability).toBe('ranked');
+  });
+});

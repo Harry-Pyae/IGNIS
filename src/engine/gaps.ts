@@ -28,6 +28,8 @@ export interface GapGrid {
   envelope: { o2_min: number; o2_max: number; flow_min: number; flow_max: number } | null;
   /** Cards in the population — after the gates when a scenario is active. */
   population: number;
+  /** Cards in the population that report BOTH o2 and flow (the only ones the grid can place). */
+  plotted: number;
 }
 
 type GridCard = Pick<Experiment, 'domain' | 'verified_by' | 'o2_pct' | 'flow_cm_s'>;
@@ -79,7 +81,7 @@ export function gapGrid(catalog: Experiment[], scenario: ResolvedScenario | null
       return { o2_min, o2_max, flow_min, flow_max, state, count };
     }),
   );
-  return { cells, envelope, population: population.length };
+  return { cells, envelope, population: population.length, plotted: points.length };
 }
 
 export interface GapRegion {
@@ -95,6 +97,14 @@ export interface ThinMaterial {
   count: number;
 }
 export interface GapRadar {
+  /**
+   * ranked = regions are ranked inside a real catalog envelope.
+   * no_plottable_evidence = nothing in scope reports both o2 and flow, so there is no envelope:
+   * every cell is "untested" only because nothing is plotted, and ranking that as one giant
+   * research gap would be a false claim (round 3, item 6). Regions stay empty; the console shows
+   * the availability state and the table route instead.
+   */
+  availability: 'ranked' | 'no_plottable_evidence';
   /** Top 5 largest contiguous (4-connected) untested regions. Outside-range cells are not gaps. */
   regions: GapRegion[];
   /** Solid-flammability materials with fewer than 3 verified cards. */
@@ -146,5 +156,7 @@ export function gapRadar(grid: GapGrid, catalog: Experiment[], limit = 5): GapRa
     .filter((m) => m.count < 3)
     .sort((a, b) => a.count - b.count || a.fuel_material.localeCompare(b.fuel_material));
 
-  return { regions: regions.slice(0, limit), thin_materials };
+  // No envelope = nothing plotted: those "untested" cells say nothing about NASA testing. Never rank them.
+  if (!grid.envelope) return { availability: 'no_plottable_evidence', regions: [], thin_materials };
+  return { availability: 'ranked', regions: regions.slice(0, limit), thin_materials };
 }
