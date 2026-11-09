@@ -77,7 +77,7 @@ function Hero() {
           </p>
           <div {...rise(3)} className="anim-rise mt-9 flex flex-wrap items-center gap-3">
             <Button variant="primary" size="lg" icon="play" glow onClick={() => scrollToId('guided-demo')}>
-              Run the guided demo
+              See the guided demo
             </Button>
             <Button variant="ghost" size="lg" iconRight="arrow-right" onClick={() => scrollToId('how-it-works')}>
               How it works
@@ -154,7 +154,7 @@ const STEPS: { icon: IconName; tag: string; title: string; lines: [string, strin
     title: 'Claims checked at the source',
     lines: [
       'Observed and supported statements cite the retrieved experiments.',
-      'The server checks every cited value against its card; anything unsupported is withheld.',
+      'The server checks every cited value against its card and withholds statements that fail. Interpretation stays labeled as interpretation.',
     ],
   },
   {
@@ -282,13 +282,17 @@ function GuidedDemoPanel() {
             <Badge variant="amber">Judge mode</Badge>
             <h2 className="display text-lit mt-5 text-[clamp(28px,3.2vw,38px)] leading-[1.08]">See the golden path in 60 seconds.</h2>
             <p className="mt-3 text-[15px] leading-relaxed text-dim">
-              The guided demo runs the cabin-wall scenario end to end with a caption at every step — or pick a preset
-              and explore on your own.
+              The guided demo runs one rehearsed scenario, chosen from what the verified catalog actually covers, end to
+              end with a caption at every step — or pick a preset and explore on your own.
             </p>
             {/* Coder B wires the guided run (R3 writes the captions). */}
-            <Button variant="primary" size="lg" icon="play" className="mt-6" disabled title="Guided demo lands with Coder B">
+            <Button variant="primary" size="lg" icon="play" className="mt-6" disabled aria-describedby="guided-demo-availability">
               Run the guided demo
             </Button>
+            {/* Visible availability, not a tooltip: the run needs the console (Coder B) and R1's first verified cards. */}
+            <p id="guided-demo-availability" className="mt-3 text-[13px] leading-snug text-dim">
+              Opens once the mission console and the first verified NASA cards are live.
+            </p>
           </div>
           {/* Presets sit in their own frosted tray: a calm, solid ground under the pills. */}
           <div className="surface-inset w-full max-w-md rounded-2xl border border-border/70 p-4 backdrop-blur-md md:w-auto">
