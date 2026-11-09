@@ -8,7 +8,7 @@ export const COPY = {
   sliderCaption: 'Sliders change which verified NASA experiments IGNIS retrieves.',
   absence: 'No matching verified evidence in the current IGNIS catalog.',
   gapNote:
-    'Gaps are not necessarily unsafe — they have no matching verified evidence in the current IGNIS catalog. IGNIS lists them as candidate areas for further study.',
+    'Gaps are not necessarily unsafe — they have no matching verified evidence in the current IGNIS catalog.',
   claimsGuarantee:
     'Observed and supported statements cite retrieved experiments, and the server checks each cited value against its card. Gaps are marked separately.',
   fallback: 'Briefing unavailable — showing matched evidence only.',
