@@ -2,7 +2,7 @@
 import { createHash, timingSafeEqual } from 'node:crypto';
 import type { z } from 'zod';
 import type { ApiErrorCode } from '../lib/types.js';
-import type { LlmUnavailableError } from './llm.js';
+import type { LlmUnavailableError, ProviderName } from './llm.js';
 
 export function json(data: unknown, status = 200): Response {
   return new Response(JSON.stringify(data), {
@@ -55,6 +55,20 @@ export function isCurator(req: Request): boolean {
 export function requireCurator(req: Request): Response | null {
   if (!process.env.CURATOR_SECRET) return apiError(503, 'not_configured', 'CURATOR_SECRET is not set on the server');
   return isCurator(req) ? null : apiError(401, 'unauthorized', 'Invalid curator secret');
+}
+
+/**
+ * Curator-only failover rehearsal switch: `x-ignis-provider: groq|gemini` + a valid `x-curator-secret`
+ * forces that ONE provider for this request (no fallthrough). Without a valid secret the header is
+ * ignored entirely, with no error and no mention, so the public sees exactly today's behavior. Forced
+ * requests must never touch the briefing cache (see /api/synthesize).
+ */
+export function forcedProvider(req: Request): { provider: ProviderName | null; response?: never } | { response: Response } {
+  const raw = req.headers.get('x-ignis-provider');
+  if (!raw || !isCurator(req)) return { provider: null };
+  const p = raw.trim().toLowerCase();
+  if (p === 'groq' || p === 'gemini') return { provider: p };
+  return { response: apiError(400, 'invalid_request', 'x-ignis-provider must be groq or gemini') };
 }
 
 /**
