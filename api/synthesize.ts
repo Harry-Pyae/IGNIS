@@ -1,7 +1,8 @@
 /** POST /api/synthesize — LLM Job B (§7.3) behind gates (A4) and claim validation (§7.4, A3). Public, rate-limited. */
-import { CatalogStatsSchema, ExperimentSchema, LlmBriefingSchema, SynthesizeRequestSchema } from '../src/lib/types.js';
+import { LlmBriefingSchema, SynthesizeRequestSchema } from '../src/lib/types.js';
 import { readCachedBriefing, writeCachedBriefing } from '../src/server/briefingCache.js';
 import { briefingCacheKey } from '../src/server/cacheKey.js';
+import { readVerifiedCatalog } from '../src/server/catalog.js';
 import { runClaimPipeline } from '../src/server/claims.js';
 import { anonClient, serviceClient } from '../src/server/db.js';
 import { apiError, json, readJson, route } from '../src/server/http.js';
@@ -20,11 +21,11 @@ export const POST = route(async (req) => {
   if (!db) return apiError(503, 'not_configured', 'Supabase is not configured on the server');
 
   // Read the catalog as the PUBLIC role: RLS guarantees verified rows only, and the client
-  // can never inject its own "evidence". ≤ ~60 rows, so the full catalog is cheap.
-  const [rows, stats] = await Promise.all([db.from('experiments').select('*'), db.rpc('catalog_stats')]);
-  if (rows.error || stats.error) return apiError(502, 'db_error', 'Could not load the verified catalog');
-  const catalog = rows.data.map((r) => ExperimentSchema.parse(r));
-  const revision = CatalogStatsSchema.parse(stats.data).revision;
+  // can never inject its own "evidence". Rows + revision come from ONE snapshot, so a concurrent
+  // correction can never be validated, cached or served under the wrong revision (round 3).
+  const read = await readVerifiedCatalog(db);
+  if (!read.ok) return read.response;
+  const { catalog, revision } = read;
 
   // Gates + coverage BEFORE any provider call.
   const prepared = prepareSynthesis(data.scenario, data.experiment_ids, catalog, revision);
