@@ -38,6 +38,11 @@ npm run dev                       # http://localhost:5173  (also serves /api/* l
 | `npm run dev:local` | The app against that local DB (curator secret `local-curator-secret`) |
 | `npm run test:db` | RLS access matrix + draft→publish lifecycle on a fresh throwaway DB |
 
+**Local LLM calls always run on Gemini.** Groq answers `403 Access denied` from the team's network, so locally every
+parse and Brief fails over to Gemini. That's expected: don't "fix" the key. Production runs its functions in Vercel `iad1`
+(pinned in `vercel.json`), where Groq is primary. Gemini defaults to `gemini-3.5-flash-lite` (decision 11); never point
+local dev at flash, because local traffic would spend its quota.
+
 Pages: `/` public app · `/curate` curation (server-protected writes) · `/kit` design-kit reference for Coder B.
 
 ## Layout

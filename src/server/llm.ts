@@ -125,7 +125,7 @@ const CONFIG: Record<
   gemini: {
     keyVar: 'GEMINI_API_KEY',
     modelVar: 'GEMINI_MODEL',
-    defaultModel: 'gemini-3.5-flash', // 2.5-flash closed to new keys; 3.8-flash/flash-latest 429 (no quota on this key) — health-llm, 2026-11-09
+    defaultModel: 'gemini-3.5-flash-lite', // decision 11: lite is the permanent backup; flash's free quota is too fragile for demo day
     // Header, not ?key= — keeps the key out of URLs and any request logs.
     listModels: async (key, fetchFn) => {
       const res = await fetchFn('https://generativelanguage.googleapis.com/v1beta/models?pageSize=200', {
