@@ -2,17 +2,18 @@
 
 > **Timeline:** the official event is **Sat 2026-11-14 (Day 1) → Sun 2026-11-15 (Day 2)**. All work so far is the
 > preparation phase (from 2026-11-07). The official FAQ says teams may not begin working on the challenge before the
-> hackathon; our pre-event work is disclosed in `docs/DISCLOSURE.md`, a ruling is being requested, and **no new
-> challenge code lands until it arrives**. Card extraction and verification happen only in the event window.
+> hackathon; our pre-event work is disclosed in `docs/DISCLOSURE.md`. **Ruling (reported 2026-11-10): preparation may
+> continue before the event** (written text to be attached). Card extraction and verification still happen only in
+> the event window.
 > Schedule: `docs/MILESTONES.md` §5.
 
 Snapshot written by Coder A after the console merge. Overwrite on the next handoff.
 
 ## Main and the live site
 
-- **main:** `a053e14` (Merge `console` = Coder B's mission console, then the match-summary wording and the
-  lite/region change). This file lands in the docs-only commit right after it.
-- **Live:** <https://ignisprototype01.vercel.app>, serving `a053e14`. Vercel Production deploys from `main`; CI (check + disposable-DB) is green on every `main` commit. Vercel builds one at a time, so a merge can wait ~15 min behind branch previews. Functions are pinned to `iad1` (`vercel.json`).
+- **main:** `21bb12c` (console code-split: `src/pages/Console.tsx` lazy-loaded by `consoleLoader.ts`; recharts removed),
+  on top of the console merge, the match-summary wording and the lite/region change. Docs commits follow it.
+- **Live:** <https://ignisprototype01.vercel.app>, serving `21bb12c`. Vercel Production deploys from `main`; CI (check + disposable-DB) is green on every `main` commit. Vercel builds one at a time, so a merge can wait ~15 min behind branch previews. Functions are pinned to `iad1` (`vercel.json`).
 - **Deployed:** the landing page, **the mission console** (scenario builder, Evidence Map, Match Panel, Mission Brief, Gap Radar), `/curate`, `/kit`, plus the API routes:
   - `parse-scenario` (LLM)
   - `synthesize` (validated claims + briefing cache keyed by `catalog_revision`)
@@ -52,7 +53,7 @@ Snapshot written by Coder A after the console merge. Overwrite on the next hando
 | RLS + `/curate` lifecycle | ✅ 15/15 on the disposable DB in CI (every push). Earlier live-project runs wrote test rows, so they are **not to be repeated**; production gets read-only checks only. |
 | Rate-limit 429 (0003 applied) | ✅ 20 allowed, then 429 with `retry-after`. Fails open if the counter is unreachable. |
 | og:image / canonical / og:url | ✅ absolute `https://ignisprototype01.vercel.app` URLs |
-| PageSpeed mobile (Google servers) | ✅ before round 3: FCP 0.8 s · LCP 2.1 s · TBT 0 ms · CLS 0.001 · SI 1.1 s. Re-run after the console (2026-11-10) on Lighthouse devtools from the dev machine (Google API keyless quota exhausted): Perf 79 · A11y/BP/SEO 100 · FCP/LCP 4.0 s, network-bound (200 ms RTT), not comparable. **Real regression:** main JS 55 → 96 KB gzip; Zod is back on the landing path via `Home.tsx` schema imports. Fix: lazy-load the console section (Coder B). Re-measure on Google's servers when the quota resets. |
+| PageSpeed mobile | ✅ 2026-11-10 after the console code-split (`21bb12c`), Lighthouse 12.2 mobile with devtools throttling from the dev machine (the Google API's keyless quota was exhausted both times): **Performance 83** (79 before the split) · Accessibility / Best Practices / SEO 100 · FCP/LCP **3.5 s** (4.0) · TBT 40 ms · CLS 0.001 · unused JS at first load **0** (42 KiB). Landing JS **57.2 KB gzip** (95.6 before the split, 55.3 before the console), and Zod is off the landing path again. The absolute times are network-bound on this path (200 ms RTT, 560 ms for the HTML), so they aren't comparable with the old Google-server run (FCP 0.8 s). Re-run from Google's servers when the quota resets. |
 | Favicon tab screenshot | ⏳ R3, in the QA checklist |
 
 **Measurement rule:** PageSpeed or Lighthouse with `--throttling-method=devtools` is the reference. Never use simulated Lighthouse from a VPN-routed dev machine.
@@ -63,7 +64,7 @@ Snapshot written by Coder A after the console merge. Overwrite on the next hando
 
 | Risk | Impact | Owner / next step |
 |---|---|---|
-| **Pre-event work vs the FAQ rule** ("Teams are not allowed to begin working on the challenges prior to the hackathon") | Our pre-event work is challenge-specific and the repo history is public; possible disqualification | Coder A: send `docs/DISCLOSURE.md` to the Local Lead / GO Team before Sat 11-14 and follow the ruling. No new challenge code until then. |
+| **Pre-event work vs the FAQ rule** | Ruling reported 2026-11-10: preparation may continue before the event | Coder A: attach the organizers' written ruling to `docs/DISCLOSURE.md`; keep the submission's disclosure + AI-use section. |
 | **Forced-Gemini synthesize unproven on production.** | Parse failover is proven on production (2026-11-09); synthesize on lite is proven in tests and locally on the disposable DB. | Coder A: run the forced synthesize step from the runbook rehearsal once R1's first real card exists. |
 
 ## Next actions

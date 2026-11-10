@@ -1,7 +1,9 @@
 # IGNIS — development timeline and disclosure
 
 **Team AstroFlare · NASA Space Apps Challenge 2026 · Challenge: "Flame in Freefall"**
-**Status:** written 2026-11-10 as the basis of our request for an organizer ruling. Updated when the ruling arrives.
+**Status:** written 2026-11-10 as the basis of our request for an organizer ruling.
+
+**Organizer ruling (reported by the team lead, 2026-11-10):** the organizers allow the team to continue preparation before 2026-11-14. The written ruling will be attached here verbatim. The team's own rule stands: card extraction and verification happen only inside the event window.
 
 This is a plain statement of what our team built and when, so anyone can check it against the public git history
 (<https://github.com/Harry-Pyae/IGNIS>).

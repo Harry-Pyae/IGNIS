@@ -6,11 +6,11 @@ This is one self-contained file for checking progress without the repo. Coder A 
 | | |
 |---|---|
 | **As of** | 2026-11-10, preparation phase (4 days before the official start, Sat 2026-11-14 = Day 1) |
-| **main** | `3d257b0` + this docs patch (63 commits since 2026-11-07) |
-| **Live** | <https://ignisprototype01.vercel.app>, serving `a053e14` (the code commit before `e12c4e6`; `e12c4e6` is docs only) |
-| **CI** | green: typecheck · lint · 184 tests passed, 17 skipped (DB tests, which run in their own CI job) · build · disposable-DB job |
+| **main** | `21bb12c` + this docs patch (65 commits since 2026-11-07) |
+| **Live** | <https://ignisprototype01.vercel.app>, serving `21bb12c` (console code-split) |
+| **CI** | green: typecheck · lint · 186 tests passed, 17 skipped (DB tests, which run in their own CI job) · build · disposable-DB job |
 | **Public catalog** | **0 verified cards**, 3 drafts in review |
-| **Overall** | Engine, API and console are built and live. **Compliance first:** the official FAQ bars working on the challenge before the event, and our pre-event work is challenge-specific. We've disclosed it ([DISCLOSURE.md](DISCLOSURE.md)) and are asking the organizers for a ruling; **no new challenge code until then.** Then data: nothing real can be demoed until R1 publishes verified cards, and that happens in the event window. |
+| **Overall** | Engine, API and console are built and live. **Compliance:** the official FAQ bars working on the challenge before the event; we disclosed our pre-event work ([DISCLOSURE.md](DISCLOSURE.md)) and the organizers' ruling (reported 2026-11-10) lets preparation continue. Then data: nothing real can be demoed until R1 publishes verified cards, and that happens in the event window. |
 
 **Card verification happens only in the event window (from Sat 2026-11-14).** The guide is [§12](#12-how-to-verify-a-card-r1-curate).
 
@@ -66,7 +66,9 @@ human (`verified_by` is the reviewer's own name).
 | 2026-11-10 | **Lite is the permanent Gemini backup** (code default); functions pinned to `iad1`; local-dev Groq note; decisions 9–11 | `a053e14` |
 | 2026-11-10 | STATE handoff; console verified live | `e12c4e6` |
 | 2026-11-10 | MILESTONES.md published; card-verification guide (§12); PageSpeed re-run after the console | `12c3b43`, `3d257b0` |
-| 2026-11-10 | **Timeline re-baselined** to the official start; FAQ conflict found; DISCLOSURE.md; Decisions Round 4 (upgrade proposal), build items on hold | this patch |
+| 2026-11-10 | **Timeline re-baselined** to the official start; FAQ conflict found; DISCLOSURE.md; Decisions Round 4 (upgrade proposal), build items on hold | `5085371` |
+| 2026-11-10 | **Organizer ruling** (reported): preparation may continue; build hold lifted | this patch |
+| 2026-11-10 | **Console code-split:** landing JS 95.6 → 57.2 KB gzip, Zod off the landing path, console prefetched at idle and mounted near the viewport, console deep links fixed; recharts removed | `21bb12c` |
 
 ## 4. Scope checklist (Build Plan §11 tiers, as amended by the Team Plan)
 
@@ -123,9 +125,9 @@ Submission follows the local event's end time; aim for Day 2 morning, never the 
 | When | Work | Owner | Status |
 |---|---|---|---|
 | **Prep: done** (11-07 → 11-10) | Engine, API, curation tool, console, tests, deploy | Coder A, Coder B | ✅ Disclosed in DISCLOSURE.md |
-| **Prep: now** (11-10 → 11-13) | Send the ruling request to the Local Lead / GO Team; choose a project license; finish the credits + AI-use statement (DISCLOSURE.md) | Coder A | 🟡 drafted |
-| **Prep: ask in the ruling** | R1 source *list* (Build Plan §9 allows collecting it before the event); R2 identifying footage sources; R3 QA-checklist template | R1, R2, R3 | ⏸ hold until ruled |
-| **Prep: on hold for the ruling** | Console lazy-loading (Round 4 #5, must land before mission code); mission wiring; stills rendering; Match Panel field alignment | Coder B, Coder A review | ⏸ in-window if the ruling says so |
+| **Prep: now** (11-10 → 11-13) | Ruling received (reported 2026-11-10): attach its written text to DISCLOSURE.md; choose a project license; fill in the art-pack tool | Coder A | 🟡 |
+| **Prep: allowed** | R1 source *list* only (Build Plan §9, no extraction); R2 identifying footage sources; R3 QA-checklist template | R1, R2, R3 | open |
+| **Prep: build** | ✅ console lazy-loading (`21bb12c`, Round 4 #5) · then mission wiring, stills rendering, Match Panel field alignment (Coder B, after rebasing on `main`) | Coder B, Coder A review | 🟡 |
 | **Fri 11-13** | Space Apps publishes the Project Submission + Judging guides; R3 reads them and confirms the submission format | R3 | pending |
 | **Day 1 (Sat 11-14)** | **R1 card-verification sprint:** re-verify the 3 seeds from the source, then 15+ cards (§12) | R1 (+ team lead session) | pending |
 | Day 1 | **Integration checkpoint on real cards:** warm the demo cache, parse → confirm → retrieve → synthesize → cite on the deployed URL; the **forced-Gemini synthesize proof** (once, on a real card) | Coder A | pending (needs cards) |
@@ -166,7 +168,7 @@ real verified cards, the video.
 | RLS + curation lifecycle | ✅ 15/15 on the disposable DB in CI on every push |
 | Rate limit | ✅ 20 allowed, then 429 with `retry-after`; fails open |
 | Export | ✅ empty-catalog file with the 33-field README |
-| PageSpeed mobile | 🟡 2026-11-10, after the console: Lighthouse 12.2 mobile, devtools throttling, from the dev machine (the Google API's keyless daily quota was exhausted). Performance 79 · Accessibility 100 · Best Practices 100 · SEO 100 · FCP/LCP 4.0 s · TBT 0 ms · CLS 0.001. **Not comparable with the earlier Google-server run** (FCP 0.8 s, LCP 2.1 s): this path has 200 ms RTT and 1.2 s for the HTML alone. **Real regression:** main JS 55 → 96 KB gzip after the console merge, and Zod is back on the landing path (`Home.tsx` imports the response schemas); 42 KB of it is unused at first paint. Fix: lazy-load the console section (Coder B). Re-measure from Google's servers when the API quota resets. |
+| PageSpeed mobile | ✅ 2026-11-10 after the console code-split (`21bb12c`), Lighthouse 12.2 mobile with devtools throttling from the dev machine (the Google API's keyless quota was exhausted both times): **Performance 83** (79 before the split) · Accessibility / Best Practices / SEO 100 · FCP/LCP **3.5 s** (4.0) · TBT 40 ms · CLS 0.001 · unused JS at first load **0** (42 KiB). Landing JS **57.2 KB gzip** (95.6 before the split, 55.3 before the console), and Zod is off the landing path again. The absolute times are network-bound on this path (200 ms RTT, 560 ms for the HTML), so they aren't comparable with the old Google-server run (FCP 0.8 s). Re-run from Google's servers when the quota resets. |
 | Favicon tab screenshot | ❓ R3 |
 
 ## 8. Decisions log (summary)
@@ -186,23 +188,22 @@ real verified cards, the video.
 
 | Risk | Impact | Next step |
 |---|---|---|
-| **Pre-event work vs the FAQ rule** ("Teams are not allowed to begin working on the challenges prior to the hackathon") | Our pre-event work is challenge-specific and publicly dated; possible disqualification | Coder A: send DISCLOSURE.md to the Local Lead / GO Team and follow the ruling. No new challenge code until then |
+| **Pre-event work vs the FAQ rule** | Ruling reported 2026-11-10: preparation may continue | Coder A: attach the written ruling to DISCLOSURE.md; keep the disclosure and AI-use section in the submission |
 | **No verified cards** | Blocks the demo case, the integration checkpoint, the mission, stills, the production failover proof and the acceptance run | R1: verification sprint on Day 1 (in the event window only) |
 | No R2/R3 artifacts in the repo | Can't confirm the video, ledger, QA log or demo script are on track | R2/R3: send docs-only PRs or issues to Coder A |
 | Forced-Gemini synthesize unproven on production | Backup path on stage is proven in tests and locally only | Coder A: run once on R1's first real card (runbook §3) |
 | Two presets lack materials | Cable insulation and Cargo packaging always open the picker | R1: card a real insulation and a packaging material, send the `fuel_material` names |
 | Coder C absent | WOW features cut by default | Follow the fallback rules; nobody absorbs them at the cost of their own "done when" |
-| Landing bundle +40 KB gzip | Zod and the console code load before first paint (round 3 had kept Zod off the landing path) | Coder B: lazy-load the console section before any mission code (Round 4 #5); timing per the ruling |
 
 ## 10. Next actions
 
 | Owner | Action |
 |---|---|
-| Coder A | Send the ruling request with DISCLOSURE.md; choose the project license; fill in the art-pack tool name. On Day 1: warm the demo cache, the full checkpoint on real cards, the forced-Gemini synthesize proof, the acceptance run |
+| Coder A | Attach the written ruling; choose the project license; fill in the art-pack tool name. On Day 1: warm the demo cache, the full checkpoint on real cards, the forced-Gemini synthesize proof, the acceptance run |
 | R1 | No card extraction or verification before Sat 11-14. Day 1: re-verify and publish the 3 seeds under your own name, decide GMT45-T4, then 15+ cards; coverage note for R3 |
 | R2 | Day 1: stills with a rights ledger for the mission's cards; video by Day 2 |
 | R3 | Fri 11-13: read the Submission + Judging guides. Day 1–2: captions, usability test, QA, rehearsals, submission |
-| Coder B | Rebase `console` on `main`. Lazy-loading first, then mission wiring, stills and field alignment, **timed per the ruling** |
+| Coder B | Rebase `console` on `main` (the console now lives in `src/pages/Console.tsx`), then mission wiring, stills and field alignment |
 
 ## 11. Codebase at a glance
 
@@ -212,9 +213,9 @@ real verified cards, the video.
 | Server logic | `src/server/`: LLM adapter, prompts, claim validation, synthesis, briefing cache, rate limit, export | |
 | Engine (pure, no LLM) | `src/engine/`: aliases, match, gaps, views · `src/lib/gates.ts`, `coverage.ts` | |
 | Contracts | `src/lib/types.ts` (Zod), `copy.ts` (approved copy), `fixtures.ts` | |
-| UI | `src/pages/Home.tsx` (landing + console), `Curate.tsx`, `Kit.tsx` · `src/components/ui/*` · `src/i18n/` | |
+| UI | `src/pages/Home.tsx` (landing), `Console.tsx` (lazy console) + `consoleLoader.ts`, `Curate.tsx`, `Kit.tsx` · `src/components/ui/*` · `src/i18n/` | |
 | Database | `supabase/migrations/` 0001–0003 · `supabase/seed.sql` (3 drafts) | |
-| Tests | `tests/`: 24 files; `tests/db/` RLS + lifecycle on a throwaway DB | 184 passing |
+| Tests | `tests/`: 25 files; `tests/db/` RLS + lifecycle on a throwaway DB | 186 passing |
 | Docs | `IGNIS_BUILD_PLAN.md`, `IGNIS_TEAM_PLAN.md`, `AGENTS.md`, `docs/STATE.md`, `DECISIONS-ROUND2/3/4.md`, `DISCLOSURE.md`, `DEPLOY-RUNBOOK.md` | |
 
 Total tracked source + tests + DB + scripts: ~9,300 lines.
@@ -280,3 +281,4 @@ under the reviewer's own name.
 | 2026-11-10 | `e12c4e6` | First version, after the console merge |
 | 2026-11-10 | `12c3b43` + patch | Day count confirmed; §12 card-verification guide; PageSpeed re-run + bundle regression |
 | 2026-11-10 | `3d257b0` + patch | Re-baselined to the official start (Sat 11-14 = Day 1); §5 event-window plan; FAQ conflict + DISCLOSURE.md; Round 4 decisions; §12 agenda moved to Day 1 |
+| 2026-11-10 | `21bb12c` + patch | Ruling recorded; console code-split shipped; PageSpeed row updated; §5 prep rows unblocked |

@@ -3,7 +3,11 @@
 Recorded by Coder A (team lead) after the upgrade proposal "IGNIS upgrade strategy 2026-11-10" (kept unedited outside
 the repository, like the round-3 review). Round 2 and Round 3 decisions stand unless noted.
 
-**Timing hold (applies to every build item below):** the official 2026 Participant FAQ says *"Teams are not allowed to
+**Organizer ruling (reported by the team lead, 2026-11-10):** the organizers allow the team to continue preparation before 2026-11-14. The written ruling will be attached here verbatim. The team's own rule stands: card extraction and verification happen only inside the event window.
+The timing hold below is **lifted** for the build items; the content gate (#1) and in-window verification are unchanged.
+#5 shipped first: `21bb12c` split the console out of the landing chunk (95.6 → 57.2 KB gzip).
+
+~~**Timing hold (applies to every build item below):**~~ *(historical)* the official 2026 Participant FAQ says *"Teams are not allowed to
 begin working on the challenges prior to the hackathon"* (event: 2026-11-14 → 11-15). Until the Local Lead / Global
 Organizing Team rules on our pre-event work (`docs/DISCLOSURE.md`), **no new challenge code lands**. These decisions
 fix *what* we build; *when* waits for the ruling.
