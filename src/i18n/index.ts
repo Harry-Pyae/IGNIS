@@ -22,6 +22,8 @@ const EN = {
   notSpecified: 'Not specified',
   setAirflow: 'Set airflow to 0 cm/s',
   clearAirflow: 'Clear airflow',
+  setOxygen: 'Set to 21% (cabin air)',
+  clearOxygen: 'Clear oxygen',
   enterMaterial: 'Enter a material',
   selectMaterial: 'Select material',
   chooseCatalogMaterial: 'Choose a verified catalog material to continue.',

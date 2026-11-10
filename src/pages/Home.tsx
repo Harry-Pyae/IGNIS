@@ -341,7 +341,7 @@ function ConsoleSkeleton() {
     fuel_material_raw: SCENARIO_PRESETS[0]?.material?.fuel_material ?? null,
     fuel_form: SCENARIO_PRESETS[0]?.fuel_form ?? null,
     thickness_mm: SCENARIO_PRESETS[0]?.thickness_mm ?? null,
-    o2_pct: SCENARIO_PRESETS[0]?.o2_pct ?? 21,
+    o2_pct: SCENARIO_PRESETS[0]?.o2_pct ?? null,
     flow_cm_s: SCENARIO_PRESETS[0]?.flow_cm_s ?? null,
     pressure_kpa: SCENARIO_PRESETS[0]?.pressure_kpa ?? null,
   }));
@@ -536,7 +536,7 @@ function ConsoleSkeleton() {
                     ))}
                     <PresetChip active={presetId === null} onClick={() => {
                       setPresetId(null);
-                      editScenario({ fuel_material_raw: null, fuel_form: null, thickness_mm: null, o2_pct: 21, flow_cm_s: null, pressure_kpa: null }, true);
+                      editScenario({ fuel_material_raw: null, fuel_form: null, thickness_mm: null, o2_pct: null, flow_cm_s: null, pressure_kpa: null }, true);
                     }}>{t('custom')}</PresetChip>
                   </div>
                 </div>
@@ -597,7 +597,7 @@ function ConsoleSkeleton() {
             {message && <p role="status" className="text-sm text-dim">{message}</p>}
           </div>
           <div className="flex flex-col gap-5">
-            <Slider label="O₂" unit="%" min={14} max={30} value={scenario.o2_pct ?? 21} onChange={(value) => moveSlider({ o2_pct: value })} />
+            <Slider label="O₂" unit="%" min={14} max={30} value={scenario.o2_pct} onChange={(value) => moveSlider({ o2_pct: value })} onClear={() => moveSlider({ o2_pct: null })} allowUnspecified unspecifiedValue={21} unspecifiedLabel={t('notSpecified')} setValueLabel={t('setOxygen')} clearValueLabel={t('clearOxygen')} />
             <Slider label="Airflow" unit="cm/s" min={0} max={30} value={scenario.flow_cm_s} onChange={(value) => moveSlider({ flow_cm_s: value })} onClear={() => moveSlider({ flow_cm_s: null })} allowUnspecified unspecifiedLabel={t('notSpecified')} setValueLabel={t('setAirflow')} clearValueLabel={t('clearAirflow')} />
             <p className="text-[13px] text-dim">{COPY.sliderCaption}</p>
           </div>

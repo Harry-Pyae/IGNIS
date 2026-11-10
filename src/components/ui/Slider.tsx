@@ -11,6 +11,7 @@ interface SliderProps {
   onChange: (value: number) => void;
   onClear?: () => void;
   allowUnspecified?: boolean;
+  unspecifiedValue?: number;
   unspecifiedLabel?: string;
   setValueLabel?: string;
   clearValueLabel?: string;
@@ -22,7 +23,7 @@ interface SliderProps {
  * Semantics: it changes WHICH verified evidence is retrieved — it never paints risk zones.
  * Always pair it with COPY.sliderCaption (src/lib/copy.ts). Native range input: keyboard, touch, a11y for free.
  */
-export function Slider({ label, value, min, max, step = 1, unit, onChange, onClear, className, allowUnspecified = false, unspecifiedLabel = 'Not specified', setValueLabel = 'Set value', clearValueLabel = 'Clear value' }: SliderProps) {
+export function Slider({ label, value, min, max, step = 1, unit, onChange, onClear, className, allowUnspecified = false, unspecifiedValue = min, unspecifiedLabel = 'Not specified', setValueLabel = 'Set value', clearValueLabel = 'Clear value' }: SliderProps) {
   const id = useId();
   const currentValue = value ?? min;
   const fill = ((currentValue - min) / (max - min)) * 100;
@@ -36,7 +37,7 @@ export function Slider({ label, value, min, max, step = 1, unit, onChange, onCle
           {value == null && allowUnspecified ? unspecifiedLabel : <>{value}<span className="ml-1 text-dim">{unit}</span></>}
         </output>
         {allowUnspecified && (
-          <button type="button" className="text-xs text-dim underline underline-offset-2 hover:text-text" onClick={() => value == null ? onChange(min) : onClear?.()}>
+          <button type="button" className="text-xs text-dim underline underline-offset-2 hover:text-text" onClick={() => value == null ? onChange(unspecifiedValue) : onClear?.()}>
             {value == null ? setValueLabel : clearValueLabel}
           </button>
         )}
