@@ -4,7 +4,7 @@
 
 **Rule (Team Plan R3, DECISIONS-ROUND5 #2):** Burmese ships **complete and reviewed**, or the app stays EN-only. A partial set never ships.
 
-The draft comes from a teammate's practice build (Pyroverse, used with her permission): strings only. Her build covers a different UI (3D chamber, audit, chatbot), so only **3 of our 123 keys** have a direct equivalent. The rest are blank for you to write; the glossary in §2 has her terms.
+The draft comes from a teammate's practice build (Pyroverse, used with her permission): strings only. Her build covers a different UI (3D chamber, audit, chatbot), so only **3 of our 143 keys** have a direct equivalent. The rest are blank for you to write; the glossary in §2 has her terms.
 
 **How to review:**
 - Fill *R3 translation* for every key (keep her draft or replace it), then tick *Native ✓* and *Scientific ✓* once checked.
@@ -12,7 +12,7 @@ The draft comes from a teammate's practice build (Pyroverse, used with her permi
 - Never make the approved meaning stronger: absence stays "no matching verified evidence in the current IGNIS catalog" (never "NASA never tested"); no "predict", "safe" or "approved".
 - When every row has both ticks, send this file to Coder A, who promotes it into `src/i18n/index.ts`.
 
-## 1. UI strings (123 keys)
+## 1. UI strings (143 keys)
 
 | Key | English | Her draft | R3 translation | Native ✓ | Scientific ✓ | Notes |
 |---|---|---|---|---|---|---|
@@ -37,6 +37,7 @@ The draft comes from a teammate's practice build (Pyroverse, used with her permi
 | `material` | Material | ပစ္စည်း |  |  |  |  |
 | `form` | Form |  |  |  |  |  |
 | `notSpecified` | Not specified |  |  |  |  |  |
+| `notReported` | Not reported |  |  |  |  |  |
 | `setAirflow` | Set airflow to 0 cm/s |  |  |  |  |  |
 | `clearAirflow` | Clear airflow |  |  |  |  |  |
 | `setOxygen` | Set to 21% (cabin air) |  |  |  |  |  |
@@ -48,6 +49,29 @@ The draft comes from a teammate's practice build (Pyroverse, used with her permi
 | `catalogMaterialsUnavailable` | Verified catalog materials could not be loaded. |  |  |  |  |  |
 | `retry` | Retry |  |  |  |  |  |
 | `confirmScenario` | Confirm scenario |  |  |  |  |  |
+| `edit` | Edit |  |  |  |  |  |
+| `outcome` | Outcome |  |  |  |  |  |
+| `missionBack` | Back |  |  |  |  |  |
+| `missionNext` | Next |  |  |  |  |  |
+| `missionDone` | Done |  |  |  |  |  |
+| `exploreFreely` | Explore freely |  |  |  |  |  |
+| `guidedMission` | Guided mission |  |  |  |  |  |
+| `missionProgress` | Guided mission steps |  |  |  |  |  |
+| `goToMissionStep` | Go to step |  |  |  |  |  |
+| `missionStepScenario` | Describe the scenario |  |  |  |  |  |
+| `missionStepMap` | Inspect the observations |  |  |  |  |  |
+| `missionStepMatches` | Compare the matched tests |  |  |  |  |  |
+| `missionStepBrief` | Read the evidence brief |  |  |  |  |  |
+| `missionStepGaps` | Check the evidence gaps |  |  |  |  |  |
+| `missionCaptionScenario` | Review the scenario inputs, then confirm them before comparing experiments. |  |  |  |  |  |
+| `missionCaptionMap` | The map plots verified experiments with reported oxygen and airflow values. |  |  |  |  |  |
+| `missionCaptionMatches` | Compare reported conditions, outcomes, observations, and source locations across the closest catalog matches. |  |  |  |  |  |
+| `missionCaptionBrief` | Observed results and supported interpretations are shown separately; citations lead back to matched evidence. |  |  |  |  |  |
+| `missionCaptionGaps` | Review the conditions where this catalog has no matching verified evidence. |  |  |  |  |  |
+| `understandResearch` | Understand the research |  |  |  |  |  |
+| `whereItHappened` | Where it happened |  |  |  |  |  |
+| `whatItStudied` | What it studied |  |  |  |  |  |
+| `whyItMatters` | Why it matters |  |  |  |  |  |
 | `confirmedMatches` | ranked matches ready |  |  |  |  |  |
 | `confirmed` | Confirmed |  |  |  |  |  |
 | `confirmedCatalog` | Scenario confirmed. Results use verified catalog records only. |  |  |  |  |  |
@@ -121,6 +145,8 @@ The draft comes from a teammate's practice build (Pyroverse, used with her permi
 | `oxygenNotReported` | O₂ not reported |  |  |  |  |  |
 | `airflowNotReported` | Airflow not reported |  |  |  |  |  |
 | `sourcePage` | Source p. |  |  |  |  |  |
+| `backToMap` | Back to evidence map |  |  |  |  |  |
+| `openMatchCard` | Open its match card |  |  |  |  |  |
 | `noUntestedWithinRange` | No untested cells were found inside the current catalog range. |  |  |  |  |  |
 | `thinMaterialsHeading` | Materials with fewer than three verified records |  |  |  |  |  |
 | `openDataset` | Open dataset (.json) |  |  |  |  |  |
@@ -130,12 +156,6 @@ The draft comes from a teammate's practice build (Pyroverse, used with her permi
 | `whatTestReported` | What a NASA test directly reported. |  |  |  |  |  |
 | `carefulReading` | Careful reading across cited tests. |  |  |  |  |  |
 | `noMatchingEvidence` | No matching verified evidence in the current catalog. Shown, never filled in. |  |  |  |  |  |
-| `judgeMode` | Judge mode |  |  |  |  |  |
-| `goldenPath` | See the golden path in 60 seconds. |  |  |  |  |  |
-| `guidedDemoDescription` | The guided demo runs one rehearsed scenario, chosen from what the verified catalog actually covers, end to end with a caption at every step — or pick a preset and explore on your own. |  |  |  |  |  |
-| `runGuidedDemo` | Run the guided demo |  |  |  |  |  |
-| `guidedDemoAvailability` | Opens once the mission console and the first verified NASA cards are live. |  |  |  |  |  |
-| `orPickPreset` | Or pick a preset |  |  |  |  |  |
 | `experimentDataSources` | Experiment data: NASA Technical Reports Server (NTRS) and NASA Physical Sciences Informatics (PSI). Each card links to and credits its own source. |  |  |  |  |  |
 | `nasaDisclaimer` | IGNIS is an independent NASA Space Apps project. Not affiliated with or endorsed by NASA. |  |  |  |  |  |
 | `brandingArt` | Illustrations on this page are branding — not NASA experiment imagery. |  |  |  |  |  |

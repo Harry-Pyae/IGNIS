@@ -44,6 +44,10 @@ export const COPY = {
     plotted: (n: number) => `${n} plotted`,
     notPlotted: (n: number) => `${n} missing plot coordinates`,
     topMatches: (n: number) => `${n} top match${n === 1 ? '' : 'es'}`,
+    o2: (v: number | null) => (v == null ? 'O₂ not specified' : `O₂ ${v}%`),
+    flow: (v: number | null) => (v == null ? 'Flow not specified' : `Flow ${v} cm/s`),
+    // Before confirmation the counts are whole-catalog counts; never label them with unconfirmed inputs.
+    notConfirmed: 'Not confirmed yet. These counts cover the whole verified catalog; confirm the scenario to see its own evidence.',
   },
   environmentExplanation: 'Sets oxygen and pressure only.',
   environmentApplied: 'Oxygen updated · Pressure updated · Other inputs unchanged',

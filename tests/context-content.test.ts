@@ -32,10 +32,13 @@ describe('context content (DECISIONS-ROUND5 #3)', () => {
     }
   });
 
-  it('stays off evidence retrieval and briefing code', () => {
+  it('stays off evidence code: only the console imports it, and only the signed-only section', () => {
     const importers = [...files('src'), ...files('api')]
-      .filter((f) => !f.replace(/\\/g, '/').endsWith('src/lib/context-content.ts') && !f.replace(/\\/g, '/').endsWith('src/pages/Console.tsx'))
+      .map((f) => f.replace(/\\/g, '/'))
+      .filter((f) => !f.endsWith('src/lib/context-content.ts'))
       .filter((f) => /context-content/.test(readFileSync(f, 'utf8')));
-    expect(importers).toEqual([]); // Console may render the separate, signed-only context section.
+    expect(importers).toEqual(['src/pages/Console.tsx']);
+    const imports = readFileSync('src/pages/Console.tsx', 'utf8').match(/import \{([^}]*)\} from '\.\.\/lib\/context-content'/);
+    expect(imports?.[1]?.trim()).toBe('contextSection'); // never CONTEXT_ENTRIES or unsigned entries
   });
 });

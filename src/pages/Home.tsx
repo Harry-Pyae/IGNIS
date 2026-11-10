@@ -64,7 +64,8 @@ function Hero() {
           </p>
           <div {...rise(3)} className="anim-rise mt-9 flex flex-wrap items-center gap-3">
             {MISSION_CASE && <MissionStartControl />}
-            <Button variant="ghost" size="lg" iconRight="arrow-right" onClick={() => scrollToId('console')}>
+            {/* Explore is the primary action until a reviewed mission case exists (DECISIONS-ROUND6 #1). */}
+            <Button variant={MISSION_CASE ? 'ghost' : 'primary'} size="lg" iconRight="arrow-right" glow={!MISSION_CASE} onClick={() => scrollToId('console')}>
               {COPY.landingCta.explore}
             </Button>
           </div>

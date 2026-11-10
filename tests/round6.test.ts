@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { applyEnvironment, ENVIRONMENT_PRESETS } from '../src/engine/environments';
 import { missionEntry, MISSION_CASE, type MissionCase } from '../src/engine/mission';
-import { briefingKey, currentBriefing, evidenceViews } from '../src/engine/views';
+import { briefingKey, currentBriefing, evidenceViews, investigationSummary } from '../src/engine/views';
 import { CONTEXT_ENTRIES, contextSection } from '../src/lib/context-content';
 import { COPY } from '../src/lib/copy';
 import { SEED_CARDS } from '../src/lib/fixtures';
@@ -32,6 +32,21 @@ describe('Round 6 #2: summary strip reuses the revision-binding contract', () =>
     expect(currentBriefing(old, briefingKey(scenario(), 'rev-2', ids))).toBeNull();
     expect(currentBriefing(old, briefingKey(scenario(), 'rev-1', ['a']))).toBeNull();
     expect(currentBriefing(old, null)).toBeNull(); // no active request → no Brief
+  });
+});
+
+describe('Round 6 #2: the summary never labels whole-catalog counts with an unconfirmed scenario', () => {
+  it('unconfirmed: whole-catalog counts, flagged, no top-match count; confirmed: that scenario and its counts', () => {
+    const draft = scenario({ fuel_form: 'thick_slab' });
+    const unconfirmed = investigationSummary(draft, null, evidenceViews(SEED_CARDS, null, 'rev'));
+    expect(unconfirmed).toMatchObject({ confirmed: false, scenario: draft, counts: { eligible: SEED_CARDS.length, top_k: null } });
+    const confirmedScenario = scenario();
+    const confirmed = investigationSummary(draft, confirmedScenario, evidenceViews(SEED_CARDS, confirmedScenario, 'rev', 2));
+    expect(confirmed.confirmed).toBe(true);
+    expect(confirmed.scenario).toBe(confirmedScenario); // the confirmed inputs, not the draft being edited
+    expect(confirmed.counts?.top_k).toBe(2);
+    expect(COPY.summary.notConfirmed).toMatch(/whole verified catalog/);
+    expect([COPY.summary.o2(null), COPY.summary.flow(null), COPY.summary.flow(0)]).toEqual(['O₂ not specified', 'Flow not specified', 'Flow 0 cm/s']);
   });
 });
 

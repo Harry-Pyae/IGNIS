@@ -9,8 +9,8 @@ import { useVerifiedCatalog } from '../lib/catalog';
 import { COPY } from '../lib/copy';
 import { pickMaterial, presetScenario, resolveMaterial, SCENARIO_PRESETS } from '../engine/aliases';
 import { applyEnvironment, isElevatedO2, visibleEnvironmentPresets, type EnvironmentPreset } from '../engine/environments';
-import { briefingKey, currentBriefing, evidenceViews, type EvidenceViews } from '../engine/views';
-import { FIELD_UNITS, PARAM_LABELS, ParseScenarioResponseSchema, SynthesizeResponseSchema, type Briefing, type ContinuousParam, type Experiment, type MatchResult, type ParsedScenario, type ResolvedMaterial, type ResolvedScenario } from '../lib/types';
+import { briefingKey, currentBriefing, evidenceViews, investigationSummary } from '../engine/views';
+import { FIELD_UNITS, PARAM_LABELS, ParseScenarioResponseSchema, SynthesizeResponseSchema, type Briefing, type ContinuousParam, type Experiment, type MatchResult, type ParsedScenario, type ResolvedScenario } from '../lib/types';
 import { gapGrid, gapRadar, type GapRadar as GapRadarData } from '../engine/gaps';
 import { whyMatched } from '../engine/match';
 import { t } from '../i18n';
@@ -369,14 +369,14 @@ export function Console() {
                     <PresetChip key={env.id} active={activeEnvironment?.id === env.id} onClick={() => chooseEnvironment(env)}>{env.label}</PresetChip>
                   ))}
                 </div>
-                <p className="text-[13px] text-dim">{COPY.environmentExplanation}</p>
+                <p className="text-[13px] text-dim">{COPY.environmentCaption}</p>
                 {activeEnvironment && (
                   <p className="text-[13px] text-text">
-                    {activeEnvironment.context}{' '}
+                    {COPY.environmentExplanation} {activeEnvironment.context}{' '}
                     {activeEnvironment.verification.source_url && <a href={activeEnvironment.verification.source_url} target="_blank" rel="noreferrer" className="text-amber underline underline-offset-4">{t('source')}</a>}
                   </p>
                 )}
-                {activeEnvironment && <p className="text-[13px] text-success">{COPY.environmentApplied}</p>}
+                {activeEnvironment && <p role="status" className="text-[13px] text-dim">{COPY.environmentApplied}</p>}
                 {activeEnvironment && isElevatedO2(activeEnvironment) && <p className="text-[13px] text-warn">{COPY.elevatedO2(activeEnvironment.o2_pct)}</p>}
               </div>
             )}
@@ -395,9 +395,7 @@ export function Console() {
         />
         <MissionCaption step={guidedStep === 1 ? 1 : null} onStep={setGuidedStep} text={t(MISSION_STEPS[1].caption)} />
         <InvestigationSummary
-          scenario={scenario}
-          material={material}
-          views={views}
+          summary={investigationSummary(draft, confirmed, views)}
           onEdit={focusScenarioEditor}
         />
         <EvidenceMap key={revision} experiments={views?.eligible ?? experiments} scenario={confirmed} matches={views?.top_k ?? []} status={dataStatus} />
@@ -465,29 +463,23 @@ function MissionCaption({ step, onStep, text }: { step: number | null; onStep: (
 }
 
 function InvestigationSummary({
-  scenario,
-  material,
-  views,
+  summary: { scenario, confirmed, counts },
   onEdit,
 }: {
-  scenario: ParsedScenario;
-  material: ResolvedMaterial;
-  views: EvidenceViews | null;
+  summary: ReturnType<typeof investigationSummary>;
   onEdit: () => void;
 }) {
   const summary = COPY.summary;
-  const materialName = material.status === 'resolved' ? material.fuel_material.replace(/_/g, ' ') : scenario.fuel_material_raw ?? t('notSpecified');
+  const { material } = scenario;
+  const materialName = material.status === 'resolved' ? material.fuel_material.replace(/_/g, ' ') : material.raw ?? t('notSpecified');
   const form = scenario.fuel_form?.replace(/_/g, ' ') ?? t('notSpecified');
-  const conditions = [
-    scenario.o2_pct == null ? t('notSpecified') : `${scenario.o2_pct}% O₂`,
-    scenario.flow_cm_s == null ? t('notSpecified') : `${scenario.flow_cm_s} cm/s`,
-  ].join(' · ');
-  const evidence = views
-    ? [summary.eligible(views.eligible.length), summary.plotted(views.plotted.length), summary.notPlotted(views.not_plotted.length)]
+  const conditions = [summary.o2(scenario.o2_pct), summary.flow(scenario.flow_cm_s)].join(' · ');
+  const evidence = counts
+    ? [summary.eligible(counts.eligible), summary.plotted(counts.plotted), summary.notPlotted(counts.not_plotted)]
     : [t('loading')];
 
   return (
-    <div aria-label={summary.evidence} className="mb-4 grid grid-cols-2 gap-3 rounded-xl border border-border bg-bg/35 p-3 sm:grid-cols-4">
+    <div role="group" aria-label={`${summary.scenario}, ${summary.conditions}, ${summary.evidence}`} className="mb-4 grid grid-cols-2 gap-3 rounded-xl border border-border bg-bg/35 p-3 sm:grid-cols-4">
       <div className="min-w-0">
         <p className="console-label text-dim">{summary.scenario}</p>
         <p className="mt-1 break-words text-sm text-text">{materialName} · {form}</p>
@@ -500,7 +492,9 @@ function InvestigationSummary({
       <div className="min-w-0 sm:col-span-2">
         <p className="console-label text-dim">{summary.evidence}</p>
         <p className="mt-1 break-words text-sm text-text">{evidence.join(' · ')}</p>
-        <p className="mt-1 text-xs text-dim">{views ? summary.topMatches(views.top_k.length) : t('loading')}</p>
+        {counts && (confirmed
+          ? <p className="mt-1 text-xs text-dim">{summary.topMatches(counts.top_k ?? 0)}</p>
+          : <p role="status" className="mt-1 text-xs text-warn">{summary.notConfirmed}</p>)}
       </div>
     </div>
   );
@@ -657,8 +651,8 @@ function EvidenceMap({
                   role="button"
                   tabIndex={0}
                   aria-label={`${experimentLabel(experiment)}, ${experiment.outcome ?? t('outcomeUnreported')}, ${experiment.o2_pct}% oxygen, ${experiment.flow_cm_s} centimeters per second airflow`}
-                  onClick={() => { setSelectedId(experiment.id); focusExperiment(experiment.id); }}
-                  onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); setSelectedId(experiment.id); focusExperiment(experiment.id); } }}
+                  onClick={() => setSelectedId(experiment.id)}
+                  onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); setSelectedId(experiment.id); } }}
                   className="cursor-pointer focus-visible:outline focus-visible:outline-1 focus-visible:outline-amber"
                 >
                   {matchIds.has(experiment.id) && <circle cx={x(experiment.flow_cm_s!)} cy={y(experiment.o2_pct!)} r="9" fill="none" stroke="var(--color-text)" strokeWidth="1.25" />}
@@ -699,6 +693,10 @@ function EvidenceMap({
               </div>
               {selected.key_observation_quote && <blockquote className="mt-3 border-l-2 border-raised pl-3 text-sm leading-relaxed text-dim">“{selected.key_observation_quote}”</blockquote>}
               <p className="mt-2 text-xs text-dim">{[selected.source_page != null ? `${t('sourcePage')} ${selected.source_page}` : null, selected.source_figure, selected.source_table].filter(Boolean).join(' · ')}</p>
+              {/* Selection stays on the map; opening the match card is the visitor's choice (no jump on every click). */}
+              {matches.some((match) => match.experiment.id === selected.id) && (
+                <button type="button" onClick={() => focusExperiment(selected.id)} className="mt-3 text-sm text-amber underline underline-offset-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-amber">{t('openMatchCard')}</button>
+              )}
             </div>
           )}
           {missingAxisCount > 0 && <p className="mt-3 text-[13px] text-dim">{missingAxisCount} {t(missingAxisCount === 1 ? 'eligibleRecord' : 'eligibleRecords')} {t(missingAxisCount === 1 ? 'missingAxisRecord' : 'missingAxisRecords')}</p>}
@@ -747,10 +745,10 @@ function MatchPanel({ matches, status, confirmed }: { matches: MatchResult[]; st
             <dl className="mt-3 divide-y divide-border/70 border-y border-border/70">
               {field(t('material'), experiment.fuel_material.replace(/_/g, ' '))}
               {field(t('form'), experiment.fuel_form.replace(/_/g, ' '))}
-              {field(t('oxygenAxis'), experiment.o2_pct == null ? t('oxygenNotReported') : `${experiment.o2_pct}%`, 'o2_pct')}
-              {field(t('airflowAxis'), experiment.flow_cm_s == null ? t('airflowNotReported') : `${experiment.flow_cm_s} cm/s`, 'flow_cm_s')}
-              {field(t('thicknessMm'), experiment.thickness_mm == null ? t('notReported') : `${experiment.thickness_mm} mm`, 'thickness_mm')}
-              {field(t('pressureKpa'), experiment.pressure_kpa == null ? t('notReported') : `${experiment.pressure_kpa} kPa`, 'pressure_kpa')}
+              {field(PARAM_LABELS.o2_pct, experiment.o2_pct == null ? t('oxygenNotReported') : `${experiment.o2_pct}%`, 'o2_pct')}
+              {field(PARAM_LABELS.flow_cm_s, experiment.flow_cm_s == null ? t('airflowNotReported') : `${experiment.flow_cm_s} cm/s`, 'flow_cm_s')}
+              {field(PARAM_LABELS.thickness_mm, experiment.thickness_mm == null ? t('notReported') : `${experiment.thickness_mm} mm`, 'thickness_mm')}
+              {field(PARAM_LABELS.pressure_kpa, experiment.pressure_kpa == null ? t('notReported') : `${experiment.pressure_kpa} kPa`, 'pressure_kpa')}
               <div className="grid grid-cols-[minmax(5.5rem,.7fr)_minmax(0,1.3fr)] items-center gap-3 py-2">
                 <dt className="text-xs text-dim">{t('outcome')}</dt>
                 <dd className="flex justify-end">{experiment.outcome ? <Badge variant={experiment.outcome} /> : <Badge variant="neutral">{t('outcomeNotReported')}</Badge>}</dd>

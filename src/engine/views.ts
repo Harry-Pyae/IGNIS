@@ -35,6 +35,23 @@ export const briefingKey = (scenario: ResolvedScenario, catalog_revision: string
 export const currentBriefing = <T>(result: { key: string; data: T } | null, requestKey: string | null): T | null =>
   requestKey != null && result?.key === requestKey ? result.data : null;
 
+/**
+ * Current-investigation summary (DECISIONS-ROUND6 #2): which scenario the displayed counts belong to. Until a
+ * scenario is confirmed the counts are whole-catalog counts, flagged as such, with no top-match count.
+ */
+export function investigationSummary(draft: ResolvedScenario, confirmed: ResolvedScenario | null, views: EvidenceViews | null) {
+  return {
+    scenario: confirmed ?? draft,
+    confirmed: confirmed != null,
+    counts: views && {
+      eligible: views.eligible.length,
+      plotted: views.plotted.length,
+      not_plotted: views.not_plotted.length,
+      top_k: confirmed ? views.top_k.length : null,
+    },
+  };
+}
+
 export function evidenceViews(
   catalog: Experiment[],
   scenario: ResolvedScenario | null,
