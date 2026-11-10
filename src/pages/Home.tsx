@@ -570,7 +570,7 @@ function ConsoleSkeleton() {
                       </select>
                     ) : catalog.state === 'unavailable' ? (
                       <div className="flex items-center gap-2"><span>{t('catalogUnavailableForMaterials')}</span><Button size="sm" onClick={reload}>{t('retry')}</Button></div>
-                    ) : <p>{t('noVerifiedMaterials')}</p>}
+                    ) : <p>{COPY.absence}</p>}
                   </div>
                 )}
                 <div className="grid gap-3 sm:grid-cols-2">
@@ -655,6 +655,7 @@ function EvidenceMap({
   const plotted = coordinateRecords.filter(isOnAxes);
   const outsideAxesCount = coordinateRecords.length - plotted.length;
   const grid = gapGrid(experiments, scenario);
+  const missingAxisCount = grid.population - grid.plotted;
   const selected = experiments.find((experiment) => experiment.id === selectedId);
   const matchIds = new Set(matches.slice(0, 3).map((match) => match.experiment.id));
   const envelope = grid.envelope;
@@ -797,7 +798,7 @@ function EvidenceMap({
               {(nasaPdfUrl(selected) || selected.source_url) && <a href={nasaPdfUrl(selected) ?? selected.source_url} target="_blank" rel="noreferrer" className="text-sm text-amber underline underline-offset-4">{nasaPdfUrl(selected) ? 'NASA paper PDF' : 'Source'}</a>}
             </div>
           )}
-          {grid.plotted < grid.population && <p className="mt-3 text-[13px] text-dim">{grid.population - grid.plotted} {grid.population - grid.plotted === 1 ? t('record') : t('records')} {t('untestedSourceRecords')}</p>}
+          {missingAxisCount > 0 && <p className="mt-3 text-[13px] text-dim">{missingAxisCount} {t(missingAxisCount === 1 ? 'eligibleRecord' : 'eligibleRecords')} {t(missingAxisCount === 1 ? 'missingAxisRecord' : 'missingAxisRecords')}</p>}
         </>
       )}
     </div>
