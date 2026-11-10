@@ -57,7 +57,8 @@ export const ENVIRONMENT_PRESETS: readonly EnvironmentPreset[] = [
   },
   {
     id: 'exploration-atmosphere',
-    label: 'Exploration / Moon-base atmosphere',
+    // Source-specific label (Round 6 #3): a proposed habitat atmosphere, not an established operating environment.
+    label: 'Proposed exploration atmosphere (Moon base)',
     o2_pct: 30, // PLACEHOLDER (unsourced practice-build figure)
     pressure_kpa: 70.3, // PLACEHOLDER: 10.2 psi
     pressure_original: { value: 10.2, unit: 'psi' },

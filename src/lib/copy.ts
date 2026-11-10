@@ -30,4 +30,23 @@ export const COPY = {
   illustration: 'Illustration — not NASA experiment imagery.',
   withheld: (n: number) => `${n} statement${n === 1 ? '' : 's'} withheld (failed evidence validation)`,
   inReview: (n: number) => `Catalog in verification — ${n} card${n === 1 ? '' : 's'} in review`,
+
+  // Round 6 (docs/DECISIONS-ROUND6.md). Two paths through one product: the mission is primary only once it is ready.
+  landingCta: { mission: 'Start the guided mission', explore: 'Explore the evidence' },
+  missionAvailability:
+    'The guided mission opens once a case built from verified NASA cards has been reviewed. Until then, explore the evidence on your own.',
+  // Current-investigation summary: these counts mean different things, so each keeps its own label.
+  summary: {
+    scenario: 'Your scenario',
+    conditions: 'Conditions',
+    evidence: 'Evidence',
+    eligible: (n: number) => `${n} eligible`,
+    plotted: (n: number) => `${n} plotted`,
+    notPlotted: (n: number) => `${n} missing plot coordinates`,
+    topMatches: (n: number) => `${n} top match${n === 1 ? '' : 'es'}`,
+  },
+  environmentExplanation: 'Sets oxygen and pressure only.',
+  environmentApplied: 'Oxygen updated · Pressure updated · Other inputs unchanged',
+  contextBanner: 'Research context — not matched evidence.',
+  campaignContext: 'Campaign context',
 } as const;

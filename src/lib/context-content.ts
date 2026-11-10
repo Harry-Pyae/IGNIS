@@ -15,6 +15,7 @@
  * text_my is an UNREVIEWED draft from the same practice build (null where none existed or it carried figures); it
  * follows the Burmese gate in docs/MY-REVIEW.md before it can show.
  */
+import { COPY } from './copy.js';
 import { verifierNameProblem } from './verifier.js';
 
 export type ContextKind = 'facility' | 'investigation' | 'spinoff' | 'heritage';
@@ -101,3 +102,12 @@ export const CONTEXT_ENTRIES: readonly ContextEntry[] = [
 /** Entries allowed to render: signed by a real person, with the NASA page they checked. */
 export const renderableContext = (entries: readonly ContextEntry[] = CONTEXT_ENTRIES) =>
   entries.filter((e) => !verifierNameProblem(e.verified_by) && !!e.source_url && /^https:\/\//.test(e.source_url));
+
+/**
+ * The Context section (DECISIONS-ROUND6 #5): null (omit the whole section, no empty promise) until an entry is
+ * signed; otherwise the approved banner and the signed entries only.
+ */
+export function contextSection(entries: readonly ContextEntry[] = CONTEXT_ENTRIES) {
+  const shown = renderableContext(entries);
+  return shown.length ? { banner: COPY.contextBanner, entries: shown } : null;
+}

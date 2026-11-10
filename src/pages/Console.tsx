@@ -9,7 +9,7 @@ import { useVerifiedCatalog } from '../lib/catalog';
 import { COPY } from '../lib/copy';
 import { pickMaterial, presetScenario, resolveMaterial, SCENARIO_PRESETS } from '../engine/aliases';
 import { applyEnvironment, isElevatedO2, visibleEnvironmentPresets, type EnvironmentPreset } from '../engine/environments';
-import { evidenceViews } from '../engine/views';
+import { briefingKey, currentBriefing, evidenceViews } from '../engine/views';
 import { FIELD_UNITS, PARAM_LABELS, ParseScenarioResponseSchema, SynthesizeResponseSchema, type Briefing, type Experiment, type MatchResult, type ParsedScenario, type ResolvedScenario } from '../lib/types';
 import { gapGrid, gapRadar, type GapRadar as GapRadarData } from '../engine/gaps';
 import { whyMatched } from '../engine/match';
@@ -80,7 +80,7 @@ export function Console() {
     if (!confirmed || dataStatus !== 'connected' || !views?.top_k.length) return null;
     const experiment_ids = views.top_k.map(({ experiment }) => experiment.id);
     return {
-      key: JSON.stringify({ scenario: confirmed, catalog_revision: revision, experiment_ids }),
+      key: briefingKey(confirmed, revision, experiment_ids),
       catalog_revision: revision,
       scenario: confirmed,
       experiment_ids,
@@ -130,7 +130,7 @@ export function Console() {
     };
   }, [briefingRequest, reload]);
 
-  const activeBriefing = briefingRequest && briefingResult?.key === briefingRequest.key ? briefingResult.data : null;
+  const activeBriefing = currentBriefing(briefingResult, briefingRequest?.key ?? null);
   const activeBriefStatus = briefingRequest
     ? briefingStatus?.key === briefingRequest.key ? briefingStatus.state : 'waiting'
     : 'idle';

@@ -25,6 +25,16 @@ export interface EvidenceViews {
   coverage: CoverageResult | null;
 }
 
+/**
+ * Revision binding (round 3; reused by the Round 6 summary strip). A Brief is current only for the exact confirmed
+ * scenario, catalog revision and matched ids it was requested for: change any of them and the old Brief is not shown.
+ */
+export const briefingKey = (scenario: ResolvedScenario, catalog_revision: string, experiment_ids: string[]) =>
+  JSON.stringify({ scenario, catalog_revision, experiment_ids });
+
+export const currentBriefing = <T>(result: { key: string; data: T } | null, requestKey: string | null): T | null =>
+  requestKey != null && result?.key === requestKey ? result.data : null;
+
 export function evidenceViews(
   catalog: Experiment[],
   scenario: ResolvedScenario | null,
