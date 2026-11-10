@@ -11,10 +11,10 @@ Snapshot written by Coder A after the console merge. Overwrite on the next hando
 
 ## Main and the live site
 
+- **Round 6 (2026-11-10):** the feature and design upgrade review is **adopted** (`docs/DECISIONS-ROUND6.md`; the review file stays uncommitted in `reports/`). Coder A shipped the approved copy (`COPY.landingCta`, `missionAvailability`, `summary`, `environmentExplanation`, `environmentApplied`, `contextBanner`, `campaignContext`), the mission-entry gate `src/engine/mission.ts` (`MISSION_CASE = null` until a reviewed case exists), `contextSection()` (null until an entry is signed) and the revision-binding helpers `briefingKey()` / `currentBriefing()`. No visible change on the live site: Coder B renders all of it. 205 tests.
 - **Round 5 (2026-11-10):** `src/engine/environments.ts` (Environments row in the console, hidden until R1 signs a preset), `src/lib/context-content.ts` (renders only signed entries; no importer yet), `src/i18n/my.draft.ts` (UNREVIEWED, CI guard: nothing may import it). R1 queue `docs/FACT-CHECK-QUEUE.md`, R3 sheet `docs/MY-REVIEW.md`. 197 tests.
-- **main:** `21bb12c` (console code-split: `src/pages/Console.tsx` lazy-loaded by `consoleLoader.ts`; recharts removed),
-  on top of the console merge, the match-summary wording and the lite/region change. Docs commits follow it.
-- **Live:** <https://ignisprototype01.vercel.app>, serving `21bb12c`. Vercel Production deploys from `main`; CI (check + disposable-DB) is green on every `main` commit. Vercel builds one at a time, so a merge can wait ~15 min behind branch previews. Functions are pinned to `iad1` (`vercel.json`).
+- **main:** the `round6` merge, on top of Round 5, the Apache-2.0 license, the console code-split (`21bb12c`), the console merge, the match-summary wording and the lite/region change.
+- **Live:** <https://ignisprototype01.vercel.app>, serving Round 6. Vercel Production deploys from `main`; CI (check + disposable-DB) is green on every `main` commit. Vercel builds one at a time, so a merge can wait ~15 min behind branch previews. Functions are pinned to `iad1` (`vercel.json`).
 - **Deployed:** the landing page, **the mission console** (scenario builder, Evidence Map, Match Panel, Mission Brief, Gap Radar), `/curate`, `/kit`, plus the API routes:
   - `parse-scenario` (LLM)
   - `synthesize` (validated claims + briefing cache keyed by `catalog_revision`)
@@ -30,7 +30,7 @@ Snapshot written by Coder A after the console merge. Overwrite on the next hando
 - **Local dev:** Groq answers `403 Access denied` from the team's network, so every local parse and Brief fails over to Gemini (lite by default). That's expected: don't "fix" the key (README, `.env.example`).
 - **Database:** Supabase project `zvzofutgfwzptlbfibpz`, migrations 0001–0003 applied. Catalog: **0 verified, 3 drafts** (live header, 2026-11-10).
 - **History** was rewritten on 2026-11-09 (all branches). If your clone predates that, stash your work, then run `git fetch origin && git reset --hard origin/<branch>`.
-- **Decisions:** `docs/DECISIONS-ROUND2.md`, `docs/DECISIONS-ROUND3.md` (#9 shared-primitive sign-off, #10 match summary, #11 lite permanent), `docs/DECISIONS-ROUND4.md` (evidence-investigation mission, ledgered stills, staged comparison, rejected list), then `docs/DECISIONS-ROUND5.md` (Pyroverse content: environment presets, Burmese draft, context content, handoffs, rejected list).
+- **Decisions:** `docs/DECISIONS-ROUND2.md`, `docs/DECISIONS-ROUND3.md` (#9 shared-primitive sign-off, #10 match summary, #11 lite permanent), `docs/DECISIONS-ROUND4.md` (evidence-investigation mission, ledgered stills, staged comparison, rejected list), `docs/DECISIONS-ROUND5.md` (Pyroverse content: environment presets, Burmese draft, context content, handoffs, rejected list), then `docs/DECISIONS-ROUND6.md` (upgrade review: mission entry, summary strip, preset explanation, anchored selection, context section, design review criteria, Coder B's ordered queue).
 
 ## Pull requests
 
@@ -75,8 +75,8 @@ Snapshot written by Coder A after the console merge. Overwrite on the next hando
 | **R1** | **Event window only (from Sat 11-14):** re-verify the 3 seed cards against NTRS 20150008962 and publish them in `/curate` under your own name. The public catalog stays at 0 until then. Decide the GMT45-T4 changing-flow question (`docs/DECISIONS-ROUND2.md`). Next sources in order: complete BASS-II runs → Saffire I/II/IV → obtainable MIST papers (DECISIONS-ROUND3 #5). |
 | **R1** | Card a real wire/cable insulation material and a real cargo packaging material, then send Coder A each card's `fuel_material`. This activates two presets (AGENTS.md → Open handoffs). |
 | **R2** | A few correctly associated, ledgered stills before thumbnail count (DECISIONS-ROUND3 #6). |
-| **Coder B** | Rebase `console` on `main` (the merge plus two Coder A commits). Shared primitives (`src/components/ui/*`) and `copy.ts` change only with Coder A sign-off (DECISIONS-ROUND3 #9). |
-| **R3** | QA the live console (390/1024/1440, reduced motion, export, empty/error/retry states); favicon tab screenshot; pick the demo scenario from R1's coverage note once cards exist. |
+| **Coder B** | Rebase `console` on `main`, then work the ordered Round 6 queue (`docs/DECISIONS-ROUND6.md`). Shared primitives (`src/components/ui/*`) and `copy.ts` change only with Coder A sign-off (DECISIONS-ROUND3 #9). |
+| **R3** | Add the Round 6 usability questions to the test script. QA the live console (390/1024/1440, reduced motion, export, empty/error/retry states); favicon tab screenshot; pick the demo scenario from R1's coverage note once cards exist. |
 | **Team lead: environment setup** | Done. Optional: the Vercel `GEMINI_MODEL=gemini-3.5-flash-lite` value now equals the code default and can stay or go. |
 | **Coder A** | **Queue empty; no new code without the team lead's kick-off.** Reopens on (a) the next console PR, reviewed principles first, then CI, then a disposable-DB click-through; or (b) the integration checkpoint once R1 publishes signed cards: warm the briefing cache for the catalog-supported demo scenario (not necessarily PMMA); parse → confirm → resolve → retrieve → synthesize → cite source on real cards, with cache hit, provider failure, and correction/unpublish exercised on the disposable DB; the forced-Gemini synthesize proof; then the final acceptance run (Build Plan §12). Low priority: PageSpeed "render-blocking ~150 ms" and "cache lifetimes 7 KiB" (`/art/(.*)` rule in `vercel.json`). |
 
