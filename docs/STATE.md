@@ -1,4 +1,10 @@
-# IGNIS — state handoff (2026-11-10, console merged)
+# IGNIS — state handoff (2026-11-10, console merged · preparation phase)
+
+> **Timeline:** the official event is **Sat 2026-11-14 (Day 1) → Sun 2026-11-15 (Day 2)**. All work so far is the
+> preparation phase (from 2026-11-07). The official FAQ says teams may not begin working on the challenge before the
+> hackathon; our pre-event work is disclosed in `docs/DISCLOSURE.md`, a ruling is being requested, and **no new
+> challenge code lands until it arrives**. Card extraction and verification happen only in the event window.
+> Schedule: `docs/MILESTONES.md` §5.
 
 Snapshot written by Coder A after the console merge. Overwrite on the next handoff.
 
@@ -22,7 +28,7 @@ Snapshot written by Coder A after the console merge. Overwrite on the next hando
 - **Local dev:** Groq answers `403 Access denied` from the team's network, so every local parse and Brief fails over to Gemini (lite by default). That's expected: don't "fix" the key (README, `.env.example`).
 - **Database:** Supabase project `zvzofutgfwzptlbfibpz`, migrations 0001–0003 applied. Catalog: **0 verified, 3 drafts** (live header, 2026-11-10).
 - **History** was rewritten on 2026-11-09 (all branches). If your clone predates that, stash your work, then run `git fetch origin && git reset --hard origin/<branch>`.
-- **Decisions:** `docs/DECISIONS-ROUND2.md`, then `docs/DECISIONS-ROUND3.md` (#9 shared-primitive sign-off, #10 match summary, #11 lite permanent).
+- **Decisions:** `docs/DECISIONS-ROUND2.md`, `docs/DECISIONS-ROUND3.md` (#9 shared-primitive sign-off, #10 match summary, #11 lite permanent), then `docs/DECISIONS-ROUND4.md` (evidence-investigation mission, ledgered stills, staged comparison, rejected list; build items on hold for the ruling).
 
 ## Pull requests
 
@@ -57,13 +63,14 @@ Snapshot written by Coder A after the console merge. Overwrite on the next hando
 
 | Risk | Impact | Owner / next step |
 |---|---|---|
+| **Pre-event work vs the FAQ rule** ("Teams are not allowed to begin working on the challenges prior to the hackathon") | Our pre-event work is challenge-specific and the repo history is public; possible disqualification | Coder A: send `docs/DISCLOSURE.md` to the Local Lead / GO Team before Sat 11-14 and follow the ruling. No new challenge code until then. |
 | **Forced-Gemini synthesize unproven on production.** | Parse failover is proven on production (2026-11-09); synthesize on lite is proven in tests and locally on the disposable DB. | Coder A: run the forced synthesize step from the runbook rehearsal once R1's first real card exists. |
 
 ## Next actions
 
 | Owner | Action |
 |---|---|
-| **R1** | Re-verify the 3 seed cards against NTRS 20150008962 and publish them in `/curate` under your own name. The public catalog stays at 0 until then. Decide the GMT45-T4 changing-flow question (`docs/DECISIONS-ROUND2.md`). Next sources in order: complete BASS-II runs → Saffire I/II/IV → obtainable MIST papers (DECISIONS-ROUND3 #5). |
+| **R1** | **Event window only (from Sat 11-14):** re-verify the 3 seed cards against NTRS 20150008962 and publish them in `/curate` under your own name. The public catalog stays at 0 until then. Decide the GMT45-T4 changing-flow question (`docs/DECISIONS-ROUND2.md`). Next sources in order: complete BASS-II runs → Saffire I/II/IV → obtainable MIST papers (DECISIONS-ROUND3 #5). |
 | **R1** | Card a real wire/cable insulation material and a real cargo packaging material, then send Coder A each card's `fuel_material`. This activates two presets (AGENTS.md → Open handoffs). |
 | **R2** | A few correctly associated, ledgered stills before thumbnail count (DECISIONS-ROUND3 #6). |
 | **Coder B** | Rebase `console` on `main` (the merge plus two Coder A commits). Shared primitives (`src/components/ui/*`) and `copy.ts` change only with Coder A sign-off (DECISIONS-ROUND3 #9). |

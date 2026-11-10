@@ -18,6 +18,14 @@ verified evidence.
 - **Round 2 decisions, approved copy, validation guarantee:** [docs/DECISIONS-ROUND2.md](docs/DECISIONS-ROUND2.md)
 - **Deploying:** [docs/DEPLOY-RUNBOOK.md](docs/DEPLOY-RUNBOOK.md)
 
+## Disclosure
+
+Our team built this platform during a **preparation phase (2026-11-07 → 2026-11-13)**, before the official event
+window (**2026-11-14 → 11-15**). That work is specific to the Flame in Freefall challenge, so we're disclosing it to
+the organizers and asking for their ruling. The full statement covers the dates, contents, the NASA data handled, our use of AI tools, and third-party credits:
+**[docs/DISCLOSURE.md](docs/DISCLOSURE.md)**. All card extraction, verification and publication happens inside the
+event window.
+
 ## Quick start
 
 ```bash

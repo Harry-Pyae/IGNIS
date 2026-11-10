@@ -5,14 +5,14 @@ This is one self-contained file for checking progress without the repo. Coder A 
 
 | | |
 |---|---|
-| **As of** | 2026-11-10, Day 3 (card-verification guide + PageSpeed re-run) |
-| **main** | `12c3b43` + this docs patch (62 commits since 2026-11-07) |
+| **As of** | 2026-11-10, preparation phase (4 days before the official start, Sat 2026-11-14 = Day 1) |
+| **main** | `3d257b0` + this docs patch (63 commits since 2026-11-07) |
 | **Live** | <https://ignisprototype01.vercel.app>, serving `a053e14` (the code commit before `e12c4e6`; `e12c4e6` is docs only) |
 | **CI** | green: typecheck · lint · 184 tests passed, 17 skipped (DB tests, which run in their own CI job) · build · disposable-DB job |
 | **Public catalog** | **0 verified cards**, 3 drafts in review |
-| **Overall** | Engine, API and console are built and live. **The critical path is now data:** nothing real can be demoed until R1 publishes verified cards. |
+| **Overall** | Engine, API and console are built and live. **Compliance first:** the official FAQ bars working on the challenge before the event, and our pre-event work is challenge-specific. We've disclosed it ([DISCLOSURE.md](DISCLOSURE.md)) and are asking the organizers for a ruling; **no new challenge code until then.** Then data: nothing real can be demoed until R1 publishes verified cards, and that happens in the event window. |
 
-**Verifying cards tonight?** Jump to [§12 How to verify a card](#12-how-to-verify-a-card-r1-curate).
+**Card verification happens only in the event window (from Sat 2026-11-14).** The guide is [§12](#12-how-to-verify-a-card-r1-curate).
 
 Legend: ✅ done · 🟡 partly done · ❌ not started · ⛔ blocked (named dependency) · ❓ not visible in the repo (ask the owner)
 
@@ -48,7 +48,7 @@ refuses to guess.
 Rules: only Coder A merges to `main`; CI green before every PR; production holds real data only; publication is a named
 human (`verified_by` is the reviewer's own name).
 
-## 3. Completed milestones (timeline)
+## 3. Preparation-phase milestones (2026-11-07 → 11-13, before the official start)
 
 | Date | Milestone | Key commits |
 |---|---|---|
@@ -65,7 +65,8 @@ human (`verified_by` is the reviewer's own name).
 | 2026-11-10 | **Match summary names every uncounted parameter** (decision 10) | `c7703e7` |
 | 2026-11-10 | **Lite is the permanent Gemini backup** (code default); functions pinned to `iad1`; local-dev Groq note; decisions 9–11 | `a053e14` |
 | 2026-11-10 | STATE handoff; console verified live | `e12c4e6` |
-| 2026-11-10 | MILESTONES.md published; card-verification guide (§12); PageSpeed re-run after the console | `12c3b43` + this patch |
+| 2026-11-10 | MILESTONES.md published; card-verification guide (§12); PageSpeed re-run after the console | `12c3b43`, `3d257b0` |
+| 2026-11-10 | **Timeline re-baselined** to the official start; FAQ conflict found; DISCLOSURE.md; Decisions Round 4 (upgrade proposal), build items on hold | this patch |
 
 ## 4. Scope checklist (Build Plan §11 tiers, as amended by the Team Plan)
 
@@ -113,24 +114,33 @@ human (`verified_by` is the reviewer's own name).
 Prediction/simulator · free chat · user PDF upload · droplet domain · 3D flames · accounts · offline/PWA claims ·
 real-time PSI integration · LLM-generated match explanations.
 
-## 5. Team Plan schedule vs actual
+## 5. Event-window plan
 
-The Team Plan (written 2026-11-07) gives a ~6-day window. **Day 1 = 2026-11-08 (confirmed by the team lead), so
-2026-11-10 is Day 3 and feature freeze is the morning of Day 6 (2026-11-13).**
+**Official event: Saturday 2026-11-14 (Day 1) → Sunday 2026-11-15 (Day 2).** Everything before that is the
+preparation phase. The Team Plan's old Day 1–6 schedule (counted from 2026-11-08) is replaced by this table.
+Submission follows the local event's end time; aim for Day 2 morning, never the final hour.
 
-| Day | Planned (end of day) | Actual |
-|---|---|---|
-| 1 | Engine: resolver + gates + similarity on seeds · Console: Scenario Builder + static map · R1: seeds re-verified + 5 cards · R2: footage pull · R3: QA checklist | Engine ✅ · Console ✅ (merged Day 3) · R1 ❌ · R2 ❓ · R3 ❓ |
-| 2 | Engine complete (gaps, coverage, chips) · Match Panel + map interactions · **15 cards** · R3 captions draft | Engine ✅ · Match Panel ✅ · cards ❌ (0) · captions ❓ |
-| 3 | **Integration checkpoint:** parse → match → synthesize → validated Brief on the deployed URL · Guided Demo wired · 20 cards · first QA sweep | 🟡 The flow is proven end to end on the disposable DB and live with empty states; ⛔ **on real cards** it waits for R1 · Guided Demo ❌ · cards ❌ · QA sweep ❓ |
-| 4 | Honesty surfaces (gap shading, outside-range, provenance, export) · choreography · 25 cards + telemetry · all stills · dress rehearsal #0 | Honesty surfaces ✅ already · rest pending |
-| 5 | Coder C list or fallback · 30+ cards · video rough cut · full QA regression · demo scenario locked | pending |
-| 6 | **Feature freeze (morning)** · video final · two timed rehearsals · final acceptance run · submission prepared | pending |
+| When | Work | Owner | Status |
+|---|---|---|---|
+| **Prep: done** (11-07 → 11-10) | Engine, API, curation tool, console, tests, deploy | Coder A, Coder B | ✅ Disclosed in DISCLOSURE.md |
+| **Prep: now** (11-10 → 11-13) | Send the ruling request to the Local Lead / GO Team; choose a project license; finish the credits + AI-use statement (DISCLOSURE.md) | Coder A | 🟡 drafted |
+| **Prep: ask in the ruling** | R1 source *list* (Build Plan §9 allows collecting it before the event); R2 identifying footage sources; R3 QA-checklist template | R1, R2, R3 | ⏸ hold until ruled |
+| **Prep: on hold for the ruling** | Console lazy-loading (Round 4 #5, must land before mission code); mission wiring; stills rendering; Match Panel field alignment | Coder B, Coder A review | ⏸ in-window if the ruling says so |
+| **Fri 11-13** | Space Apps publishes the Project Submission + Judging guides; R3 reads them and confirms the submission format | R3 | pending |
+| **Day 1 (Sat 11-14)** | **R1 card-verification sprint:** re-verify the 3 seeds from the source, then 15+ cards (§12) | R1 (+ team lead session) | pending |
+| Day 1 | **Integration checkpoint on real cards:** warm the demo cache, parse → confirm → retrieve → synthesize → cite on the deployed URL; the **forced-Gemini synthesize proof** (once, on a real card) | Coder A | pending (needs cards) |
+| Day 1 | Mission case chosen from the real catalog (≥3 strong matches + one clean gap); captions written | R1 + R3 | pending (needs cards) |
+| Day 1 | Stills association checked for the mission's cards; footage pull | R2 → R1 | pending |
+| **Day 2 (Sun 11-15)** | Mission content wired (or the presenter-led fallback); aligned Match Panel; static comparison only if time allows | Coder B | pending |
+| Day 2 | Three-person usability test (DECISIONS-ROUND4, five questions); fix the hesitation step | R3 | pending |
+| Day 2 | QA sweep at 390/1024/1440 + reduced motion; acceptance run; two timed rehearsals; final video | R3, Coder A, R2 | pending |
+| Day 2 | **Submission** with credits, licenses and the AI-use description | R3 + Coder A | pending |
 
-**Cut order when a day slips:** boundary polyline → comparison animation → auto-play captions → telemetry modal →
-cards 30→25 → Burmese ships EN-only → choreography reduced to the slider glide.
-**Never cut:** matching + chips, Evidence Map, claim validation, UNTESTED/outside-range, the Guided Demo button, the
-evidence-only fallback, the video.
+**Cut order inside the window** (first cut first): static comparison view → stills beyond the mission's cards →
+Burmese (ships EN-only) → mission wiring (falls back to the presenter-led preset). Choreography, telemetry and the
+comparison animation stay cut.
+**Never cut:** matching + chips, Evidence Map, claim validation, UNTESTED/outside-range, the evidence-only fallback,
+real verified cards, the video.
 
 ## 6. "Done when" per role
 
@@ -170,26 +180,29 @@ evidence-only fallback, the video.
 (9) shared-primitive changes need Coder A sign-off · (10) match summary names every uncounted parameter ·
 (11) Gemini lite is the permanent backup; Groq blocks the team's network, so local dev always runs on Gemini; production runs in `iad1`.
 
+**Round 4 (2026-11-10, upgrade proposal):** (1) Guided Demo → five-step evidence-investigation mission; content only from R1's verified cards · (2) ledgered stills on cards; the map stays a pure plot · (3) align Match Panel fields first, static comparison only if time allows · (4) rejected: trainers, survival guides, games, health tools, boundary fits, danger heatmaps, safety rankings, new report formats, new artwork · (5) lazy-loading before any mission code · (6) schedule re-baselined to 2026-11-14 = Day 1 · (7) the proposal stays uncommitted. **All build items are on hold pending the organizer ruling.**
+
 ## 9. Open risks and blockers
 
 | Risk | Impact | Next step |
 |---|---|---|
-| **No verified cards** | Blocks the demo scenario, integration checkpoint, Guided Demo, thumbnails, the production failover proof and the acceptance run | R1: re-verify and publish the 3 seeds today, then 15+ |
+| **Pre-event work vs the FAQ rule** ("Teams are not allowed to begin working on the challenges prior to the hackathon") | Our pre-event work is challenge-specific and publicly dated; possible disqualification | Coder A: send DISCLOSURE.md to the Local Lead / GO Team and follow the ruling. No new challenge code until then |
+| **No verified cards** | Blocks the demo case, the integration checkpoint, the mission, stills, the production failover proof and the acceptance run | R1: verification sprint on Day 1 (in the event window only) |
 | No R2/R3 artifacts in the repo | Can't confirm the video, ledger, QA log or demo script are on track | R2/R3: send docs-only PRs or issues to Coder A |
 | Forced-Gemini synthesize unproven on production | Backup path on stage is proven in tests and locally only | Coder A: run once on R1's first real card (runbook §3) |
 | Two presets lack materials | Cable insulation and Cargo packaging always open the picker | R1: card a real insulation and a packaging material, send the `fuel_material` names |
 | Coder C absent | WOW features cut by default | Follow the fallback rules; nobody absorbs them at the cost of their own "done when" |
-| Landing bundle +40 KB gzip | Zod and the console code load before first paint (round 3 had kept Zod off the landing path) | Coder B: lazy-load the console section; Coder A reviews |
+| Landing bundle +40 KB gzip | Zod and the console code load before first paint (round 3 had kept Zod off the landing path) | Coder B: lazy-load the console section before any mission code (Round 4 #5); timing per the ruling |
 
 ## 10. Next actions
 
 | Owner | Action |
 |---|---|
-| R1 | Publish the 3 seeds under your own name; decide the GMT45-T4 changing-flow question; 15 → 30 cards; coverage note for R3 |
-| R2 | Ledgered stills (`media_url`); footage pull; video rough cut by Day 5 |
-| R3 | QA the live console at 390/1024/1440 + reduced motion; start `docs/QA-LOG.md`; Guided Demo captions; pick the demo scenario once cards exist |
-| Coder B | Rebase `console` on `main`; lazy-load the console section (bundle regression, §7); then thumbnails, Guided Demo wiring, choreography |
-| Coder A | Wait for kickoff. On R1's cards: warm the briefing cache for the demo scenario, run the full checkpoint on real cards, the forced-Gemini synthesize proof, then the final acceptance run |
+| Coder A | Send the ruling request with DISCLOSURE.md; choose the project license; fill in the art-pack tool name. On Day 1: warm the demo cache, the full checkpoint on real cards, the forced-Gemini synthesize proof, the acceptance run |
+| R1 | No card extraction or verification before Sat 11-14. Day 1: re-verify and publish the 3 seeds under your own name, decide GMT45-T4, then 15+ cards; coverage note for R3 |
+| R2 | Day 1: stills with a rights ledger for the mission's cards; video by Day 2 |
+| R3 | Fri 11-13: read the Submission + Judging guides. Day 1–2: captions, usability test, QA, rehearsals, submission |
+| Coder B | Rebase `console` on `main`. Lazy-loading first, then mission wiring, stills and field alignment, **timed per the ruling** |
 
 ## 11. Codebase at a glance
 
@@ -202,13 +215,14 @@ evidence-only fallback, the video.
 | UI | `src/pages/Home.tsx` (landing + console), `Curate.tsx`, `Kit.tsx` · `src/components/ui/*` · `src/i18n/` | |
 | Database | `supabase/migrations/` 0001–0003 · `supabase/seed.sql` (3 drafts) | |
 | Tests | `tests/`: 24 files; `tests/db/` RLS + lifecycle on a throwaway DB | 184 passing |
-| Docs | `IGNIS_BUILD_PLAN.md`, `IGNIS_TEAM_PLAN.md`, `AGENTS.md`, `docs/STATE.md`, `DECISIONS-ROUND2/3.md`, `DEPLOY-RUNBOOK.md` | |
+| Docs | `IGNIS_BUILD_PLAN.md`, `IGNIS_TEAM_PLAN.md`, `AGENTS.md`, `docs/STATE.md`, `DECISIONS-ROUND2/3/4.md`, `DISCLOSURE.md`, `DEPLOY-RUNBOOK.md` | |
 
 Total tracked source + tests + DB + scripts: ~9,300 lines.
 
 ## 12. How to verify a card (R1, `/curate`)
 
-One page for a verification session. The rules come from Build Plan §4/§9, Team Plan R1, DECISIONS-ROUND2 and the
+One page for the Day 1 verification sprint. **Card extraction and verification happen only inside the event window
+(2026-11-14 → 11-15).** The rules come from Build Plan §4/§9, Team Plan R1, DECISIONS-ROUND2 and the
 `/curate` form itself. Publishing on production is allowed **only** for real cards checked against their source,
 under the reviewer's own name.
 
@@ -249,12 +263,13 @@ under the reviewer's own name.
 7. **Check it went public.** The live console header count goes up, and the card appears on the Evidence Map / in the
    Match Panel for a matching scenario.
 
-**Tonight's agenda (Day 3)**
+**Verification sprint agenda (Day 1, Sat 2026-11-14)**
 - [ ] Re-verify and publish the 3 seed cards (BASS GMT96-T7, BASS GMT96-T8, BASS-II GMT45-T4).
 - [ ] Decide GMT45-T4: card it with the held flow (2.2 cm/s) plus its `condition_changes` qualifier (current choice), or keep it out of constant-flow comparisons (DECISIONS-ROUND2).
 - [ ] Next sources in order: complete BASS-II runs → Saffire I/II/IV → obtainable MIST papers (DECISIONS-ROUND3 #5).
 - [ ] When a real wire/cable insulation card or cargo packaging card is published, send Coder A its exact `fuel_material` (this activates two presets).
 - [ ] Tell Coder A when the seeds are live: that starts the integration checkpoint (demo cache, full flow on real cards, forced-Gemini proof, acceptance run).
+- [ ] With R3: pick the mission case from the published cards (≥3 strong matches + one clean gap), never scripted.
 
 "Done when" for every card: it survives a line-by-line challenge against its source by the person whose name is on it.
 
@@ -264,3 +279,4 @@ under the reviewer's own name.
 |---|---|---|
 | 2026-11-10 | `e12c4e6` | First version, after the console merge |
 | 2026-11-10 | `12c3b43` + patch | Day count confirmed; §12 card-verification guide; PageSpeed re-run + bundle regression |
+| 2026-11-10 | `3d257b0` + patch | Re-baselined to the official start (Sat 11-14 = Day 1); §5 event-window plan; FAQ conflict + DISCLOSURE.md; Round 4 decisions; §12 agenda moved to Day 1 |
