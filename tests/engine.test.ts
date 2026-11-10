@@ -97,8 +97,16 @@ describe('matching engine (§5b–§5d) agrees with the contract fixtures', () =
     const near = card({ test_id: 'M-near', o2_pct: 21 });
     const ranked = matchScenario(s, [weak, far, near]);
     expect(ranked.map((m) => m.experiment.test_id)).toEqual(['M-near', 'Z-far', 'A-weak']);
-    expect(whyMatched(ranked[2]!).summary).toBe('weak evidence — material match only');
-    expect(whyMatched(ranked[0]!).summary).toBe('Matched 1 of 4 parameters.');
+    expect(whyMatched(ranked[2]!).summary).toBe('Weak evidence — compared on 0 of 4 parameters · 3 not specified · 1 not reported by this experiment');
+    expect(whyMatched(ranked[0]!).summary).toBe('Compared on 1 of 4 parameters · 3 not specified');
+  });
+
+  it('the summary names every uncounted parameter (decision 10): counts always add up to total_params', () => {
+    const m = pick(FIXTURES.zeroRange.scenario, SEED_CARDS, FIXTURES.zeroRange.match.experiment.id);
+    expect(whyMatched(m).summary).toBe('Compared on 2 of 4 parameters · 2 identical across all candidates');
+    for (const r of matchScenario(scenario({ o2_pct: 21, flow_cm_s: null, pressure_kpa: 50 }), catalog)) {
+      expect(r.scored_params + Object.values(r.unscored).reduce((a, b) => a + b, 0)).toBe(r.total_params);
+    }
   });
 
   it('ties: exact fuel before class, then test_id', () => {

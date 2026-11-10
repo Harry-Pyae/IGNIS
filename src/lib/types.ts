@@ -198,7 +198,8 @@ export type GateResult = z.infer<typeof GateResultSchema>;
 // • A condition_changes entry for p: chip computed against the stored scalar, and the
 //   card's qualifier must be rendered next to it — never shown as a constant-condition test.
 // • scored_params = params contributing to the score; total_params = 4.
-//   scored_params === 0 → weak_evidence (rendered "weak evidence — material match only"),
+//   unscored = why each other param is excluded (decision 10: the summary names every reason).
+//   scored_params === 0 → weak_evidence (rendered "Weak evidence — compared on 0 of 4 parameters · …"),
 //   ranked after every non-weak match.
 // • Ties: score desc → scored_params desc → exact fuel before class → test_id asc → id asc.
 // ---------------------------------------------------------------------------
@@ -228,15 +229,29 @@ export const MatchChipsSchema = z.object({
 });
 export type MatchChips = z.infer<typeof MatchChipsSchema>;
 
+/** Why each excluded continuous param is excluded; counts sum to total_params − scored_params. */
+export const UnscoredCountsSchema = z.object({
+  /** scenario value is null */
+  not_specified: z.number().int().min(0),
+  /** zero range: every eligible card reports the same value, so it cannot discriminate */
+  identical: z.number().int().min(0),
+  /** this card's value is null */
+  not_reported: z.number().int().min(0),
+  /** no eligible card reports the param */
+  none_reported: z.number().int().min(0),
+});
+export type UnscoredCounts = z.infer<typeof UnscoredCountsSchema>;
+
 export const MatchResultSchema = z.object({
   experiment: ExperimentSchema,
   chips: MatchChipsSchema,
-  /** "Matched N of M parameters." */
+  /** "Compared on N of M parameters · <reasons>" (decision 10). */
   scored_params: z.number().int().min(0),
+  unscored: UnscoredCountsSchema,
   total_params: z.number().int().min(0),
   /** INTERNAL sort order only — never rendered (§5c). */
   score: z.number().min(0).max(1),
-  /** true when 0 continuous params scored → "weak evidence — material match only". */
+  /** true when 0 continuous params scored → "Weak evidence — compared on 0 of 4 parameters · …". */
   weak_evidence: z.boolean(),
 });
 export type MatchResult = z.infer<typeof MatchResultSchema>;

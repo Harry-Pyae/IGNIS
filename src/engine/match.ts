@@ -16,6 +16,7 @@ import {
   type MatchResult,
   PARAM_LABELS,
   type ResolvedScenario,
+  type UnscoredCounts,
 } from '../lib/types.js';
 
 export const WEIGHTS: Record<ContinuousParam, number> = { o2_pct: 0.35, flow_cm_s: 0.3, thickness_mm: 0.2, pressure_kpa: 0.15 };
@@ -51,6 +52,14 @@ function scoreParam(scen: number | null, card: number | null, r: Range): { chip:
   return { chip: d <= SAME + EPS ? 'same' : d <= CLOSE + EPS ? 'close' : 'different', contribution: 1 - d };
 }
 
+/** Why an excluded param is excluded — mirrors the null-contribution branches of scoreParam. */
+function unscoredReason(scen: number | null, card: number | null, r: Range): keyof UnscoredCounts {
+  if (scen == null) return 'not_specified';
+  if (!r) return 'none_reported';
+  if (card == null) return 'not_reported';
+  return 'identical'; // zero range: the only other excluded case
+}
+
 const rank = (a: MatchResult, b: MatchResult) =>
   Number(a.weak_evidence) - Number(b.weak_evidence) ||
   (Math.abs(b.score - a.score) > EPS ? b.score - a.score : 0) ||
@@ -77,6 +86,7 @@ export function matchScenario(scenario: ResolvedScenario, catalog: Experiment[])
       let num = 0;
       let den = 0;
       let scored_params = 0;
+      const unscored: UnscoredCounts = { not_specified: 0, identical: 0, not_reported: 0, none_reported: 0 };
       for (const p of CONTINUOUS_PARAMS) {
         const { chip, contribution } = scoreParam(scenario[p], card[p], ranges[p]);
         chips[p] = chip;
@@ -84,6 +94,8 @@ export function matchScenario(scenario: ResolvedScenario, catalog: Experiment[])
           num += WEIGHTS[p] * contribution;
           den += WEIGHTS[p];
           scored_params++;
+        } else {
+          unscored[unscoredReason(scenario[p], card[p], ranges[p])]++;
         }
       }
       const base = den > 0 ? num / den : 0;
@@ -92,6 +104,7 @@ export function matchScenario(scenario: ResolvedScenario, catalog: Experiment[])
         experiment: card,
         chips,
         scored_params,
+        unscored,
         total_params: CONTINUOUS_PARAMS.length,
         score,
         weak_evidence: scored_params === 0,
@@ -162,7 +175,12 @@ export function whyMatched(m: MatchResult): { summary: string; lines: WhyLine[] 
     text: `${label}: ${CHIP_TEXT[status]}`,
   });
   return {
-    summary: m.weak_evidence ? COPY.weakEvidence : COPY.matched(m.scored_params, m.total_params),
+    summary: [
+      m.weak_evidence ? COPY.weakEvidence(m.total_params) : COPY.compared(m.scored_params, m.total_params),
+      ...(Object.keys(COPY.unscored) as (keyof UnscoredCounts)[])
+        .filter((k) => m.unscored[k] > 0)
+        .map((k) => COPY.unscored[k](m.unscored[k])),
+    ].join(' · '),
     lines: [
       line('fuel', 'Material', m.chips.fuel),
       ...CONTINUOUS_PARAMS.map((p) => line(p, PARAM_LABELS[p], m.chips[p])),

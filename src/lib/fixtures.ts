@@ -146,6 +146,7 @@ export const FIXTURES = {
       experiment: { ...T8, thickness_mm: null },
       chips: { fuel: 'exact', o2_pct: 'same', flow_cm_s: 'different', thickness_mm: 'not_reported', pressure_kpa: 'not_specified' },
       scored_params: 2,
+      unscored: { not_specified: 1, identical: 0, not_reported: 1, none_reported: 0 },
       total_params: 4,
       score: 0.82,
       weak_evidence: false,
@@ -160,6 +161,7 @@ export const FIXTURES = {
       experiment: T7,
       chips: { fuel: 'exact', o2_pct: 'same', flow_cm_s: 'same', thickness_mm: 'same', pressure_kpa: 'same' },
       scored_params: 2, // o2 + flow only — thickness and pressure cannot discriminate
+      unscored: { not_specified: 0, identical: 2, not_reported: 0, none_reported: 0 },
       total_params: 4,
       score: 1,
       weak_evidence: false,
@@ -174,6 +176,7 @@ export const FIXTURES = {
       experiment: T7,
       chips: { fuel: 'exact', o2_pct: 'outside_range', flow_cm_s: 'same', thickness_mm: 'not_specified', pressure_kpa: 'not_specified' },
       scored_params: 2,
+      unscored: { not_specified: 2, identical: 0, not_reported: 0, none_reported: 0 },
       total_params: 4,
       score: 0.56,
       weak_evidence: false,
