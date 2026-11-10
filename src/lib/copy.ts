@@ -6,6 +6,9 @@
  */
 export const COPY = {
   sliderCaption: 'Sliders change which verified NASA experiments IGNIS retrieves.',
+  // Environment presets (DECISIONS-ROUND5 #1): framed as showing where evidence ends, never as a fault.
+  environmentCaption: "Environment presets change oxygen and pressure only. Use them to see where the verified catalog's evidence ends.",
+  elevatedO2: (pct: number) => `Elevated oxygen: ${pct}% O₂ is above the 21% of Earth-normal air.`,
   absence: 'No matching verified evidence in the current IGNIS catalog.',
   gapNote:
     'Gaps are not necessarily unsafe — they have no matching verified evidence in the current IGNIS catalog. IGNIS lists them as candidate areas for further study.',

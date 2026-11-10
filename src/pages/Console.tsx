@@ -8,6 +8,7 @@ import { Badge, Button, Chip, CitationChip, Panel, PresetChip, SectionHeader, Sl
 import { useVerifiedCatalog } from '../lib/catalog';
 import { COPY } from '../lib/copy';
 import { pickMaterial, presetScenario, resolveMaterial, SCENARIO_PRESETS } from '../engine/aliases';
+import { applyEnvironment, isElevatedO2, visibleEnvironmentPresets, type EnvironmentPreset } from '../engine/environments';
 import { evidenceViews } from '../engine/views';
 import { FIELD_UNITS, PARAM_LABELS, ParseScenarioResponseSchema, SynthesizeResponseSchema, type Briefing, type Experiment, type MatchResult, type ParsedScenario, type ResolvedScenario } from '../lib/types';
 import { gapGrid, gapRadar, type GapRadar as GapRadarData } from '../engine/gaps';
@@ -25,6 +26,9 @@ function experimentLabel(experiment: Experiment): string {
     ? experiment.test_id
     : `${experiment.campaign} ${experiment.test_id}`;
 }
+
+/** Signed environment presets only (none until R1 verifies them; the row stays hidden until then). */
+const ENVIRONMENTS = visibleEnvironmentPresets();
 
 export function Console() {
   const { catalog, reload } = useVerifiedCatalog();
@@ -146,6 +150,14 @@ export function Console() {
   function moveSlider(update: Partial<Pick<ParsedScenario, 'o2_pct' | 'flow_cm_s'>>) {
     setScenario((current) => ({ ...current, ...update }));
     setConfirmed((current) => current ? { ...current, ...update } : null);
+    setMessage('');
+  }
+
+  const activeEnvironment = ENVIRONMENTS.find((env) => env.o2_pct === scenario.o2_pct && env.pressure_kpa === scenario.pressure_kpa) ?? null;
+
+  function chooseEnvironment(env: EnvironmentPreset) {
+    setScenario((current) => applyEnvironment(current, env));
+    setConfirmed((current) => current ? applyEnvironment(current, env) : null);
     setMessage('');
   }
 
@@ -295,6 +307,24 @@ export function Console() {
             {message && <p role="status" className="text-sm text-dim">{message}</p>}
           </div>
           <div className="flex flex-col gap-5">
+            {ENVIRONMENTS.length > 0 && (
+              <div className="flex flex-col gap-2">
+                <p className="console-label text-dim">{t('environments')}</p>
+                <div className="flex flex-wrap gap-2" role="group" aria-label={t('environments')}>
+                  {ENVIRONMENTS.map((env) => (
+                    <PresetChip key={env.id} active={activeEnvironment?.id === env.id} onClick={() => chooseEnvironment(env)}>{env.label}</PresetChip>
+                  ))}
+                </div>
+                <p className="text-[13px] text-dim">{COPY.environmentCaption}</p>
+                {activeEnvironment && (
+                  <p className="text-[13px] text-text">
+                    {activeEnvironment.context}{' '}
+                    {activeEnvironment.verification.source_url && <a href={activeEnvironment.verification.source_url} target="_blank" rel="noreferrer" className="text-amber underline underline-offset-4">{t('source')}</a>}
+                  </p>
+                )}
+                {activeEnvironment && isElevatedO2(activeEnvironment) && <p className="text-[13px] text-warn">{COPY.elevatedO2(activeEnvironment.o2_pct)}</p>}
+              </div>
+            )}
             <Slider label="O₂" unit="%" min={14} max={30} value={scenario.o2_pct} onChange={(value) => moveSlider({ o2_pct: value })} onClear={() => moveSlider({ o2_pct: null })} allowUnspecified unspecifiedValue={21} unspecifiedLabel={t('notSpecified')} setValueLabel={t('setOxygen')} clearValueLabel={t('clearOxygen')} />
             <Slider label="Airflow" unit="cm/s" min={0} max={30} value={scenario.flow_cm_s} onChange={(value) => moveSlider({ flow_cm_s: value })} onClear={() => moveSlider({ flow_cm_s: null })} allowUnspecified unspecifiedLabel={t('notSpecified')} setValueLabel={t('setAirflow')} clearValueLabel={t('clearAirflow')} />
             <p className="text-[13px] text-dim">{COPY.sliderCaption}</p>

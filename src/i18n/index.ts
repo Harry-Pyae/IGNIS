@@ -11,6 +11,7 @@ const EN = {
   briefStep: '04 · Evidence-validated claims',
   gapStep: '05 · Research prioritization',
   scenarioPresets: 'Scenario presets',
+  environments: 'Environments',
   custom: 'Custom',
   scenarioPresetsStart: 'Start with a preset',
   orDescribeScenario: 'Or describe a scenario',
