@@ -46,6 +46,7 @@ before writing code. Where they disagree, the Build Plan's Core Principles win.
 | `src/pages/Curate.tsx`, `src/pages/Kit.tsx`, `src/lib/catalog.ts`, `src/components/CatalogStatus.tsx`, `src/components/AppHeader.tsx` | Coder A | Curation path, design kit, client catalog integration, app shell. |
 | `src/server/*`, `api/*`, `src/lib/gates.ts`, `src/lib/coverage.ts`, `src/engine/*` (new) | Coder A | Engine, endpoints, claim validation, prompts, briefing cache, export. ONE gate implementation — never fork it. |
 | `src/pages/Home.tsx` console sections, `src/components/*` (non-ui, non-shell), `src/i18n/*` (new) | Coder B | The public console built to §8.3. Landing hero/how-it-works/catalog/footer copy is Coder A-approved. |
+| `src/lib/context-content.ts`, `src/engine/environments.ts`, `src/i18n/my.draft.ts` | Coder A | Round 5: context entries and environment presets render only once R1 signs them (`docs/FACT-CHECK-QUEUE.md`); the MY draft never ships until R3 completes `docs/MY-REVIEW.md` (CI guard). |
 | `src/features/*` (new) | Coder C | Telemetry modal, auto-play captions, comparison animation, `/curate` quality-of-life — each with a fallback. |
 | `docs/sources.md`, `docs/catalog-coverage.md` | R1 | Source queue and the coverage note R3 picks the demo scenario from. |
 | `docs/media-ledger.md`, card `media_url` stills, the pitch video | R2 | Real NASA public-domain material only; every asset in the ledger. |

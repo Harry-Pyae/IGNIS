@@ -11,6 +11,7 @@ Snapshot written by Coder A after the console merge. Overwrite on the next hando
 
 ## Main and the live site
 
+- **Round 5 (2026-11-10):** `src/engine/environments.ts` (Environments row in the console, hidden until R1 signs a preset), `src/lib/context-content.ts` (renders only signed entries; no importer yet), `src/i18n/my.draft.ts` (UNREVIEWED, CI guard: nothing may import it). R1 queue `docs/FACT-CHECK-QUEUE.md`, R3 sheet `docs/MY-REVIEW.md`. 197 tests.
 - **main:** `21bb12c` (console code-split: `src/pages/Console.tsx` lazy-loaded by `consoleLoader.ts`; recharts removed),
   on top of the console merge, the match-summary wording and the lite/region change. Docs commits follow it.
 - **Live:** <https://ignisprototype01.vercel.app>, serving `21bb12c`. Vercel Production deploys from `main`; CI (check + disposable-DB) is green on every `main` commit. Vercel builds one at a time, so a merge can wait ~15 min behind branch previews. Functions are pinned to `iad1` (`vercel.json`).
@@ -29,7 +30,7 @@ Snapshot written by Coder A after the console merge. Overwrite on the next hando
 - **Local dev:** Groq answers `403 Access denied` from the team's network, so every local parse and Brief fails over to Gemini (lite by default). That's expected: don't "fix" the key (README, `.env.example`).
 - **Database:** Supabase project `zvzofutgfwzptlbfibpz`, migrations 0001–0003 applied. Catalog: **0 verified, 3 drafts** (live header, 2026-11-10).
 - **History** was rewritten on 2026-11-09 (all branches). If your clone predates that, stash your work, then run `git fetch origin && git reset --hard origin/<branch>`.
-- **Decisions:** `docs/DECISIONS-ROUND2.md`, `docs/DECISIONS-ROUND3.md` (#9 shared-primitive sign-off, #10 match summary, #11 lite permanent), then `docs/DECISIONS-ROUND4.md` (evidence-investigation mission, ledgered stills, staged comparison, rejected list; build items on hold for the ruling).
+- **Decisions:** `docs/DECISIONS-ROUND2.md`, `docs/DECISIONS-ROUND3.md` (#9 shared-primitive sign-off, #10 match summary, #11 lite permanent), `docs/DECISIONS-ROUND4.md` (evidence-investigation mission, ledgered stills, staged comparison, rejected list), then `docs/DECISIONS-ROUND5.md` (Pyroverse content: environment presets, Burmese draft, context content, handoffs, rejected list).
 
 ## Pull requests
 
