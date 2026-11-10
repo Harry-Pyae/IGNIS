@@ -5,12 +5,14 @@ This is one self-contained file for checking progress without the repo. Coder A 
 
 | | |
 |---|---|
-| **As of** | 2026-11-10 (after the console merge) |
-| **main** | `e12c4e6` (60 commits since 2026-11-07) |
+| **As of** | 2026-11-10, Day 3 (card-verification guide + PageSpeed re-run) |
+| **main** | `12c3b43` + this docs patch (62 commits since 2026-11-07) |
 | **Live** | <https://ignisprototype01.vercel.app>, serving `a053e14` (the code commit before `e12c4e6`; `e12c4e6` is docs only) |
 | **CI** | green: typecheck · lint · 184 tests passed, 17 skipped (DB tests, which run in their own CI job) · build · disposable-DB job |
 | **Public catalog** | **0 verified cards**, 3 drafts in review |
 | **Overall** | Engine, API and console are built and live. **The critical path is now data:** nothing real can be demoed until R1 publishes verified cards. |
+
+**Verifying cards tonight?** Jump to [§12 How to verify a card](#12-how-to-verify-a-card-r1-curate).
 
 Legend: ✅ done · 🟡 partly done · ❌ not started · ⛔ blocked (named dependency) · ❓ not visible in the repo (ask the owner)
 
@@ -63,6 +65,7 @@ human (`verified_by` is the reviewer's own name).
 | 2026-11-10 | **Match summary names every uncounted parameter** (decision 10) | `c7703e7` |
 | 2026-11-10 | **Lite is the permanent Gemini backup** (code default); functions pinned to `iad1`; local-dev Groq note; decisions 9–11 | `a053e14` |
 | 2026-11-10 | STATE handoff; console verified live | `e12c4e6` |
+| 2026-11-10 | MILESTONES.md published; card-verification guide (§12); PageSpeed re-run after the console | `12c3b43` + this patch |
 
 ## 4. Scope checklist (Build Plan §11 tiers, as amended by the Team Plan)
 
@@ -153,7 +156,7 @@ evidence-only fallback, the video.
 | RLS + curation lifecycle | ✅ 15/15 on the disposable DB in CI on every push |
 | Rate limit | ✅ 20 allowed, then 429 with `retry-after`; fails open |
 | Export | ✅ empty-catalog file with the 33-field README |
-| PageSpeed mobile | ✅ before round 3 (FCP 0.8 s, LCP 2.1 s, CLS 0.001); **re-run now that the console is live** |
+| PageSpeed mobile | 🟡 2026-11-10, after the console: Lighthouse 12.2 mobile, devtools throttling, from the dev machine (the Google API's keyless daily quota was exhausted). Performance 79 · Accessibility 100 · Best Practices 100 · SEO 100 · FCP/LCP 4.0 s · TBT 0 ms · CLS 0.001. **Not comparable with the earlier Google-server run** (FCP 0.8 s, LCP 2.1 s): this path has 200 ms RTT and 1.2 s for the HTML alone. **Real regression:** main JS 55 → 96 KB gzip after the console merge, and Zod is back on the landing path (`Home.tsx` imports the response schemas); 42 KB of it is unused at first paint. Fix: lazy-load the console section (Coder B). Re-measure from Google's servers when the API quota resets. |
 | Favicon tab screenshot | ❓ R3 |
 
 ## 8. Decisions log (summary)
@@ -176,6 +179,7 @@ evidence-only fallback, the video.
 | Forced-Gemini synthesize unproven on production | Backup path on stage is proven in tests and locally only | Coder A: run once on R1's first real card (runbook §3) |
 | Two presets lack materials | Cable insulation and Cargo packaging always open the picker | R1: card a real insulation and a packaging material, send the `fuel_material` names |
 | Coder C absent | WOW features cut by default | Follow the fallback rules; nobody absorbs them at the cost of their own "done when" |
+| Landing bundle +40 KB gzip | Zod and the console code load before first paint (round 3 had kept Zod off the landing path) | Coder B: lazy-load the console section; Coder A reviews |
 
 ## 10. Next actions
 
@@ -184,7 +188,7 @@ evidence-only fallback, the video.
 | R1 | Publish the 3 seeds under your own name; decide the GMT45-T4 changing-flow question; 15 → 30 cards; coverage note for R3 |
 | R2 | Ledgered stills (`media_url`); footage pull; video rough cut by Day 5 |
 | R3 | QA the live console at 390/1024/1440 + reduced motion; start `docs/QA-LOG.md`; Guided Demo captions; pick the demo scenario once cards exist |
-| Coder B | Rebase `console` on `main`; then thumbnails, Guided Demo wiring, choreography |
+| Coder B | Rebase `console` on `main`; lazy-load the console section (bundle regression, §7); then thumbnails, Guided Demo wiring, choreography |
 | Coder A | Wait for kickoff. On R1's cards: warm the briefing cache for the demo scenario, run the full checkpoint on real cards, the forced-Gemini synthesize proof, then the final acceptance run |
 
 ## 11. Codebase at a glance
@@ -202,8 +206,61 @@ evidence-only fallback, the video.
 
 Total tracked source + tests + DB + scripts: ~9,300 lines.
 
-## 12. Changelog of this file
+## 12. How to verify a card (R1, `/curate`)
+
+One page for a verification session. The rules come from Build Plan §4/§9, Team Plan R1, DECISIONS-ROUND2 and the
+`/curate` form itself. Publishing on production is allowed **only** for real cards checked against their source,
+under the reviewer's own name.
+
+**Before you start**
+- Open `https://ignisprototype01.vercel.app/curate` and enter the curator secret. Coder A shares it privately; never
+  paste it into chat, docs or screenshots.
+- Have the source PDF open. The three seeds come from NTRS 20150008962 (Zhao, T'ien, Ferkul, Olson, 2015, "Concurrent
+  flame growth, spread and extinction over composite fabric samples…").
+- Timebox: **20 minutes per card**. If a card can't be defended in that time, leave it as a draft with a note.
+
+**Steps**
+1. **Open the card.** For a seed: **Cards · drafts and published** → *Reopen*. For a new card: *New card*, or paste an
+   excerpt and press *Extract into a new draft*. The extractor is only a helper: the server discards any value without
+   a supporting quote that appears in the excerpt (listed under "Discarded by the server").
+2. **Check every non-null field against the source**, line by line. The fields marked `*` are required: domain, campaign,
+   test_id, fuel_material, material_class, fuel_form, outcome, key_observation_quote, source_title, source_url.
+3. **Apply the field rules:**
+
+| Field | Rule |
+|---|---|
+| Any value | Only what the source **explicitly states**. Ambiguous → leave it empty (null) and explain in `notes`. Never estimate, never fill provenance from memory. |
+| `domain` | `solid_flammability`. SAME experiments are `smoke_detection`. FLEX (droplets) is never carded. |
+| `fuel_material` / `material_class` | Normalized name (e.g. `PMMA`, `cotton_fiberglass`, `nomex`); class is one of thermoplastic · fabric · aramid_fabric · insulation · other. |
+| `fuel_form` | flat_sheet · rod · fabric · thick_slab |
+| Numbers | Normalized units: `thickness_mm`, `o2_pct` (volume %), `flow_cm_s`, `pressure_kpa` (1 atm = 101.325 kPa), `spread_rate_mm_s`. The original units stay in the verbatim quote. A value that is only plotted (e.g. read off a figure) is not "stated": leave it null. |
+| `outcome` | sustained · extinguished · transition · partial. Never force a non-ignition row into these to raise the card count. |
+| `key_observation_quote` | Verbatim from the source, with original units. |
+| Changing conditions | Use `condition_changes`, e.g. `[{"parameter":"flow_cm_s","from":10,"to":2.2,"stored":"final_held","note":"… (p.5)"}]`. Never store a changing condition as if it were constant. |
+| Provenance | `source_page`, `source_figure`, `source_table`, `source_section`, `ntrs_id`. The quote's page and the figure's page often differ; record each where it really is. |
+| `media_url` | Only a still from R2's media ledger. Leave empty otherwise. |
+
+4. **Publish.** Type your **own full name** in *Verified by (your full name)* and press *Verify & publish*. Publishing
+   means you checked every non-null field against the source yourself. Role names ("R1", "Coder A") and placeholder
+   words (test, example, TBD, unknown…) are rejected by both the server and the database.
+5. **Never publish for someone else.** If you can't verify it yourself, press *Save draft* and hand it over.
+6. **Corrections.** Reopen a published card, fix it and save. Saving un-publishes it until someone re-verifies it. The
+   catalog revision changes, so cached briefings for the old version are dropped automatically.
+7. **Check it went public.** The live console header count goes up, and the card appears on the Evidence Map / in the
+   Match Panel for a matching scenario.
+
+**Tonight's agenda (Day 3)**
+- [ ] Re-verify and publish the 3 seed cards (BASS GMT96-T7, BASS GMT96-T8, BASS-II GMT45-T4).
+- [ ] Decide GMT45-T4: card it with the held flow (2.2 cm/s) plus its `condition_changes` qualifier (current choice), or keep it out of constant-flow comparisons (DECISIONS-ROUND2).
+- [ ] Next sources in order: complete BASS-II runs → Saffire I/II/IV → obtainable MIST papers (DECISIONS-ROUND3 #5).
+- [ ] When a real wire/cable insulation card or cargo packaging card is published, send Coder A its exact `fuel_material` (this activates two presets).
+- [ ] Tell Coder A when the seeds are live: that starts the integration checkpoint (demo cache, full flow on real cards, forced-Gemini proof, acceptance run).
+
+"Done when" for every card: it survives a line-by-line challenge against its source by the person whose name is on it.
+
+## 13. Changelog of this file
 
 | Date | main | Change |
 |---|---|---|
 | 2026-11-10 | `e12c4e6` | First version, after the console merge |
+| 2026-11-10 | `12c3b43` + patch | Day count confirmed; §12 card-verification guide; PageSpeed re-run + bundle regression |

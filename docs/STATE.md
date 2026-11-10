@@ -46,7 +46,7 @@ Snapshot written by Coder A after the console merge. Overwrite on the next hando
 | RLS + `/curate` lifecycle | ✅ 15/15 on the disposable DB in CI (every push). Earlier live-project runs wrote test rows, so they are **not to be repeated**; production gets read-only checks only. |
 | Rate-limit 429 (0003 applied) | ✅ 20 allowed, then 429 with `retry-after`. Fails open if the counter is unreachable. |
 | og:image / canonical / og:url | ✅ absolute `https://ignisprototype01.vercel.app` URLs |
-| PageSpeed mobile (Google servers) | ✅ FCP 0.8 s · LCP 2.1 s · TBT 0 ms · CLS 0.001 · SI 1.1 s (before round 3; re-run now that the console is live) |
+| PageSpeed mobile (Google servers) | ✅ before round 3: FCP 0.8 s · LCP 2.1 s · TBT 0 ms · CLS 0.001 · SI 1.1 s. Re-run after the console (2026-11-10) on Lighthouse devtools from the dev machine (Google API keyless quota exhausted): Perf 79 · A11y/BP/SEO 100 · FCP/LCP 4.0 s, network-bound (200 ms RTT), not comparable. **Real regression:** main JS 55 → 96 KB gzip; Zod is back on the landing path via `Home.tsx` schema imports. Fix: lazy-load the console section (Coder B). Re-measure on Google's servers when the quota resets. |
 | Favicon tab screenshot | ⏳ R3, in the QA checklist |
 
 **Measurement rule:** PageSpeed or Lighthouse with `--throttling-method=devtools` is the reference. Never use simulated Lighthouse from a VPN-routed dev machine.
