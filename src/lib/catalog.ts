@@ -45,6 +45,8 @@ export interface LatestStore<T> {
   refresh: () => Promise<void>;
   /** Observe changes without starting a load. */
   watch: (listener: () => void) => () => void;
+  /** Start the first load early (no-op once started), e.g. to prefetch before anything subscribes. */
+  start: () => void;
 }
 
 export function createLatestStore<T>(initial: T, load: () => Promise<T>): LatestStore<T> {
@@ -74,6 +76,9 @@ export function createLatestStore<T>(initial: T, load: () => Promise<T>): Latest
     watch: (l) => {
       listeners.add(l);
       return () => listeners.delete(l);
+    },
+    start: () => {
+      if (!started) void refresh();
     },
   };
 }
@@ -132,6 +137,8 @@ export function useVerifiedCatalog(): { catalog: VerifiedCatalog; reload: () => 
   return { catalog, reload: catalogReload };
 }
 const catalogReload = () => void verifiedStore.refresh();
+/** Fetch the verified rows before the console mounts (Home's idle prefetch), so it renders settled, not "loading". */
+export const preloadVerifiedCatalog = () => verifiedStore.start();
 
 /**
  * One revision across the page: if the counts and the loaded rows disagree, the side that did
