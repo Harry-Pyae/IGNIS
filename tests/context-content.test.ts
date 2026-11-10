@@ -32,10 +32,10 @@ describe('context content (DECISIONS-ROUND5 #3)', () => {
     }
   });
 
-  it('stays off evidence surfaces: no console, map, brief or engine code imports it yet', () => {
+  it('stays off evidence retrieval and briefing code', () => {
     const importers = [...files('src'), ...files('api')]
-      .filter((f) => !f.replace(/\\/g, '/').endsWith('src/lib/context-content.ts'))
+      .filter((f) => !f.replace(/\\/g, '/').endsWith('src/lib/context-content.ts') && !f.replace(/\\/g, '/').endsWith('src/pages/Console.tsx'))
       .filter((f) => /context-content/.test(readFileSync(f, 'utf8')));
-    expect(importers).toEqual([]); // Coder B's Context section will be the first (and only) importer
+    expect(importers).toEqual([]); // Console may render the separate, signed-only context section.
   });
 });

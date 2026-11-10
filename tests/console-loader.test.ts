@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CONSOLE_REQUEST, requestConsole, takePendingAnchor, watchConsole, type ConsoleEnv } from '../src/pages/consoleLoader';
+import { CONSOLE_REQUEST, requestConsole, requestGuidedMission, takePendingAnchor, takePendingMission, watchConsole, type ConsoleEnv } from '../src/pages/consoleLoader';
 
 /** A fake browser: one IntersectionObserver, a captured idle callback, a real EventTarget for hash/request events. */
 function fakeEnv(hash = '') {
@@ -58,5 +58,18 @@ describe('console code-split loader', () => {
     expect(takePendingAnchor()).toBe('experiment-abc');
     other.events.dispatchEvent(new Event(CONSOLE_REQUEST));
     expect(mounted).toEqual(['hash', 'request']); // at most once
+  });
+
+  it('keeps a guided mission preset pending while the lazy console mounts', () => {
+    const { env, events } = fakeEnv('#how-it-works');
+    const mounted: string[] = [];
+    watchConsole(slot, { prefetch: () => {}, mount: () => mounted.push('console') }, env);
+
+    requestGuidedMission('cabin-wall-panel', events);
+
+    expect(mounted).toEqual(['console']);
+    expect(takePendingAnchor()).toBe('console');
+    expect(takePendingMission()).toBe('cabin-wall-panel');
+    expect(takePendingMission()).toBeNull();
   });
 });

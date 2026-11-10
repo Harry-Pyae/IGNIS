@@ -9,10 +9,12 @@ const CONSOLE_ANCHOR = /^(console|s[1-5]|experiment-.+)$/;
 const MOUNT_MARGIN = '800px 0px';
 const IDLE_FALLBACK_MS = 2000; // Safari has no requestIdleCallback
 export const CONSOLE_REQUEST = 'ignis:console';
+export const GUIDED_MISSION_REQUEST = 'ignis:guided-mission';
 
 export const isConsoleAnchor = (id: string) => CONSOLE_ANCHOR.test(id);
 
 let pendingAnchor: string | null = null;
+let pendingMissionPreset: string | null = null;
 
 /** Ask for the console to mount, then scroll to `id` once it has (see takePendingAnchor). */
 export function requestConsole(id: string, target: EventTarget = window) {
@@ -25,6 +27,18 @@ export function takePendingAnchor(): string | null {
   const id = pendingAnchor;
   pendingAnchor = null;
   return id;
+}
+
+export function requestGuidedMission(presetId: string, target: EventTarget = window) {
+  pendingMissionPreset = presetId;
+  requestConsole('console', target);
+  target.dispatchEvent(new Event(GUIDED_MISSION_REQUEST));
+}
+
+export function takePendingMission(): string | null {
+  const presetId = pendingMissionPreset;
+  pendingMissionPreset = null;
+  return presetId;
 }
 
 export type ConsoleEnv = Pick<Window, 'addEventListener' | 'removeEventListener' | 'setTimeout' | 'location'> & {

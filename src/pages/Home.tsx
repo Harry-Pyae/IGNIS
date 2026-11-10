@@ -1,27 +1,17 @@
 import { lazy, Suspense, useEffect, useRef, useState, type CSSProperties } from 'react';
 import {
-  Badge,
   Button,
   FlameSphereArt,
   Icon,
   Panel,
-  PresetChip,
   type IconName,
 } from '../components/ui';
 import { CatalogBlock, ExportButton } from '../components/CatalogStatus';
-import { preloadVerifiedCatalog, useCatalogSummary } from '../lib/catalog';
+import { preloadVerifiedCatalog, useCatalogSummary, useVerifiedCatalog } from '../lib/catalog';
+import { MISSION_CASE, missionEntry } from '../engine/mission';
 import { COPY } from '../lib/copy';
 import { t } from '../i18n';
-import { isConsoleAnchor, requestConsole, takePendingAnchor, watchConsole } from './consoleLoader';
-
-/** §8.1 Scenario Builder templates. Presets carry their explicit material mapping (§5a) — Coder A/B wire them. */
-const PRESETS = [
-  'Cabin wall panel (PMMA)',
-  'Cable insulation',
-  'Crew clothing (cotton blend)',
-  'Cargo packaging',
-  'Custom',
-] as const;
+import { isConsoleAnchor, requestConsole, requestGuidedMission, takePendingAnchor, watchConsole } from './consoleLoader';
 
 export function Home() {
   return (
@@ -30,7 +20,6 @@ export function Home() {
       <HowItWorks />
       <CatalogSection />
       <Principle />
-      <GuidedDemoPanel />
       <LazyConsole />
       <Footer />
     </main>
@@ -74,13 +63,12 @@ function Hero() {
             catalog has no matching evidence.
           </p>
           <div {...rise(3)} className="anim-rise mt-9 flex flex-wrap items-center gap-3">
-            <Button variant="primary" size="lg" icon="play" glow onClick={() => scrollToId('guided-demo')}>
-              See the guided demo
-            </Button>
-            <Button variant="ghost" size="lg" iconRight="arrow-right" onClick={() => scrollToId('how-it-works')}>
-              How it works
+            {MISSION_CASE && <MissionStartControl />}
+            <Button variant="ghost" size="lg" iconRight="arrow-right" onClick={() => scrollToId('console')}>
+              {COPY.landingCta.explore}
             </Button>
           </div>
+          {!MISSION_CASE && <p {...rise(4)} className="anim-rise mt-3 max-w-lg text-[13px] leading-snug text-dim">{COPY.missionAvailability}</p>}
           <ul {...rise(4)} className="anim-rise mt-12 flex flex-wrap gap-x-6 gap-y-2">
             {['Solid flammability only', 'Every claim checked against its card', 'Gaps shown, never guessed'].map((t) => (
               <li key={t} className="console-label flex items-center gap-2 text-dim">
@@ -119,6 +107,17 @@ function Hero() {
       </div>
     </section>
   );
+}
+
+function MissionStartControl() {
+  const { catalog } = useVerifiedCatalog();
+  const entry = catalog.state === 'ready' || catalog.state === 'empty'
+    ? missionEntry(catalog.state === 'ready' ? catalog.experiments : [])
+    : null;
+  if (entry?.state === 'available') {
+    return <Button variant="primary" size="lg" icon="play" glow onClick={() => requestGuidedMission(entry.case.preset_id)}>{COPY.landingCta.mission}</Button>;
+  }
+  return <p role="status" className="max-w-lg text-[13px] leading-snug text-dim">{entry?.state === 'unavailable' ? entry.message : catalog.state === 'loading' ? t('catalogConnecting') : t('matchCatalogUnavailable')}</p>;
 }
 
 function scrollToId(id: string) {
@@ -314,54 +313,6 @@ function Principle() {
 }
 
 /* -------------------------------------------------------------------------- */
-
-function GuidedDemoPanel() {
-  const [preset, setPreset] = useState<string>(PRESETS[0]);
-  return (
-    <section id="guided-demo" className="scroll-mt-20 px-4 pb-16 sm:px-6">
-      <div className="surface reveal relative isolate mx-auto max-w-6xl overflow-hidden rounded-panel border border-border">
-        <img
-          src="/art/bg-grid-accent.webp"
-          width={1672}
-          height={941}
-          alt=""
-          aria-hidden
-          loading="lazy"
-          decoding="async"
-          // Fade the art out toward the bottom so its amber diagonal never runs through the preset pills;
-          // hidden on narrow screens, where the stretched diagonal would cross the copy.
-          className="absolute inset-0 -z-10 size-full object-cover object-right max-md:hidden [mask-image:linear-gradient(to_bottom,black_0%,black_30%,transparent_68%)]"
-        />
-        <div className="flex flex-col gap-8 p-6 sm:p-10 md:flex-row md:items-end md:justify-between">
-          <div className="max-w-md">
-            <Badge variant="amber">{t('judgeMode')}</Badge>
-            <h2 className="display text-lit mt-5 text-[clamp(28px,3.2vw,38px)] leading-[1.08]">{t('goldenPath')}</h2>
-            <p className="mt-3 text-[15px] leading-relaxed text-dim">{t('guidedDemoDescription')}</p>
-            {/* Coder B wires the guided run (R3 writes the captions). */}
-            <Button variant="primary" size="lg" icon="play" className="mt-6" disabled aria-describedby="guided-demo-availability">
-              {t('runGuidedDemo')}
-            </Button>
-            {/* Visible availability, not a tooltip: the run needs the console (Coder B) and R1's first verified cards. */}
-            <p id="guided-demo-availability" className="mt-3 text-[13px] leading-snug text-dim">
-              {t('guidedDemoAvailability')}
-            </p>
-          </div>
-          {/* Presets sit in their own frosted tray: a calm, solid ground under the pills. */}
-          <div className="surface-inset w-full max-w-md rounded-2xl border border-border/70 p-4 backdrop-blur-md md:w-auto">
-            <p className="console-label mb-3 text-dim">{t('orPickPreset')}</p>
-            <div className="flex flex-wrap gap-2" role="group" aria-label={t('scenarioPresets')}>
-              {PRESETS.map((p) => (
-                <PresetChip key={p} active={preset === p} onClick={() => setPreset(p)}>
-                  {p}
-                </PresetChip>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
 
 /* -------------------------------------------------------------------------- */
 
