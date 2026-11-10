@@ -342,7 +342,7 @@ function ConsoleSkeleton() {
     fuel_form: SCENARIO_PRESETS[0]?.fuel_form ?? null,
     thickness_mm: SCENARIO_PRESETS[0]?.thickness_mm ?? null,
     o2_pct: SCENARIO_PRESETS[0]?.o2_pct ?? 21,
-    flow_cm_s: 10,
+    flow_cm_s: SCENARIO_PRESETS[0]?.flow_cm_s ?? null,
     pressure_kpa: SCENARIO_PRESETS[0]?.pressure_kpa ?? null,
   }));
   const [materialChoice, setMaterialChoice] = useState<string | null>(null);
@@ -465,7 +465,7 @@ function ConsoleSkeleton() {
       fuel_form: value.fuel_form,
       thickness_mm: value.thickness_mm,
       o2_pct: value.o2_pct,
-      flow_cm_s: preset.flow_cm_s ?? 10,
+      flow_cm_s: preset.flow_cm_s,
       pressure_kpa: value.pressure_kpa,
     });
   }
@@ -536,7 +536,7 @@ function ConsoleSkeleton() {
                     ))}
                     <PresetChip active={presetId === null} onClick={() => {
                       setPresetId(null);
-                      editScenario({ fuel_material_raw: null, fuel_form: null, thickness_mm: null, o2_pct: 21, flow_cm_s: 10, pressure_kpa: null }, true);
+                      editScenario({ fuel_material_raw: null, fuel_form: null, thickness_mm: null, o2_pct: 21, flow_cm_s: null, pressure_kpa: null }, true);
                     }}>{t('custom')}</PresetChip>
                   </div>
                 </div>
@@ -598,7 +598,7 @@ function ConsoleSkeleton() {
           </div>
           <div className="flex flex-col gap-5">
             <Slider label="O₂" unit="%" min={14} max={30} value={scenario.o2_pct ?? 21} onChange={(value) => moveSlider({ o2_pct: value })} />
-            <Slider label="Airflow" unit="cm/s" min={0} max={30} value={scenario.flow_cm_s ?? 0} onChange={(value) => moveSlider({ flow_cm_s: value })} />
+            <Slider label="Airflow" unit="cm/s" min={0} max={30} value={scenario.flow_cm_s} onChange={(value) => moveSlider({ flow_cm_s: value })} onClear={() => moveSlider({ flow_cm_s: null })} allowUnspecified unspecifiedLabel={t('notSpecified')} setValueLabel={t('setAirflow')} clearValueLabel={t('clearAirflow')} />
             <p className="text-[13px] text-dim">{COPY.sliderCaption}</p>
           </div>
         </div>
@@ -650,7 +650,10 @@ function EvidenceMap({
   status: 'connected' | 'loading' | 'unavailable';
 }) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const plotted = experiments.filter((experiment) => experiment.o2_pct != null && experiment.flow_cm_s != null);
+  const coordinateRecords = experiments.filter((experiment) => experiment.o2_pct != null && experiment.flow_cm_s != null);
+  const isOnAxes = (experiment: Experiment) => experiment.o2_pct! >= 14 && experiment.o2_pct! <= 30 && experiment.flow_cm_s! >= 0 && experiment.flow_cm_s! <= 30;
+  const plotted = coordinateRecords.filter(isOnAxes);
+  const outsideAxesCount = coordinateRecords.length - plotted.length;
   const grid = gapGrid(experiments, scenario);
   const selected = experiments.find((experiment) => experiment.id === selectedId);
   const matchIds = new Set(matches.slice(0, 3).map((match) => match.experiment.id));
@@ -683,13 +686,20 @@ function EvidenceMap({
         <p role="status" className="rounded-xl border border-border bg-bg/50 px-4 py-6 text-center text-sm text-dim">{t('catalogConnecting')}</p>
       ) : status === 'unavailable' ? (
         <p role="status" className="rounded-xl border border-border bg-bg/50 px-4 py-6 text-center text-sm text-dim">{t('catalogNotConnected')}</p>
-      ) : plotted.length === 0 ? (
+      ) : coordinateRecords.length === 0 ? (
         <p role="status" className="rounded-xl border border-border bg-bg/50 px-4 py-6 text-center text-sm text-dim">{t('mapNoPoints')}</p>
       ) : (
         <>
           <div className="overflow-x-auto rounded-xl border border-border bg-bg/45 p-2 sm:p-4">
             <svg viewBox={`0 0 ${width} ${height}`} role="group" aria-label={t('mapAccessibility')} className="block h-auto min-w-[520px] w-full">
               <title>{t('mapVerifiedTitle')}</title>
+              <defs>
+                <pattern id="ignis-untested-hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+                  <rect width="6" height="6" fill="var(--color-bg)" fillOpacity=".45" />
+                  <line x1="0" y1="0" x2="0" y2="6" stroke="var(--color-faint)" strokeOpacity=".38" strokeWidth="1.3" />
+                </pattern>
+                <clipPath id="ignis-plot-clip"><rect x={left} y={top} width={plotWidth} height={plotHeight} /></clipPath>
+              </defs>
               {grid.cells.flatMap((row) => row).map((cell) => cell.state === 'tested' ? null : (
                 <rect
                   key={`${cell.o2_min}-${cell.flow_min}`}
@@ -697,9 +707,11 @@ function EvidenceMap({
                   y={y(cell.o2_max)}
                   width={x(cell.flow_max) - x(cell.flow_min)}
                   height={y(cell.o2_min) - y(cell.o2_max)}
-                  fill="var(--color-warn)"
-                  fillOpacity=".045"
-                  stroke="none"
+                  fill={cell.state === 'untested' ? 'url(#ignis-untested-hatch)' : 'var(--color-faint)'}
+                  fillOpacity={cell.state === 'outside_range' ? '.07' : '1'}
+                  stroke={cell.state === 'outside_range' ? 'var(--color-faint)' : 'none'}
+                  strokeDasharray={cell.state === 'outside_range' ? '2 3' : undefined}
+                  strokeWidth=".5"
                 />
               ))}
               {grid.envelope && (
@@ -714,6 +726,7 @@ function EvidenceMap({
                   strokeWidth="1"
                   opacity=".7"
                   pointerEvents="none"
+                  clipPath="url(#ignis-plot-clip)"
                 />
               )}
               {[0, 5, 10, 15, 20, 25, 30].map((flow) => (
@@ -732,6 +745,7 @@ function EvidenceMap({
               <line x1={left} x2={left} y1={top} y2={top + plotHeight} stroke="var(--color-faint)" />
               <text x={left + plotWidth / 2} y={height - 3} textAnchor="middle" fill="var(--color-dim)" fontSize="12">{t('airflowAxis')}</text>
               <text transform={`translate(15 ${top + plotHeight / 2}) rotate(-90)`} textAnchor="middle" fill="var(--color-dim)" fontSize="12">{t('oxygenAxis')}</text>
+              <g clipPath="url(#ignis-plot-clip)">
               {scenario?.o2_pct != null && scenario.flow_cm_s != null && matches.slice(0, 3).map(({ experiment }) => (
                 experiment.o2_pct != null && experiment.flow_cm_s != null && (
                   <line key={`match-${experiment.id}`} x1={x(scenario.flow_cm_s!)} y1={y(scenario.o2_pct!)} x2={x(experiment.flow_cm_s!)} y2={y(experiment.o2_pct!)} stroke="var(--color-amber)" strokeWidth="1.2" strokeDasharray="4 5" opacity=".7" />
@@ -752,6 +766,7 @@ function EvidenceMap({
                   <title>{experiment.test_id} · {experiment.outcome ?? t('outcomeNotReported')} · {experiment.o2_pct}% O₂ · {experiment.flow_cm_s} cm/s</title>
                 </g>
               ))}
+              </g>
               {scenario?.o2_pct != null && scenario.flow_cm_s != null && scenario.o2_pct >= 14 && scenario.o2_pct <= 30 && scenario.flow_cm_s >= 0 && scenario.flow_cm_s <= 30 && (
                 <g aria-label={`Scenario marker: ${scenario.flow_cm_s} centimeters per second airflow, ${scenario.o2_pct}% oxygen`}>
                   <circle cx={x(scenario.flow_cm_s)} cy={y(scenario.o2_pct)} r="11" fill="none" stroke="var(--color-text)" strokeWidth="2" />
@@ -767,9 +782,11 @@ function EvidenceMap({
             <span className="inline-flex items-center gap-2"><i aria-hidden className="size-2.5 rounded-full bg-success" />{t('partial')}</span>
             <span className="inline-flex items-center gap-2"><i aria-hidden className="size-2.5 rounded-full bg-faint" />{t('outcomeNotReported')}</span>
             <span className="inline-flex items-center gap-2"><i aria-hidden className="size-2.5 rounded-full border border-lit" />{t('scenario')}</span>
-            <span className="inline-flex items-center gap-2"><i aria-hidden className="h-3 w-4 rounded-sm border border-dashed border-warn/60 bg-warn/10" />{t('outsideCatalogRange')}</span>
+            <span className="inline-flex items-center gap-2"><i aria-hidden className="h-3 w-4 rounded-sm border border-faint/50" style={{ backgroundImage: 'repeating-linear-gradient(135deg, transparent 0 3px, var(--color-faint) 3px 4px)' }} />{t('untestedCell')}</span>
+            <span className="inline-flex items-center gap-2"><i aria-hidden className="h-3 w-4 rounded-sm border border-dashed border-faint/60 bg-faint/10" />{t('outsideCatalogRange')}</span>
           </div>
           <p className="mt-3 text-[13px] text-dim">{plotted.length} {t('plotted')} · {matches.length} {t('rankedMatches')}</p>
+          {outsideAxesCount > 0 && <p role="status" className="mt-2 text-[13px] text-dim">{outsideAxesCount} {t(outsideAxesCount === 1 ? 'outsideAxesRecord' : 'outsideAxesRecords')}</p>}
           {outsideEnvelope && <p role="status" className="mt-3 rounded-lg border border-warn/35 bg-warn/[0.05] px-3 py-2 text-sm text-warn">{COPY.outsideRange}</p>}
           {selected && (
             <div className="mt-4 flex flex-wrap items-start justify-between gap-3 rounded-xl border border-border bg-bg/55 p-4">

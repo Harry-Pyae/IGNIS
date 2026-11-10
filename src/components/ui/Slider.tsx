@@ -3,12 +3,17 @@ import { cx } from '../../lib/cx';
 
 interface SliderProps {
   label: string;
-  value: number;
+  value: number | null;
   min: number;
   max: number;
   step?: number;
   unit: string;
   onChange: (value: number) => void;
+  onClear?: () => void;
+  allowUnspecified?: boolean;
+  unspecifiedLabel?: string;
+  setValueLabel?: string;
+  clearValueLabel?: string;
   className?: string;
 }
 
@@ -17,9 +22,10 @@ interface SliderProps {
  * Semantics: it changes WHICH verified evidence is retrieved — it never paints risk zones.
  * Always pair it with COPY.sliderCaption (src/lib/copy.ts). Native range input: keyboard, touch, a11y for free.
  */
-export function Slider({ label, value, min, max, step = 1, unit, onChange, className }: SliderProps) {
+export function Slider({ label, value, min, max, step = 1, unit, onChange, onClear, className, allowUnspecified = false, unspecifiedLabel = 'Not specified', setValueLabel = 'Set value', clearValueLabel = 'Clear value' }: SliderProps) {
   const id = useId();
-  const fill = ((value - min) / (max - min)) * 100;
+  const currentValue = value ?? min;
+  const fill = ((currentValue - min) / (max - min)) * 100;
   return (
     <div className={cx('flex flex-col gap-2', className)}>
       <div className="flex items-baseline justify-between gap-3">
@@ -27,9 +33,13 @@ export function Slider({ label, value, min, max, step = 1, unit, onChange, class
           {label}
         </label>
         <output htmlFor={id} className="font-mono text-sm text-text tabular-nums">
-          {value}
-          <span className="ml-1 text-dim">{unit}</span>
+          {value == null && allowUnspecified ? unspecifiedLabel : <>{value}<span className="ml-1 text-dim">{unit}</span></>}
         </output>
+        {allowUnspecified && (
+          <button type="button" className="text-xs text-dim underline underline-offset-2 hover:text-text" onClick={() => value == null ? onChange(min) : onClear?.()}>
+            {value == null ? setValueLabel : clearValueLabel}
+          </button>
+        )}
       </div>
       <input
         id={id}
@@ -38,7 +48,8 @@ export function Slider({ label, value, min, max, step = 1, unit, onChange, class
         min={min}
         max={max}
         step={step}
-        value={value}
+        value={currentValue}
+        disabled={allowUnspecified && value == null}
         onChange={(e) => onChange(Number(e.target.value))}
         style={{ '--fill': `${Math.min(100, Math.max(0, fill))}%` } as CSSProperties}
       />
