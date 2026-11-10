@@ -199,3 +199,22 @@ Her Burmese exists only where her build had one without figures. R1 fact-checks 
 | `spinoff-smoke-detection` | Smoke-particle measurements from SAME and DAFT inform smoke detectors that can tell dust or steam apart from smoke. |  |  |  |  |
 | `spinoff-firefighter-gear` | Flame-resistant fabrics and lightweight breathing-air tanks developed for spaceflight are used by firefighters. |  |  |  |  |
 | `heritage-apollo-1` | On 27 January 1967, fire swept the Apollo 1 command module during a ground test in a pure-oxygen cabin atmosphere, killing astronauts Virgil "Gus" Grissom, Edward White II and Roger Chaffee. NASA then changed the spacecraft's launch cabin atmosphere and its materials requirements. |  |  |  |  |
+
+## 5. Inventory: every Burmese string in her build
+
+Her build has **254 distinct Burmese strings** across 12 files (counted 2026-11-10; *with figures* = the string contains Western or Burmese digits). Sections 1–4 hold everything we took. The rest stays in her repo on purpose, for the reason given. Check a file there if you want her wording for a term.
+
+| Her file | Strings | With figures | What we did |
+|---|---|---|---|
+| `context/LanguageContext.tsx` (her UI dictionary) | 40 | 11 | Equivalents mapped to our keys (§1) and terms in the glossary (§2). Strings for her own features have no key here. |
+| `components/DemoGuideModal.tsx` | 16 | 4 | Step-guide pattern handed to Coder B (DECISIONS-ROUND5 #4); Back / Next noted in §2 (they look swapped). |
+| `app/page.tsx`, `app/search/page.tsx` | 18 + 13 | 7 + 1 | Terms only, where we have the same concept (§2). |
+| `lib/materialsData.ts` (her materials dataset) | 85 | 10 | Material names for catalog materials staged in §3. Descriptions, ratings and figures **not taken**: the dataset is unsourced. |
+| `lib/ignisAiEngine.ts` | 60 | 24 | **Not taken**: generated burn behaviour and derived figures (rejected: derived burn formula, prediction). |
+| `components/CustomMaterialModal.tsx` | 26 | 2 | **Not taken**: her custom-material scoring flow has no IGNIS equivalent. |
+| `components/AuditReportPrint.tsx`, `app/audit/page.tsx` | 24 + 1 | 4 + 0 | **Not taken**: audit / compliance framing (rejected). |
+| `components/AIInsightsPanel.tsx` | 10 | 2 | **Not taken**: chat / AI insights (rejected). |
+| `app/dashboard/page.tsx` | 4 | 1 | **Not taken**: no equivalent surface. |
+| `components/FlameChamber3D.tsx` | 2 | 1 | **Not taken**: 3D flame chamber (rejected). |
+
+The per-file counts overlap where the same string appears in two files, so they add up to more than 254.

@@ -6,7 +6,7 @@ This is one self-contained file for checking progress without the repo. Coder A 
 | | |
 |---|---|
 | **As of** | 2026-11-10, preparation phase (4 days before the official start, Sat 2026-11-14 = Day 1) |
-| **main** | `22b3570` (Round 5) + this patch (Apache-2.0 license) |
+| **main** | `6eb0563` (Apache-2.0 license) + this patch (Burmese source inventory, Pyroverse credit, art post-processing note) |
 | **Live** | <https://ignisprototype01.vercel.app>, serving `22b3570` (Round 5) |
 | **CI** | green: typecheck · lint · 197 tests passed, 17 skipped (DB tests, which run in their own CI job) · build · disposable-DB job |
 | **Public catalog** | **0 verified cards**, 3 drafts in review |
