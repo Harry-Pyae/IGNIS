@@ -112,6 +112,11 @@ the deploy runbook §3.
 Follow [docs/DEPLOY-RUNBOOK.md](docs/DEPLOY-RUNBOOK.md). `vercel.json` holds the SPA rewrite, `/art/*` cache headers
 and function limits. `main` deploys after the daily merge window.
 
+## License
+
+[Apache-2.0](LICENSE) for the team's own code and docs. Fonts keep SIL OFL 1.1 (`public/fonts/`); NASA material stays
+under NASA's media usage guidelines. Credits: [docs/DISCLOSURE.md](docs/DISCLOSURE.md).
+
 ---
 
 Evidence: NASA NTRS / PSI public sources. Art in `public/art/` (including the patch above) is AI-assisted

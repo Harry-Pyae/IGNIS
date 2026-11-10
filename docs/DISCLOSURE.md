@@ -87,5 +87,5 @@ All of this is in the git history with its dates.
 | NASA Technical Reports Server, NASA Physical Sciences Informatics | Experiment sources | Each card cites its source, page and locator, quoting short excerpts |
 | NASA imagery (when added) | Card stills | Recorded with origin and credit in the media ledger, following NASA's media usage guidelines |
 
-**Project license:** not chosen yet. Under the Participant Terms, original content without a stated OSI license is
-distributed under Apache-2.0.
+**Project license:** [Apache-2.0](../LICENSE) (chosen 2026-11-10), for the team's own code and docs. Third-party
+components keep their own licenses (table above), and NASA material stays under NASA's media usage guidelines.
