@@ -5,10 +5,10 @@ This is one self-contained file for checking progress without the repo. Coder A 
 
 | | |
 |---|---|
-| **As of** | 2026-11-10, preparation phase (4 days before the official start, Sat 2026-11-14 = Day 1) |
-| **main** | `round6` merged (Round 6: feature and design upgrade review adopted) |
-| **Live** | <https://ignisprototype01.vercel.app>, serving Round 6 |
-| **CI** | green: typecheck · lint · 205 tests passed, 17 skipped (DB tests, which run in their own CI job) · build · disposable-DB job |
+| **As of** | 2026-11-11, preparation phase (3 days before the official start, Sat 2026-11-14 = Day 1) |
+| **main** | Coder B's Round 6 console (mission wiring, summary strip, stills, field alignment, context section) + Coder A review fixes (`round6-a`) |
+| **Live** | <https://ignisprototype01.vercel.app>, serving the Round 6 console |
+| **CI** | green: typecheck · lint · 207 tests passed, 17 skipped (DB tests, which run in their own CI job) · build · disposable-DB job |
 | **Public catalog** | **0 verified cards**, 3 drafts in review |
 | **Overall** | Engine, API and console are built and live. **Compliance:** the official FAQ bars working on the challenge before the event; we disclosed our pre-event work ([DISCLOSURE.md](DISCLOSURE.md)) and the organizers' ruling (reported 2026-11-10) lets preparation continue. Then data: nothing real can be demoed until R1 publishes verified cards, and that happens in the event window. |
 
@@ -70,6 +70,7 @@ human (`verified_by` is the reviewer's own name).
 | 2026-11-10 | **Organizer ruling** (reported): preparation may continue; build hold lifted | this patch |
 | 2026-11-10 | **Round 5** (teammate's Pyroverse practice build: content and UX only, no code, no data values): environment presets (hidden until R1 signs), Burmese draft set behind R3 review with a CI no-ship guard, context content (renders only when R1 signs), R1/R2/R3/Coder B handoffs | `round5` merge |
 | 2026-11-10 | **Round 6** (feature and design upgrade review adopted in full): approved copy for the two landing CTAs, the mission availability line, the current-investigation summary, the environment explanation and the context banner; mission-entry gate (`missionEntry()`, no case until R1/R3 review one in the event window); context section omitted until an entry is signed; revision binding as named helpers; Coder B's ordered queue + design review criteria; metadata browsing deferred | `round6` merge |
+| 2026-11-11 | **Round 6 console** (Coder B): guided mission (five steps, controls inside each step's caption, Back / Next / Explore freely; opens only for a reviewed case, so hidden until the event), current-investigation summary, stills with a visible "Campaign context" label, aligned Match Panel fields, signed-only context section. Coder A fixes: the summary never labels whole-catalog counts with an unconfirmed scenario; the Round 5 environment caption restored; map selection stays on the map with "Open its match card"; Explore is the primary button until a mission case exists | `round6-a` merge |
 | 2026-11-10 | **Console code-split:** landing JS 95.6 → 57.2 KB gzip, Zod off the landing path, console prefetched at idle and mounted near the viewport, console deep links fixed; recharts removed | `21bb12c` |
 
 ## 4. Scope checklist (Build Plan §11 tiers, as amended by the Team Plan)
@@ -111,7 +112,7 @@ human (`verified_by` is the reviewer's own name).
 | Telemetry sparklines/modal | ❌ (field exists in `/curate`; R1 digitizes 3–5 curves) |
 | Comparison animation | ❌ (cut by default without Coder C) |
 | Flammability boundary polyline | ⛔ deferred (decision R2-6: needs a certified comparable measured series) |
-| Burmese UI | 🟡 `t()` plumbing + EN set done; Round 5 MY draft staged (`src/i18n/my.draft.ts`, 3 of 123 keys + glossary) behind R3 review (`docs/MY-REVIEW.md`); ships only complete and reviewed |
+| Burmese UI | 🟡 `t()` plumbing + EN set done; Round 5 MY draft staged (`src/i18n/my.draft.ts`, 3 of 144 keys + glossary) behind R3 review (`docs/MY-REVIEW.md`); ships only complete and reviewed |
 | Map choreography (dot stagger, marker glide, crossfade) | ❌ (Coder B item 6, after everything else) |
 
 ### DO NOT BUILD (unchanged)
@@ -129,7 +130,7 @@ Submission follows the local event's end time; aim for Day 2 morning, never the 
 | **Prep: done** (11-07 → 11-10) | Engine, API, curation tool, console, tests, deploy | Coder A, Coder B | ✅ Disclosed in DISCLOSURE.md |
 | **Prep: now** (11-10 → 11-13) | Ruling received (reported 2026-11-10): attach its written text to DISCLOSURE.md; ✅ license: Apache-2.0 (`LICENSE`); fill in the art-pack tool | Coder A | 🟡 |
 | **Prep: allowed** | R1 source *list* (Build Plan §9, no card extraction) + Round 5 fact-check queue (`docs/FACT-CHECK-QUEUE.md`: 3 environment presets, 17 context entries); R2 footage sources + SVS ledger for 4 practice-build images; R3 QA-checklist template + `docs/MY-REVIEW.md` | R1, R2, R3 | open |
-| **Prep: build** | ✅ console lazy-loading (`21bb12c`, Round 4 #5) · ✅ Round 6 contracts + copy (Coder A) · then Coder B's Round 6 queue: mission wiring → summary strip → stills → field alignment → context section → self-review (after rebasing on `main`) | Coder B, Coder A review | 🟡 |
+| **Prep: build** | ✅ console lazy-loading (`21bb12c`, Round 4 #5) · ✅ Round 6 contracts + copy (Coder A) · ✅ Coder B's Round 6 queue 1–5 (mission wiring, summary strip, stills, field alignment, context section) · next: self-review with R3 (queue #6), then the static comparison | Coder B, Coder A review | 🟡 |
 | **Fri 11-13** | Space Apps publishes the Project Submission + Judging guides; R3 reads them and confirms the submission format | R3 | pending |
 | **Day 1 (Sat 11-14)** | **R1 card-verification sprint:** re-verify the 3 seeds from the source, then 15+ cards (§12) | R1 (+ team lead session) | pending |
 | Day 1 | **Integration checkpoint on real cards:** warm the demo cache, parse → confirm → retrieve → synthesize → cite on the deployed URL; the **forced-Gemini synthesize proof** (once, on a real card) | Coder A | pending (needs cards) |
@@ -208,8 +209,8 @@ real verified cards, the video.
 | Coder A | Attach the written ruling; fill in the art-pack tool name. On Day 1: warm the demo cache, the full checkpoint on real cards, the forced-Gemini synthesize proof, the acceptance run |
 | R1 | No card extraction or verification before Sat 11-14. Now: `docs/FACT-CHECK-QUEUE.md`, smallest defensible set first (environment presets: the exploration figures look wrong; then only the context entries the section needs). Day 1: re-verify and publish the 3 seeds under your own name, decide GMT45-T4, then 15+ cards; coverage note for R3 |
 | R2 | Now: trace the 4 practice-build SVS images to their NASA SVS pages and ledger them (DECISIONS-ROUND5 handoff). Day 1: stills with a rights ledger for the mission's cards; video by Day 2 |
-| R3 | Now: `docs/MY-REVIEW.md` (123 keys; check the swapped-looking Back/Next pair); add the Round 6 usability questions to the test script. Fri 11-13: read the Submission + Judging guides. Day 1–2: captions, usability test, QA, rehearsals, submission |
-| Coder B | Rebase `console` on `main`, then the ordered queue in `docs/DECISIONS-ROUND6.md`: mission wiring (entry from `missionEntry()`) → current-investigation summary → stills on mission cards → Match Panel field alignment → context section (`contextSection()`) → self-review with R3; static comparison only after all of them |
+| R3 | Now: `docs/MY-REVIEW.md` (144 keys; check the swapped-looking Back/Next pair); add the Round 6 usability questions to the test script. Fri 11-13: read the Submission + Judging guides. Day 1–2: captions, usability test, QA, rehearsals, submission |
+| Coder B | Fast-forward `console` to `main` (`git pull --ff-only origin main`; her two commits are unchanged, with Coder A's fixes on top), then queue #6: self-review with R3 against the DECISIONS-ROUND6 criteria at 1440/1024/390. Static comparison only after that |
 
 ## 11. Codebase at a glance
 
@@ -221,7 +222,7 @@ real verified cards, the video.
 | Contracts | `src/lib/types.ts` (Zod), `copy.ts` (approved copy), `fixtures.ts` · Round 5: `src/engine/environments.ts`, `src/lib/context-content.ts`, `src/i18n/my.draft.ts` (unshippable draft) · Round 6: `src/engine/mission.ts` (mission-entry gate) | |
 | UI | `src/pages/Home.tsx` (landing), `Console.tsx` (lazy console) + `consoleLoader.ts`, `Curate.tsx`, `Kit.tsx` · `src/components/ui/*` · `src/i18n/` | |
 | Database | `supabase/migrations/` 0001–0003 · `supabase/seed.sql` (3 drafts) | |
-| Tests | `tests/`: 27 files (incl. `tests/db/` RLS + lifecycle on a throwaway DB) | 205 passing |
+| Tests | `tests/`: 27 files (incl. `tests/db/` RLS + lifecycle on a throwaway DB) | 207 passing |
 | Docs | `IGNIS_BUILD_PLAN.md`, `IGNIS_TEAM_PLAN.md`, `AGENTS.md`, `docs/STATE.md`, `DECISIONS-ROUND2/3/4/5/6.md`, `DISCLOSURE.md`, `FACT-CHECK-QUEUE.md`, `MY-REVIEW.md`, `DEPLOY-RUNBOOK.md` | |
 
 Total tracked source + tests + DB + scripts: ~9,300 lines.
@@ -292,3 +293,4 @@ under the reviewer's own name.
 | 2026-11-10 | `21bb12c` + patch | Ruling recorded; console code-split shipped; PageSpeed row updated; §5 prep rows unblocked |
 | 2026-11-10 | `round5` | Round 5 (Pyroverse content): timeline, WOW Burmese row, §5 prep rows, Round 5 decisions summary, next actions, codebase, §12 pre-Day-1 fact-check pointer |
 | 2026-11-10 | `round6` | Round 6 (upgrade review adopted): timeline, §5 build row, Round 6 decisions summary, next actions (Coder B queue, R1 smallest set, R3 questions), codebase, test count |
+| 2026-11-11 | `round6-a` | Round 6 console merged: timeline, §5 build row, Burmese key count, Coder B next action, test count |
