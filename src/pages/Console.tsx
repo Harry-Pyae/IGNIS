@@ -261,10 +261,9 @@ export function Console() {
 
   return (
     <div id="console" className="mx-auto flex max-w-6xl flex-col gap-6 px-4 pb-24 sm:px-6">
-      {guidedStep != null && <MissionGuide step={guidedStep} onStep={setGuidedStep} />}
       <Panel as="section" aria-labelledby="s1" className="reveal">
         <SectionHeader id="s1" step={t('describeStep')} title={t('missionScenario')} />
-        <MissionCaption active={guidedStep === 0} text={t(MISSION_STEPS[0].caption)} />
+        <MissionCaption step={guidedStep === 0 ? 0 : null} onStep={setGuidedStep} text={t(MISSION_STEPS[0].caption)} />
         <div className="grid gap-8 lg:grid-cols-2">
           <div className="flex min-w-0 flex-col gap-4">
             <div className="rounded-xl border border-border bg-bg/45 p-3" aria-live="polite">
@@ -394,7 +393,7 @@ export function Console() {
           step={t('retrieveStep')}
           title={t('evidenceMap')}
         />
-        <MissionCaption active={guidedStep === 1} text={t(MISSION_STEPS[1].caption)} />
+        <MissionCaption step={guidedStep === 1 ? 1 : null} onStep={setGuidedStep} text={t(MISSION_STEPS[1].caption)} />
         <InvestigationSummary
           scenario={scenario}
           material={material}
@@ -407,12 +406,12 @@ export function Console() {
       <div className="grid gap-6">
         <Panel as="section" aria-labelledby="s3" className="reveal">
         <SectionHeader id="s3" step={t('matchesStep')} title={t('matchPanel')} />
-          <MissionCaption active={guidedStep === 2} text={t(MISSION_STEPS[2].caption)} />
+          <MissionCaption step={guidedStep === 2 ? 2 : null} onStep={setGuidedStep} text={t(MISSION_STEPS[2].caption)} />
           <MatchPanel matches={views?.top_k ?? []} status={dataStatus} confirmed={confirmed !== null} />
         </Panel>
         <Panel as="section" aria-labelledby="s4">
           <SectionHeader id="s4" step={t('briefStep')} title={t('missionBrief')} />
-          <MissionCaption active={guidedStep === 3} text={t(MISSION_STEPS[3].caption)} />
+          <MissionCaption step={guidedStep === 3 ? 3 : null} onStep={setGuidedStep} text={t(MISSION_STEPS[3].caption)} />
           <MissionBrief
             briefing={activeBriefing}
             status={activeBriefStatus}
@@ -425,7 +424,7 @@ export function Console() {
 
       <Panel as="section" aria-labelledby="s5" className="reveal">
         <SectionHeader id="s5" step={t('gapStep')} title={t('evidenceGapRadar')} />
-        <MissionCaption active={guidedStep === 4} text={t(MISSION_STEPS[4].caption)} />
+        <MissionCaption step={guidedStep === 4 ? 4 : null} onStep={setGuidedStep} text={t(MISSION_STEPS[4].caption)} />
         <GapRadarPanel data={radar} status={dataStatus} scenarioActive={confirmed !== null} />
       </Panel>
       {research && <ResearchContext section={research} />}
@@ -433,37 +432,36 @@ export function Console() {
   );
 }
 
-function MissionGuide({ step, onStep }: { step: number; onStep: (step: number | null) => void }) {
+function MissionCaption({ step, onStep, text }: { step: number | null; onStep: (step: number | null) => void; text: string }) {
+  if (step == null) return null;
   const active = MISSION_STEPS[step]!;
   return (
-    <Panel as="section" aria-label={t('guidedMission')} className="flex flex-wrap items-center justify-between gap-4 border-amber/35 bg-amber/[0.04]">
-      <div>
-        <p aria-live="polite" className="console-label text-amber">{`Step ${step + 1} of ${MISSION_STEPS.length}`}</p>
-        <p className="mt-1 text-sm text-text">{t(active.title)}</p>
-      </div>
-      <div className="flex flex-wrap items-center gap-2">
-        <div className="mr-1 flex items-center gap-2" aria-label={t('missionProgress')}>
-          {MISSION_STEPS.map((item, index) => (
-            <button
-              key={item.title}
-              type="button"
-              aria-label={`${t('goToMissionStep')} ${index + 1}: ${t(item.title)}`}
-              aria-current={index === step ? 'step' : undefined}
-              onClick={() => onStep(index)}
-              className="grid size-11 place-items-center rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-amber"
-            ><span aria-hidden className={`size-3 rounded-full border ${index === step ? 'border-amber bg-amber' : 'border-faint bg-transparent'}`} /></button>
-          ))}
+    <aside role="note" aria-label={t('guidedMission')} className="mb-4 rounded-lg border border-amber/30 bg-amber/[0.04] px-3 py-3">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="min-w-0 flex-1 basis-64">
+          <p aria-live="polite" className="console-label text-amber">{`Step ${step + 1} of ${MISSION_STEPS.length} · ${t(active.title)}`}</p>
+          <p className="mt-1 text-sm leading-relaxed text-dim">{text}</p>
         </div>
-        <Button size="sm" variant="ghost" disabled={step === 0} onClick={() => onStep(step - 1)}>{t('missionBack')}</Button>
-        <Button size="sm" onClick={() => onStep(step === MISSION_STEPS.length - 1 ? null : step + 1)}>{t(step === MISSION_STEPS.length - 1 ? 'missionDone' : 'missionNext')}</Button>
-        <Button size="sm" variant="ghost" onClick={() => onStep(null)}>{t('exploreFreely')}</Button>
+        <div className="flex flex-wrap items-center gap-1 sm:gap-2">
+          <div className="mr-1 flex items-center gap-1" aria-label={t('missionProgress')}>
+            {MISSION_STEPS.map((item, index) => (
+              <button
+                key={item.title}
+                type="button"
+                aria-label={`${t('goToMissionStep')} ${index + 1}: ${t(item.title)}`}
+                aria-current={index === step ? 'step' : undefined}
+                onClick={() => onStep(index)}
+                className="grid size-10 place-items-center rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-amber"
+              ><span aria-hidden className={`size-3 rounded-full border ${index === step ? 'border-amber bg-amber' : 'border-faint bg-transparent'}`} /></button>
+            ))}
+          </div>
+          <Button size="sm" variant="ghost" disabled={step === 0} onClick={() => onStep(step - 1)}>{t('missionBack')}</Button>
+          <Button size="sm" onClick={() => onStep(step === MISSION_STEPS.length - 1 ? null : step + 1)}>{t(step === MISSION_STEPS.length - 1 ? 'missionDone' : 'missionNext')}</Button>
+          <Button size="sm" variant="ghost" onClick={() => onStep(null)}>{t('exploreFreely')}</Button>
+        </div>
       </div>
-    </Panel>
+    </aside>
   );
-}
-
-function MissionCaption({ active, text }: { active: boolean; text: string }) {
-  return active ? <aside role="note" className="mb-4 rounded-lg border border-amber/30 bg-amber/[0.04] px-3 py-2 text-sm leading-relaxed text-dim">{text}</aside> : null;
 }
 
 function InvestigationSummary({
@@ -738,8 +736,8 @@ function MatchPanel({ matches, status, confirmed }: { matches: MatchResult[]; st
           <article key={experiment.id} id={`experiment-${experiment.id}`} className="flex min-w-0 flex-col rounded-xl border border-border bg-bg/45 p-4">
             {experiment.media_url && <div className="mb-3 aspect-[16/9] overflow-hidden rounded-lg border border-border bg-bg/60">
               <img src={experiment.media_url} alt={`${COPY.campaignContext}: ${experimentLabel(experiment)}`} loading="lazy" className="size-full object-cover" />
-              <p className="sr-only">{COPY.campaignContext}</p>
             </div>}
+            {experiment.media_url && <p className="mb-2 console-label text-dim">{COPY.campaignContext}</p>}
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
                 <span className="console-label text-amber">{t('match')} {index + 1}</span>
