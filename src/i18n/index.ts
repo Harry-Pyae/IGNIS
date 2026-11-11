@@ -40,6 +40,8 @@ const EN = {
   missionDone: 'Done',
   exploreFreely: 'Explore freely',
   guidedMission: 'Guided mission',
+  // {n} and {total} are filled in by the console; a translation may reorder them.
+  missionStepOf: 'Step {n} of {total}',
   missionProgress: 'Guided mission steps',
   goToMissionStep: 'Go to step',
   missionStepScenario: 'Describe the scenario',

@@ -437,7 +437,7 @@ function MissionCaption({ step, onStep, text }: { step: number | null; onStep: (
     <aside role="note" aria-label={t('guidedMission')} className="mb-4 rounded-lg border border-amber/30 bg-amber/[0.04] px-3 py-3">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="min-w-0 flex-1 basis-64">
-          <p aria-live="polite" className="console-label text-amber">{`Step ${step + 1} of ${MISSION_STEPS.length} · ${t(active.title)}`}</p>
+          <p aria-live="polite" className="console-label text-amber">{`${t('missionStepOf').replace('{n}', String(step + 1)).replace('{total}', String(MISSION_STEPS.length))} · ${t(active.title)}`}</p>
           <p className="mt-1 text-sm leading-relaxed text-dim">{text}</p>
         </div>
         <div className="flex flex-wrap items-center gap-1 sm:gap-2">

@@ -1,10 +1,10 @@
 # Burmese (MY) review — R3
 
-**Status: UNREVIEWED draft.** Source: `src/i18n/my.draft.ts` (generated 2026-11-10; regenerate after key changes).
+**Status: UNREVIEWED draft.** Source: `src/i18n/my.draft.ts` (generated 2026-11-11; regenerate after key changes).
 
 **Rule (Team Plan R3, DECISIONS-ROUND5 #2):** Burmese ships **complete and reviewed**, or the app stays EN-only. A partial set never ships.
 
-The draft comes from a teammate's practice build (Pyroverse, used with her permission): strings only. Her build covers a different UI (3D chamber, audit, chatbot), so only **3 of our 143 keys** have a direct equivalent. The rest are blank for you to write; the glossary in §2 has her terms.
+The draft comes from a teammate's practice build (Pyroverse, used with her permission): strings only. Her build covers a different UI (3D chamber, audit, chatbot), so only **3 of our 144 keys** have a direct equivalent. The rest are blank for you to write; the glossary in §2 has her terms.
 
 **How to review:**
 - Fill *R3 translation* for every key (keep her draft or replace it), then tick *Native ✓* and *Scientific ✓* once checked.
@@ -12,7 +12,7 @@ The draft comes from a teammate's practice build (Pyroverse, used with her permi
 - Never make the approved meaning stronger: absence stays "no matching verified evidence in the current IGNIS catalog" (never "NASA never tested"); no "predict", "safe" or "approved".
 - When every row has both ticks, send this file to Coder A, who promotes it into `src/i18n/index.ts`.
 
-## 1. UI strings (143 keys)
+## 1. UI strings (144 keys)
 
 | Key | English | Her draft | R3 translation | Native ✓ | Scientific ✓ | Notes |
 |---|---|---|---|---|---|---|
@@ -56,6 +56,7 @@ The draft comes from a teammate's practice build (Pyroverse, used with her permi
 | `missionDone` | Done |  |  |  |  |  |
 | `exploreFreely` | Explore freely |  |  |  |  |  |
 | `guidedMission` | Guided mission |  |  |  |  |  |
+| `missionStepOf` | Step {n} of {total} |  |  |  |  |  |
 | `missionProgress` | Guided mission steps |  |  |  |  |  |
 | `goToMissionStep` | Go to step |  |  |  |  |  |
 | `missionStepScenario` | Describe the scenario |  |  |  |  |  |
