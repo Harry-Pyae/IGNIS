@@ -7,6 +7,8 @@
 import { COPY } from '../lib/copy.js';
 import type { Experiment } from '../lib/types.js';
 import { verifierNameProblem } from '../lib/verifier.js';
+import { presetScenario, SCENARIO_PRESETS } from './aliases.js';
+import { matchScenario } from './match.js';
 
 export interface MissionCase {
   /** SCENARIO_PRESETS id the case opens with. */
@@ -17,14 +19,26 @@ export interface MissionCase {
   reviewed_by: string | null;
 }
 
-/** No case yet: R1/R3 choose it from the verified catalog in the event window, never scripted ahead of it. */
+/**
+ * No case yet: R1/R3 choose it from the verified catalog in the event window, never scripted ahead of it.
+ * To enable, replace null with the signed handoff from docs/catalog-coverage.md:
+ *   { preset_id: '<SCENARIO_PRESETS id with a material>', experiment_ids: ['<uuid>', '<uuid>', '<uuid>'], reviewed_by: '<reviewer full name>' }
+ * The gate opens only if every ID is verified, solid, distinct (≥3) and among that preset's current top-5 matches.
+ */
 export const MISSION_CASE: MissionCase | null = null;
 
 export type MissionEntry = { state: 'available'; case: MissionCase } | { state: 'unavailable'; message: string };
 
 export function missionEntry(catalog: readonly Experiment[], c: MissionCase | null = MISSION_CASE): MissionEntry {
-  const verified = new Set(catalog.filter((e) => e.verified_by != null).map((e) => e.id));
+  const solid = catalog.filter((e) => e.verified_by != null && e.domain === 'solid_flammability');
+  const verified = new Set(solid.map((e) => e.id));
+  const preset = SCENARIO_PRESETS.find((p) => p.id === c?.preset_id);
+  // The mission walks the preset's own deterministic top matches, so the reviewed IDs must be among them
+  // (a resolved preset; a later publication that displaces a reviewed card closes the mission until re-review).
+  const shown = preset?.material ? new Set(matchScenario(presetScenario(preset, solid), solid).slice(0, 5).map((m) => m.experiment.id)) : new Set<string>();
   const ready =
-    c != null && !verifierNameProblem(c.reviewed_by) && c.experiment_ids.length > 0 && c.experiment_ids.every((id) => verified.has(id));
+    c != null && !verifierNameProblem(c.reviewed_by) && preset != null &&
+    c.experiment_ids.length >= 3 && new Set(c.experiment_ids).size === c.experiment_ids.length &&
+    c.experiment_ids.every((id) => verified.has(id) && shown.has(id));
   return ready ? { state: 'available', case: c } : { state: 'unavailable', message: COPY.missionAvailability };
 }

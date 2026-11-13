@@ -80,9 +80,9 @@ describe('Round 6 #3: environment presets set atmosphere inputs only, no gravity
 });
 
 describe('Round 6 #1: mission entry shows the availability state until a reviewed case exists', () => {
-  const verified = [card({ id: 'v1', test_id: 'V1' }), card({ id: 'v2', test_id: 'V2' })];
+  const verified = [card({ id: 'v1', test_id: 'V1' }), card({ id: 'v2', test_id: 'V2' }), card({ id: 'v3', test_id: 'V3' })];
   const draft = card({ id: 'd1', test_id: 'D1', verified_by: null });
-  const ready: MissionCase = { preset_id: 'crew-clothing', experiment_ids: ['v1', 'v2'], reviewed_by: 'Ada Reviewer' };
+  const ready: MissionCase = { preset_id: 'crew-clothing', experiment_ids: ['v1', 'v2', 'v3'], reviewed_by: 'Ada Reviewer' };
 
   it('no case yet → unavailable, with the approved line', () => {
     expect(MISSION_CASE).toBeNull();
@@ -96,6 +96,15 @@ describe('Round 6 #1: mission entry shows the availability state until a reviewe
     expect(missionEntry([...verified, draft], { ...ready, experiment_ids: ['v1', 'd1'] }).state).toBe('unavailable');
     expect(missionEntry([], ready).state).toBe('unavailable'); // card no longer in the snapshot
     expect(missionEntry(verified, { ...ready, experiment_ids: [] }).state).toBe('unavailable');
+    expect(missionEntry(verified, { ...ready, experiment_ids: ['v1', 'v2'] }).state).toBe('unavailable');
+    expect(missionEntry(verified, { ...ready, experiment_ids: ['v1', 'v1', 'v2'] }).state).toBe('unavailable');
+    expect(missionEntry(verified, { ...ready, preset_id: 'missing-preset' }).state).toBe('unavailable');
+    expect(missionEntry(verified.map((e) => e.id === 'v3' ? { ...e, domain: 'smoke_detection' } : e), ready).state).toBe('unavailable');
+    expect(missionEntry(verified, { ...ready, preset_id: 'cable-insulation' }).state).toBe('unavailable'); // picker preset
+    const pmma = verified.map((e) => e.id === 'v3' ? { ...e, fuel_material: 'PMMA', material_class: 'thermoplastic' as const, fuel_form: 'flat_sheet' as const } : e);
+    const displaced = [...verified, ...[1, 2, 3, 4, 5].map((n) => card({ id: `x${n}`, test_id: `A${n}` }))];
+    expect(missionEntry(pmma, ready).state).toBe('unavailable'); // class gate drops v3 from the preset's matches
+    expect(missionEntry(displaced, ready).state).toBe('unavailable'); // five equal matches ahead push a reviewed card out
   });
 });
 
