@@ -3,17 +3,16 @@
 **NASA Space Apps 2026 · "Flame in Freefall" · Team AstroFlare**
 This is one self-contained file for checking progress without the repo. Coder A updates it after every patch.
 
-**2026-11-13 local implementation:** see [EXECUTION-STATUS.md](EXECUTION-STATUS.md) for the authoritative matrix
-separating implemented code, signed content, production verification, and QA. The unified specification's map/source/
-selection refinements, duplicate-run migration, review protocols and disclosure update are local, not deployed.
-GitHub pushes occur only on event days. The table below is the last recorded deployment snapshot (Nov 11).
+**2026-11-13: prep complete, frozen for the event.** Only data and the Day 1/2 runbook items remain:
+[EXECUTION-STATUS.md](EXECUTION-STATUS.md) is the single Day 1 runbook (order, owner, "visible when", rollback).
+During the event, code changes are bug fixes and runbook items only.
 
 | | |
 |---|---|
-| **As of** | 2026-11-11, preparation phase (3 days before the official start, Sat 2026-11-14 = Day 1) |
-| **main** | Coder B's Round 6 console (mission wiring, summary strip, stills, field alignment, context section) + Coder A review fixes (`round6-a`) |
-| **Live** | <https://ignisprototype01.vercel.app>, serving the Round 6 console |
-| **CI** | green: typecheck · lint · 207 tests passed, 17 skipped (DB tests, which run in their own CI job) · build · disposable-DB job |
+| **As of** | 2026-11-13, prep frozen (official start Sat 2026-11-14 = Day 1) |
+| **main** | `b7602ba`: unified-spec prep patch (`82c63d2`) + mission gate (`45568e3`) + map axes from the shared GRID (`b7602ba`), on the Round 6 console |
+| **Live** | <https://ignisprototype01.vercel.app>, serving `b7602ba` (pushed 2026-11-13 on the team lead's instruction) |
+| **CI** | green: typecheck · lint · 219 tests passed, 19 skipped (DB tests + the optional benchmark run in their own jobs) · build · disposable-DB job 16/16 |
 | **Public catalog** | **0 verified cards**, 3 drafts in review |
 | **Overall** | Engine, API and console are built and live. **Compliance:** the official FAQ bars working on the challenge before the event; we disclosed our pre-event work ([DISCLOSURE.md](DISCLOSURE.md)) and the organizers' ruling (reported 2026-11-10) lets preparation continue. Then data: nothing real can be demoed until R1 publishes verified cards, and that happens in the event window. |
 
@@ -43,7 +42,7 @@ refuses to guess.
 
 | Role | Owns | Status |
 |---|---|---|
-| **Coder A** (team lead) | `main`, engine, API, deploy, merges, shared contracts/copy | Unified specification refinements local Nov 13; next real-data checkpoint awaits R1 |
+| **Coder A** (team lead) | `main`, engine, API, deploy, merges, shared contracts/copy | Prep frozen and live (`b7602ba`); Day 1 runbook steps 0, c–f |
 | **Coder B** | Mission console (`console` branch) | Console v1 merged and live 2026-11-10 |
 | **Coder C** (optional) | Features (`features` branch) | ❌ no commits beyond `main`; the Team Plan's fallback rules apply |
 | **R1** | Data and science research: the catalog | ⛔ 0 cards published (blocks the demo) |
@@ -76,6 +75,9 @@ human (`verified_by` is the reviewer's own name).
 | 2026-11-10 | **Round 5** (teammate's Pyroverse practice build: content and UX only, no code, no data values): environment presets (hidden until R1 signs), Burmese draft set behind R3 review with a CI no-ship guard, context content (renders only when R1 signs), R1/R2/R3/Coder B handoffs | `round5` merge |
 | 2026-11-10 | **Round 6** (feature and design upgrade review adopted in full): approved copy for the two landing CTAs, the mission availability line, the current-investigation summary, the environment explanation and the context banner; mission-entry gate (`missionEntry()`, no case until R1/R3 review one in the event window); context section omitted until an entry is signed; revision binding as named helpers; Coder B's ordered queue + design review criteria; metadata browsing deferred | `round6` merge |
 | 2026-11-11 | **Round 6 console** (Coder B): guided mission (five steps, controls inside each step's caption, Back / Next / Explore freely; opens only for a reviewed case, so hidden until the event), current-investigation summary, stills with a visible "Campaign context" label, aligned Match Panel fields, signed-only context section. Coder A fixes: the summary never labels whole-catalog counts with an unconfirmed scenario; the Round 5 environment caption restored; map selection stays on the map with "Open its match card"; Explore is the primary button until a mission case exists | `round6-a` merge |
+| 2026-11-13 | **Unified specification prep:** source links used as recorded (no guessed PDF names), map populations (on-axes / outside / missing) and non-colour outcome shapes, persistent selection, interpretation limits (`prompts-v5`), catalog-unavailable retry, duplicate-run identity (migration 0004 + `409`), R1/R2/R3 working records | `82c63d2` |
+| 2026-11-13 | **Mission gate:** preset must have a set material; every bound ID among the preset's current top-5 matches | `45568e3` |
+| 2026-11-13 | **Map axes from the shared GRID** + bounds test; full sweep green; pushed and verified live; **prep frozen** | `b7602ba` |
 | 2026-11-10 | **Console code-split:** landing JS 95.6 → 57.2 KB gzip, Zod off the landing path, console prefetched at idle and mounted near the viewport, console deep links fixed; recharts removed | `21bb12c` |
 
 ## 4. Scope checklist (Build Plan §11 tiers, as amended by the Team Plan)
@@ -133,10 +135,11 @@ Submission follows the local event's end time; aim for Day 2 morning, never the 
 | When | Work | Owner | Status |
 |---|---|---|---|
 | **Prep: done** (11-07 → 11-10) | Engine, API, curation tool, console, tests, deploy | Coder A, Coder B | ✅ Disclosed in DISCLOSURE.md |
-| **Prep: now** (11-10 → 11-13) | Ruling received (reported 2026-11-10): attach its written text to DISCLOSURE.md; ✅ license: Apache-2.0 (`LICENSE`); fill in the art-pack tool | Coder A | 🟡 |
+| **Prep: now** (11-10 → 11-13) | Ruling received (reported 2026-11-10): attach its written text to DISCLOSURE.md; ✅ license: Apache-2.0 (`LICENSE`); ✅ art-pack tool (ChatGPT with Claude assistance) | Coder A | 🟡 |
 | **Prep: allowed** | R1 source *list* (Build Plan §9, no card extraction) + Round 5 fact-check queue (`docs/FACT-CHECK-QUEUE.md`: 3 environment presets, 17 context entries); R2 footage sources + SVS ledger for 4 practice-build images; R3 QA-checklist template + `docs/MY-REVIEW.md` | R1, R2, R3 | open |
 | **Prep: build** | ✅ console lazy-loading (`21bb12c`, Round 4 #5) · ✅ Round 6 contracts + copy (Coder A) · ✅ Coder B's Round 6 queue 1–5 (mission wiring, summary strip, stills, field alignment, context section) · next: self-review with R3 (queue #6), then the static comparison | Coder B, Coder A review | 🟡 |
 | **Fri 11-13** | Space Apps publishes the Project Submission + Judging guides; R3 reads them and confirms the submission format | R3 | pending |
+| **Prep: frozen** (11-13) | ✅ Prep patch, mission gate and GRID axes live (`b7602ba`); Day 1 order = [EXECUTION-STATUS.md](EXECUTION-STATUS.md) | Coder A | ✅ |
 | **Day 1 (Sat 11-14)** | **R1 card-verification sprint:** re-verify the 3 seeds from the source, then 15+ cards (§12) | R1 (+ team lead session) | pending |
 | Day 1 | **Integration checkpoint on real cards:** warm the demo cache, parse → confirm → retrieve → synthesize → cite on the deployed URL; the **forced-Gemini synthesize proof** (once, on a real card) | Coder A | pending (needs cards) |
 | Day 1 | Mission case chosen from the real catalog (≥3 strong matches + one clean gap); captions written | R1 + R3 | pending (needs cards) |
@@ -167,15 +170,15 @@ real verified cards, the video.
 
 | Check | Result |
 |---|---|
-| Console against the production catalog | ✅ 2026-11-10, 1280 px + 390 px: honest empty states everywhere before and after Confirm, no fixture dots, no `/api` calls, no errors, no sideways scroll |
+| Console against the production catalog | ✅ 2026-11-13 on `b7602ba`, 1280 px + 390 px: map "no records to plot", `0 eligible · 0 with plot coordinates · 0 missing`, mission availability line (no start button), context section omitted, no `/api` calls, no errors, no sideways scroll. Earlier ✅ 2026-11-10, 1280 px + 390 px: honest empty states everywhere before and after Confirm, no fixture dots, no `/api` calls, no errors, no sideways scroll |
 | Console click-through (disposable DB, Edge) | ✅ 2026-11-10: presets, free text, material picker, both "Not specified" sliders, Set/Clear, keyboard, three map states, clipping, still Brief, reduced motion, 390 px |
 | Synthesize round trip | ✅ round 3 via Groq (0 withheld, revision bound, cache hit) |
 | Synthesize on Gemini lite | ✅ locally (2 validated Briefs); production proof ⛔ waits for R1's first card |
 | Forced-Gemini parse on production | ✅ 2026-11-09 |
-| health-llm | ✅ 2026-11-10: Groq 200, Gemini 200. Flash checks have ended (lite is final) |
-| RLS + curation lifecycle | ✅ 15/15 on the disposable DB in CI on every push |
+| health-llm | ✅ 2026-11-13 (one call, production `b7602ba`): Groq 200, Gemini lite 200. Earlier ✅ 2026-11-10: Groq 200, Gemini 200. Flash checks have ended (lite is final) |
+| RLS + curation lifecycle | ✅ 16/16 on the disposable DB (incl. duplicate-identity `409`), locally and in CI on `b7602ba` |
 | Rate limit | ✅ 20 allowed, then 429 with `retry-after`; fails open |
-| Export | ✅ empty-catalog file with the 33-field README |
+| Export | ✅ 2026-11-13: `count 0`, revision `empty`, with the 33-field README |
 | PageSpeed mobile | ✅ 2026-11-10 after the console code-split (`21bb12c`), Lighthouse 12.2 mobile with devtools throttling from the dev machine (the Google API's keyless quota was exhausted both times): **Performance 83** (79 before the split) · Accessibility / Best Practices / SEO 100 · FCP/LCP **3.5 s** (4.0) · TBT 40 ms · CLS 0.001 · unused JS at first load **0** (42 KiB). Landing JS **57.2 KB gzip** (95.6 before the split, 55.3 before the console), and Zod is off the landing path again. The absolute times are network-bound on this path (200 ms RTT, 560 ms for the HTML), so they aren't comparable with the old Google-server run (FCP 0.8 s). Re-run from Google's servers when the quota resets. |
 | Favicon tab screenshot | ❓ R3 |
 
@@ -204,6 +207,7 @@ real verified cards, the video.
 | **No verified cards** | Blocks the demo case, the integration checkpoint, the mission, stills, the production failover proof and the acceptance run | R1: verification sprint on Day 1 (in the event window only) |
 | R2/R3 execution evidence pending | Ledger, QA log and demo structure now exist; they do not establish completed reviews or a video | R2/R3: append actual asset reviews, sessions and rehearsal results |
 | Forced-Gemini synthesize unproven on production | Backup path on stage is proven in tests and locally only | Coder A: run once on R1's first real card (runbook §3) |
+| Migration 0004 not applied to production | No DB-level duplicate guard until applied (the `409` path is live but never triggers) | Coder A + R1: runbook step 0, before the first publish |
 | Two presets lack materials | Cable insulation and Cargo packaging always open the picker | R1: card a real insulation and a packaging material, send the `fuel_material` names |
 | Coder C absent | WOW features cut by default | Follow the fallback rules; nobody absorbs them at the cost of their own "done when" |
 
@@ -211,7 +215,7 @@ real verified cards, the video.
 
 | Owner | Action |
 |---|---|
-| Coder A | Attach the written ruling; fill in the art-pack tool name. On Day 1: warm the demo cache, the full checkpoint on real cards, the forced-Gemini synthesize proof, the acceptance run |
+| Coder A | Attach the written ruling. Day 1 runbook ([EXECUTION-STATUS.md](EXECUTION-STATUS.md)): step 0 (migration 0004), c (real-data checkpoint), d (forced-Gemini proof, once), e (fill `MISSION_CASE`), f (warm the cache after the last publish) |
 | R1 | No card extraction or verification before Sat 11-14. Now: `docs/FACT-CHECK-QUEUE.md`, smallest defensible set first (environment presets: the exploration figures look wrong; then only the context entries the section needs). Day 1: re-verify and publish the 3 seeds under your own name, decide GMT45-T4, then 15+ cards; coverage note for R3 |
 | R2 | Now: trace the 4 practice-build SVS images to their NASA SVS pages and ledger them (DECISIONS-ROUND5 handoff). Day 1: stills with a rights ledger for the mission's cards; video by Day 2 |
 | R3 | Now: `docs/MY-REVIEW.md` (144 keys; check the swapped-looking Back/Next pair); add the Round 6 usability questions to the test script. Fri 11-13: read the Submission + Judging guides. Day 1–2: captions, usability test, QA, rehearsals, submission |
@@ -299,3 +303,4 @@ under the reviewer's own name.
 | 2026-11-10 | `round5` | Round 5 (Pyroverse content): timeline, WOW Burmese row, §5 prep rows, Round 5 decisions summary, next actions, codebase, §12 pre-Day-1 fact-check pointer |
 | 2026-11-10 | `round6` | Round 6 (upgrade review adopted): timeline, §5 build row, Round 6 decisions summary, next actions (Coder B queue, R1 smallest set, R3 questions), codebase, test count |
 | 2026-11-11 | `round6-a` | Round 6 console merged: timeline, §5 build row, Burmese key count, Coder B next action, test count |
+| 2026-11-13 | `b7602ba` + docs | Prep frozen: header, snapshot, timeline (3 rows), §5 frozen row, scoreboard (live empty states, health, DB 16/16, export), risk (0004), Coder A next action → Day 1 runbook |

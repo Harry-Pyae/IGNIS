@@ -15,7 +15,7 @@ verified evidence.
 Current delivery status and remaining human review gates: [execution status](docs/EXECUTION-STATUS.md).
 The official challenge's current long title is
 [Flame in Freefall: SI-Powered Fire Safety Insights from Microgravity Combustion Data](https://www.spaceappschallenge.org/2026/challenges/flame-in-freefall/?tab=teams).
-The 2026-11-13 refinement is local; GitHub pushes are reserved for event days.
+Prep is complete and frozen (2026-11-13, live `b7602ba`); the remaining work is data and the Day 1 runbook.
 
 - **Build plan (technical contracts):** [IGNIS_BUILD_PLAN.md](IGNIS_BUILD_PLAN.md)
 - **Team plan (who owns what):** [IGNIS_TEAM_PLAN.md](IGNIS_TEAM_PLAN.md)

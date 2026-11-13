@@ -1,11 +1,13 @@
 # IGNIS — state handoff (2026-11-10, console merged · preparation phase)
 
-> **2026-11-13 local update:** the team lead authorized implementation of the unified execution specification.
-> [EXECUTION-STATUS.md](EXECUTION-STATUS.md) is the current status matrix (implemented / signed / production / QA).
-> Map semantics, source navigation, duplicate-run protection and scientific interpretation refinements are local;
-> this patch has not been pushed or deployed. Push only on event days per the team lead's clarification.
-> Source/coverage/media/QA/demo/submission documents now exist as working records; pending reviews remain pending.
-> The older snapshot below records historical results, not fresh validation of this patch.
+> **2026-11-13: prep complete, frozen for the event. Only data and the Day 1/2 runbook items remain.**
+> Live = `main` `b7602ba` (unified-spec prep `82c63d2` + mission gate `45568e3` + map axes from GRID `b7602ba`),
+> pushed on the team lead's instruction. Sweep: typecheck · lint · 219 tests · build · disposable DB 16/16 · CI green.
+> Live verified (1280 + 390 px): empty map, 0/0/0 counts, mission availability line, context omitted, no errors,
+> export `count 0`, health-llm (once) Groq + Gemini lite 200. Catalog: 0 verified, 3 drafts. Migration 0004 not yet
+> applied to production (runbook step 0). **[EXECUTION-STATUS.md](EXECUTION-STATUS.md) is the single Day 1 runbook**:
+> order, owner, "visible when" and rollback per step. Code changes during the event: bug fixes and runbook items only.
+> The older snapshot below is historical.
 
 > **Timeline:** the official event is **Sat 2026-11-14 (Day 1) → Sun 2026-11-15 (Day 2)**. All work so far is the
 > preparation phase (from 2026-11-07). The official FAQ says teams may not begin working on the challenge before the
