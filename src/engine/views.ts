@@ -14,11 +14,14 @@ import type { CoverageResult, Experiment, MatchResult, ResolvedScenario } from '
 import { retrieve } from './match.js';
 import { GRID } from './gaps.js';
 
+/** The Evidence Map's axes are exactly the gap GRID. */
+export const onMapAxes = (o2: number, flow: number) =>
+  o2 >= GRID.o2.min && o2 <= GRID.o2.max && flow >= GRID.flow.min && flow <= GRID.flow.max;
+
 /** Separate missing coordinates from measured points beyond the displayed axes. */
 export function mapCoordinates(experiments: Experiment[]) {
   const coordinates = experiments.filter((e) => e.o2_pct != null && e.flow_cm_s != null);
-  const onAxes = (e: Experiment) => e.o2_pct! >= GRID.o2.min && e.o2_pct! <= GRID.o2.max &&
-    e.flow_cm_s! >= GRID.flow.min && e.flow_cm_s! <= GRID.flow.max;
+  const onAxes = (e: Experiment) => onMapAxes(e.o2_pct!, e.flow_cm_s!);
   return {
     coordinates,
     visible: coordinates.filter(onAxes),

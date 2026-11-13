@@ -9,10 +9,10 @@ import { useVerifiedCatalog } from '../lib/catalog';
 import { COPY } from '../lib/copy';
 import { pickMaterial, presetScenario, resolveMaterial, SCENARIO_PRESETS } from '../engine/aliases';
 import { applyEnvironment, isElevatedO2, visibleEnvironmentPresets, type EnvironmentPreset } from '../engine/environments';
-import { briefingKey, currentBriefing, evidenceViews, investigationSummary, mapCoordinates } from '../engine/views';
+import { briefingKey, currentBriefing, evidenceViews, investigationSummary, mapCoordinates, onMapAxes } from '../engine/views';
 import { evidenceLocator, evidenceSource } from '../lib/evidenceSource';
 import { FIELD_UNITS, PARAM_LABELS, ParseScenarioResponseSchema, SynthesizeResponseSchema, type Briefing, type ContinuousParam, type Experiment, type MatchResult, type ParsedScenario, type ResolvedScenario } from '../lib/types';
-import { gapGrid, gapRadar, type GapRadar as GapRadarData } from '../engine/gaps';
+import { gapGrid, gapRadar, GRID, type GapRadar as GapRadarData } from '../engine/gaps';
 import { whyMatched } from '../engine/match';
 import { t } from '../i18n';
 import { missionEntry } from '../engine/mission';
@@ -579,8 +579,10 @@ export function EvidenceMap({
   const bottom = 42;
   const plotWidth = width - left - right;
   const plotHeight = height - top - bottom;
-  const x = (flow: number) => left + (flow / 30) * plotWidth;
-  const y = (o2: number) => top + ((30 - o2) / 16) * plotHeight;
+  // Axes come from the shared gap GRID, so plotted points, cells and the on-axes count can never diverge.
+  const x = (flow: number) => left + ((flow - GRID.flow.min) / (GRID.flow.max - GRID.flow.min)) * plotWidth;
+  const y = (o2: number) => top + ((GRID.o2.max - o2) / (GRID.o2.max - GRID.o2.min)) * plotHeight;
+  const ticks = (min: number, max: number, step: number) => Array.from({ length: Math.floor((max - min) / step) + 1 }, (_, i) => min + i * step);
   const outcomeColor = (outcome: Experiment['outcome']) => {
     if (outcome === 'sustained') return 'var(--color-flame)';
     if (outcome === 'extinguished') return 'var(--color-blue)';
@@ -638,13 +640,13 @@ export function EvidenceMap({
                   clipPath="url(#ignis-plot-clip)"
                 />
               )}
-              {[0, 5, 10, 15, 20, 25, 30].map((flow) => (
+              {ticks(GRID.flow.min, GRID.flow.max, 5).map((flow) => (
                 <g key={`x-${flow}`}>
                   <line x1={x(flow)} x2={x(flow)} y1={top} y2={top + plotHeight} stroke="var(--color-border)" strokeDasharray="3 5" />
                   <text x={x(flow)} y={height - 20} textAnchor="middle" fill="var(--color-dim)" fontSize="11">{flow}</text>
                 </g>
               ))}
-              {[14, 18, 22, 26, 30].map((o2) => (
+              {ticks(GRID.o2.min, GRID.o2.max, 4).map((o2) => (
                 <g key={`y-${o2}`}>
                   <line x1={left} x2={left + plotWidth} y1={y(o2)} y2={y(o2)} stroke="var(--color-border)" strokeDasharray="3 5" />
                   <text x={left - 10} y={y(o2) + 4} textAnchor="end" fill="var(--color-dim)" fontSize="11">{o2}</text>
@@ -680,7 +682,7 @@ export function EvidenceMap({
                 </g>
               ))}
               </g>
-              {scenario?.o2_pct != null && scenario.flow_cm_s != null && scenario.o2_pct >= 14 && scenario.o2_pct <= 30 && scenario.flow_cm_s >= 0 && scenario.flow_cm_s <= 30 && (
+              {scenario?.o2_pct != null && scenario.flow_cm_s != null && onMapAxes(scenario.o2_pct, scenario.flow_cm_s) && (
                 <g aria-label={`Scenario marker: ${scenario.flow_cm_s} centimeters per second airflow, ${scenario.o2_pct}% oxygen`}>
                   <circle cx={x(scenario.flow_cm_s)} cy={y(scenario.o2_pct)} r="11" fill="none" stroke="var(--color-text)" strokeWidth="2" />
                   <circle cx={x(scenario.flow_cm_s)} cy={y(scenario.o2_pct)} r="3" fill="var(--color-text)" />

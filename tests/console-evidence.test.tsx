@@ -4,6 +4,7 @@ import { EvidenceMap, EvidenceOnlyFallback, InvestigationSummary, MatchPanel } f
 import { investigationSummary } from '../src/engine/views';
 import { matchScenario } from '../src/engine/match';
 import { COPY } from '../src/lib/copy';
+import { GRID } from '../src/engine/gaps';
 import { card, scenario, t4 } from './helpers';
 
 const onSelect = () => {};
@@ -47,6 +48,12 @@ describe('evidence rendering regression checks', () => {
     expect(html).toContain('var(--color-violet)');
     expect(html).toContain('<path');
     expect(html).toContain(COPY.mapScope);
+  });
+  it('plot bounds equal the shared GRID: its corners land on the plot frame (54,18)–(742,288)', () => {
+    const corners = [card({ id: 'tl', o2_pct: GRID.o2.max, flow_cm_s: GRID.flow.min }), card({ id: 'br', o2_pct: GRID.o2.min, flow_cm_s: GRID.flow.max })];
+    const html = renderToStaticMarkup(<EvidenceMap experiments={corners} scenario={null} matches={[]} status="connected" selectedId={null} onSelect={onSelect} />);
+    expect(html).toContain('cx="54" cy="18"');
+    expect(html).toContain('cx="742" cy="288"');
   });
   it('retains the exact source URL, changing-condition notice and persistent selection on cards', () => {
     const experiment = t4({ source_url: 'https://ntrs.nasa.gov/citations/20210011521', ntrs_id: '20210011521' });
