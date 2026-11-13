@@ -12,6 +12,20 @@
 import { eligibleCards } from '../lib/gates.js';
 import type { CoverageResult, Experiment, MatchResult, ResolvedScenario } from '../lib/types.js';
 import { retrieve } from './match.js';
+import { GRID } from './gaps.js';
+
+/** Separate missing coordinates from measured points beyond the displayed axes. */
+export function mapCoordinates(experiments: Experiment[]) {
+  const coordinates = experiments.filter((e) => e.o2_pct != null && e.flow_cm_s != null);
+  const onAxes = (e: Experiment) => e.o2_pct! >= GRID.o2.min && e.o2_pct! <= GRID.o2.max &&
+    e.flow_cm_s! >= GRID.flow.min && e.flow_cm_s! <= GRID.flow.max;
+  return {
+    coordinates,
+    visible: coordinates.filter(onAxes),
+    outside: coordinates.filter((e) => !onAxes(e)),
+    missing: experiments.filter((e) => e.o2_pct == null || e.flow_cm_s == null),
+  };
+}
 
 export interface EvidenceViews {
   revision: string;

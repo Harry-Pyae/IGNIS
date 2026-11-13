@@ -5,6 +5,11 @@
 
 **Organizer ruling (reported by the team lead, 2026-11-10):** the organizers allow the team to continue preparation before 2026-11-14. The written ruling will be attached here verbatim. The team's own rule stands: card extraction and verification happen only inside the event window.
 
+**Clarification supplied by the team lead on 2026-11-13:** “pre-event work is okay, only push to github on event days.”
+This is the team lead's report, not a verbatim organizer document; organizer identity, original message and judging
+scope have not been supplied. Keep all new changes local until Nov 14–15. Historical commits and disclosure remain
+unchanged. The event-window card verification rule still applies.
+
 This is a plain statement of what our team built and when, so anyone can check it against the public git history
 (<https://github.com/Harry-Pyae/IGNIS>).
 
@@ -61,11 +66,15 @@ All of this is in the git history with its dates.
 
 - **Development:** an AI coding assistant (Claude Code, by Anthropic) wrote most of the code under the team lead's
   direction. The team lead reviewed, tested and merged every change.
+- **Current refinement:** OpenAI Codex assisted with the unified specification's code, tests and execution documents
+  on 2026-11-13. These changes are local pending the event-day GitHub push; scientific and participant reviews are
+  not represented as completed by the coding agent. The specification consolidates Gemini and Google AI Mode suggestions.
 - **In the product:** Groq-hosted `openai/gpt-oss-120b` (primary) and Google Gemini `gemini-3.5-flash-lite` (backup)
   turn a typed scenario into structured fields, which the user confirms, and narrate retrieved evidence as structured
   claims that the server validates. They also draft card extractions that a named human verifies before anything is
   published. The LLMs never classify materials, rank matches or explain matches; that is deterministic code.
-- **Branding art** (`public/art/*`): AI-generated illustrations made with **[tool name — team lead to fill in]**, then
+- **Branding art** (`public/art/*`): AI-generated illustrations made with **ChatGPT, with Claude assistance**
+  (tools confirmed by the team lead on 2026-11-13), then
   post-processed programmatically (gradient rebuild and added grain). They are used for branding only, never as experiment data, and the flame illustration is captioned
   "Illustration — not NASA experiment imagery."
 

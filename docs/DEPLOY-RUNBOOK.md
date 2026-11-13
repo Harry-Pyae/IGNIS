@@ -12,9 +12,22 @@ Takes about 15 minutes.
    2. `supabase/migrations/0002_round2.sql`
    3. `supabase/migrations/0003_rate_limit.sql`: the shared per-IP rate limit. **Don't skip it.** Without it
       the limiter fails open by design, so nothing breaks visibly but the public API has no request cap.
-   4. `supabase/seed.sql` (3 **draft** cards: invisible to the public until R1 verifies them in `/curate`)
+   4. `supabase/migrations/0004_experiment_identity.sql`: unique normalized campaign/test identity across publications.
+      It fails if existing records conflict; ask R1 to reconcile the records, never automatically delete/merge them.
+   5. `supabase/seed.sql` (3 **draft** cards: invisible to the public until R1 verifies them in `/curate`)
 
    Any later migration in `supabase/migrations/` goes in numeric order, before the seed.
+
+   For an existing project, apply only unapplied migrations after validation; do not rerun the seed. Migration 0004
+   is prepared locally and is not applied remotely by the 2026-11-13 implementation. A read-only conflict check is:
+
+   ```sql
+   select lower(btrim(campaign)) as campaign_key, lower(btrim(test_id)) as test_key, count(*)
+   from public.experiments group by 1, 2 having count(*) > 1;
+   ```
+
+   Different source URLs do not make the same physical run independent. Alias/spelling reconciliation still belongs
+   to R1. A duplicate write returns `409 duplicate_experiment` so the curator can reopen the existing card.
 3. **Project Settings → API**. Copy three values:
    - Project URL → `SUPABASE_URL`
    - `anon` / publishable key → `SUPABASE_ANON_KEY`

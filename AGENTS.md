@@ -24,6 +24,9 @@ before writing code. Where they disagree, the Build Plan's Core Principles win.
 
 ## Git rules
 
+- **2026-11-13 team-lead clarification:** preparation work is permitted locally; push to GitHub only on event days
+  (2026-11-14–15). See `docs/DISCLOSURE.md`. Do not push this preparation patch before that window.
+
 - **Only Coder A pushes or merges to `main`.** Coder B works on `console`, Coder C on `features`,
   each cut from the latest `main`.
 - Research members (R1–R3) don't touch code. They work through `/curate`, shared drives and docs, and send

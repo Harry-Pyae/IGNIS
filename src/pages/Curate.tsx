@@ -218,6 +218,11 @@ export function Curate() {
             Only explicitly stated values. Ambiguous → null + note. Quote verbatim with original units. Changing conditions
             go in condition_changes, never stored as constant.
           </p>
+          <p className="mt-2 max-w-2xl text-sm text-dim">
+            One card per campaign and test ID, even when a run appears in multiple papers. Reopen the existing card
+            to reconcile sources. Check absolute versus gauge pressure, specimen geometry and the reported outcome;
+            study-wide ranges and non-ignition events must not be forced into a run's numeric fields or outcome label.
+          </p>
         </div>
         <label className="flex flex-col gap-1">
           <span className="console-label text-dim">Curator secret</span>

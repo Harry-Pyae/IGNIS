@@ -496,6 +496,7 @@ export const CurateListResponseSchema = z.object({ items: z.array(CurateListItem
 export const ApiErrorCodeSchema = z.enum([
   'invalid_request',
   'ineligible_evidence',
+  'duplicate_experiment',
   'unauthorized',
   'not_found',
   'rate_limited',

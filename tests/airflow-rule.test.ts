@@ -40,7 +40,7 @@ describe('the canonical rule is in the parse prompt', () => {
     for (const f of AIRFLOW_PARSE_FIXTURES) expect(PARSE_SCENARIO_SYSTEM).toContain(`"${f.text}" -> ${JSON.stringify(f.scenario)}`);
   });
 
-  it('prompt version bumped (part of the briefing-cache key)', () => expect(PROMPT_VERSION).toBe('prompts-v4'));
+  it('prompt version bumped (part of the briefing-cache key)', () => expect(PROMPT_VERSION).toBe('prompts-v5'));
 
   it('both providers receive the byte-identical system prompt', async () => {
     const systems: Record<string, string> = {};

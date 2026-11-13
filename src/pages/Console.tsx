@@ -9,7 +9,8 @@ import { useVerifiedCatalog } from '../lib/catalog';
 import { COPY } from '../lib/copy';
 import { pickMaterial, presetScenario, resolveMaterial, SCENARIO_PRESETS } from '../engine/aliases';
 import { applyEnvironment, isElevatedO2, visibleEnvironmentPresets, type EnvironmentPreset } from '../engine/environments';
-import { briefingKey, currentBriefing, evidenceViews, investigationSummary } from '../engine/views';
+import { briefingKey, currentBriefing, evidenceViews, investigationSummary, mapCoordinates } from '../engine/views';
+import { evidenceLocator, evidenceSource } from '../lib/evidenceSource';
 import { FIELD_UNITS, PARAM_LABELS, ParseScenarioResponseSchema, SynthesizeResponseSchema, type Briefing, type ContinuousParam, type Experiment, type MatchResult, type ParsedScenario, type ResolvedScenario } from '../lib/types';
 import { gapGrid, gapRadar, type GapRadar as GapRadarData } from '../engine/gaps';
 import { whyMatched } from '../engine/match';
@@ -17,12 +18,6 @@ import { t } from '../i18n';
 import { missionEntry } from '../engine/mission';
 import { contextSection } from '../lib/context-content';
 import { GUIDED_MISSION_REQUEST, takePendingMission } from './consoleLoader';
-
-function nasaPdfUrl(experiment: Experiment): string | null {
-  if (!experiment.ntrs_id) return null;
-  if (experiment.source_url.includes('/downloads/')) return experiment.source_url;
-  return `https://ntrs.nasa.gov/api/citations/${encodeURIComponent(experiment.ntrs_id)}/downloads/${encodeURIComponent(experiment.ntrs_id)}.pdf`;
-}
 
 function experimentLabel(experiment: Experiment): string {
   return experiment.test_id.toLowerCase().startsWith(experiment.campaign.toLowerCase())
@@ -65,6 +60,8 @@ export function Console() {
   const [parsing, setParsing] = useState(false);
   const [message, setMessage] = useState('');
   const [guidedStep, setGuidedStep] = useState<number | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [inputsChanged, setInputsChanged] = useState(false);
   const [appliedEnvironmentId, setAppliedEnvironmentId] = useState<string | null>(null);
   const scenarioEditor = useRef<HTMLDetailsElement>(null);
   const sourceMaterials = useMemo(() => experiments.map(({ domain, fuel_material, material_class }) => ({ domain, fuel_material, material_class })), [experiments]);
@@ -165,6 +162,7 @@ export function Console() {
   };
 
   function editScenario(update: Partial<ParsedScenario>, materialEdited = false) {
+    if (confirmed) setInputsChanged(true);
     setScenario((current) => ({ ...current, ...update }));
     if ('o2_pct' in update || 'pressure_kpa' in update) setAppliedEnvironmentId(null);
     setConfirmed(null);
@@ -199,6 +197,7 @@ export function Console() {
     setAppliedEnvironmentId(null);
     setMaterialChoice(null);
     setConfirmed(null);
+    setInputsChanged(false);
     setMessage('');
     setScenario({
       domain: 'solid_flammability',
@@ -377,6 +376,7 @@ export function Console() {
                   </p>
                 )}
                 {activeEnvironment && <p role="status" className="text-[13px] text-dim">{COPY.environmentApplied}</p>}
+                {activeEnvironment && <p className="text-[13px] text-dim">{COPY.environmentLimit}</p>}
                 {activeEnvironment && isElevatedO2(activeEnvironment) && <p className="text-[13px] text-warn">{COPY.elevatedO2(activeEnvironment.o2_pct)}</p>}
               </div>
             )}
@@ -387,6 +387,7 @@ export function Console() {
         </div>
       </Panel>
 
+      {inputsChanged && !confirmed && <p role="status" className="rounded-lg border border-warn/35 p-3 text-sm text-warn">{COPY.staleScenario}</p>}
       <Panel as="section" aria-labelledby="s2" className="reveal">
         <SectionHeader
           id="s2"
@@ -396,18 +397,20 @@ export function Console() {
         <MissionCaption step={guidedStep === 1 ? 1 : null} onStep={setGuidedStep} text={t(MISSION_STEPS[1].caption)} />
         <InvestigationSummary
           summary={investigationSummary(draft, confirmed, views)}
+          status={dataStatus}
           onEdit={focusScenarioEditor}
         />
-        <EvidenceMap key={revision} experiments={views?.eligible ?? experiments} scenario={confirmed} matches={views?.top_k ?? []} status={dataStatus} />
+        {dataStatus === 'unavailable' && <Button size="sm" className="mb-4" onClick={reload}>{t('retry')}</Button>}
+        <EvidenceMap key={revision} experiments={views?.eligible ?? experiments} scenario={confirmed} matches={views?.top_k ?? []} status={dataStatus} selectedId={selectedId} onSelect={setSelectedId} />
       </Panel>
 
       <div className="grid gap-6">
         <Panel as="section" aria-labelledby="s3" className="reveal">
         <SectionHeader id="s3" step={t('matchesStep')} title={t('matchPanel')} />
           <MissionCaption step={guidedStep === 2 ? 2 : null} onStep={setGuidedStep} text={t(MISSION_STEPS[2].caption)} />
-          <MatchPanel matches={views?.top_k ?? []} status={dataStatus} confirmed={confirmed !== null} />
+          <MatchPanel matches={views?.top_k ?? []} status={dataStatus} confirmed={confirmed !== null} selectedId={selectedId} onSelect={setSelectedId} />
         </Panel>
-        <Panel as="section" aria-labelledby="s4">
+        <Panel as="section" aria-labelledby="s4" className="motion-still">
           <SectionHeader id="s4" step={t('briefStep')} title={t('missionBrief')} />
           <MissionCaption step={guidedStep === 3 ? 3 : null} onStep={setGuidedStep} text={t(MISSION_STEPS[3].caption)} />
           <MissionBrief
@@ -415,12 +418,12 @@ export function Console() {
             status={activeBriefStatus}
             confirmed={confirmed !== null}
             matches={views?.top_k ?? []}
-            onCitation={focusExperiment}
+            onCitation={(id) => { setSelectedId(id); focusExperiment(id); }}
           />
         </Panel>
       </div>
 
-      <Panel as="section" aria-labelledby="s5" className="reveal">
+      <Panel as="section" aria-labelledby="s5" className="motion-still">
         <SectionHeader id="s5" step={t('gapStep')} title={t('evidenceGapRadar')} />
         <MissionCaption step={guidedStep === 4 ? 4 : null} onStep={setGuidedStep} text={t(MISSION_STEPS[4].caption)} />
         <GapRadarPanel data={radar} status={dataStatus} scenarioActive={confirmed !== null} />
@@ -462,11 +465,13 @@ function MissionCaption({ step, onStep, text }: { step: number | null; onStep: (
   );
 }
 
-function InvestigationSummary({
+export function InvestigationSummary({
   summary: { scenario, confirmed, counts },
+  status,
   onEdit,
 }: {
   summary: ReturnType<typeof investigationSummary>;
+  status: 'connected' | 'loading' | 'unavailable';
   onEdit: () => void;
 }) {
   const summary = COPY.summary;
@@ -476,7 +481,7 @@ function InvestigationSummary({
   const conditions = [summary.o2(scenario.o2_pct), summary.flow(scenario.flow_cm_s)].join(' · ');
   const evidence = counts
     ? [summary.eligible(counts.eligible), summary.plotted(counts.plotted), summary.notPlotted(counts.not_plotted)]
-    : [t('loading')];
+    : [t(status === 'unavailable' ? 'evidenceUnavailable' : 'loading')];
 
   return (
     <div role="group" aria-label={`${summary.scenario}, ${summary.conditions}, ${summary.evidence}`} className="mb-4 grid grid-cols-2 gap-3 rounded-xl border border-border bg-bg/35 p-3 sm:grid-cols-4">
@@ -531,25 +536,35 @@ function ResearchContext({ section }: { section: NonNullable<ReturnType<typeof c
   );
 }
 
-function EvidenceMap({
+function OutcomeMark({ outcome, x, y, color }: { outcome: Experiment['outcome']; x: number; y: number; color: string }) {
+  const style = { fill: color, stroke: 'var(--color-bg)', strokeWidth: 1.5 };
+  if (outcome === 'extinguished') return <rect x={x - 5} y={y - 5} width={10} height={10} {...style} />;
+  if (outcome === 'transition') return <path d={`M ${x} ${y - 7} L ${x + 6} ${y} L ${x} ${y + 7} L ${x - 6} ${y} Z`} {...style} />;
+  if (outcome === 'partial') return <path d={`M ${x} ${y - 7} L ${x + 6} ${y + 5} L ${x - 6} ${y + 5} Z`} {...style} />;
+  return <circle cx={x} cy={y} r={5.5} {...style} />;
+}
+
+export function EvidenceMap({
   experiments,
   scenario,
   matches,
   status,
+  selectedId,
+  onSelect,
 }: {
   experiments: Experiment[];
   scenario: ResolvedScenario | null;
   matches: MatchResult[];
   status: 'connected' | 'loading' | 'unavailable';
+  selectedId: string | null;
+  onSelect: (id: string) => void;
 }) {
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-  const coordinateRecords = experiments.filter((experiment) => experiment.o2_pct != null && experiment.flow_cm_s != null);
-  const isOnAxes = (experiment: Experiment) => experiment.o2_pct! >= 14 && experiment.o2_pct! <= 30 && experiment.flow_cm_s! >= 0 && experiment.flow_cm_s! <= 30;
-  const plotted = coordinateRecords.filter(isOnAxes);
-  const outsideAxesCount = coordinateRecords.length - plotted.length;
+  const { coordinates: coordinateRecords, visible: plotted, outside, missing } = mapCoordinates(experiments);
+  const outsideAxesCount = outside.length;
   const grid = gapGrid(experiments, scenario);
-  const missingAxisCount = grid.population - grid.plotted;
+  const missingAxisCount = missing.length;
   const selected = experiments.find((experiment) => experiment.id === selectedId);
+  const source = selected ? evidenceSource(selected) : null;
   const matchIds = new Set(matches.slice(0, 3).map((match) => match.experiment.id));
   const envelope = grid.envelope;
   const outsideEnvelope = !!scenario && !!envelope && (
@@ -575,7 +590,7 @@ function EvidenceMap({
   };
 
   return (
-    <div>
+    <div id="evidence-map" tabIndex={-1} className="min-w-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-amber">
       {status === 'loading' ? (
         <p role="status" className="rounded-xl border border-border bg-bg/50 px-4 py-6 text-center text-sm text-dim">{t('catalogConnecting')}</p>
       ) : status === 'unavailable' ? (
@@ -648,15 +663,19 @@ function EvidenceMap({
               {plotted.map((experiment) => (
                 <g
                   key={experiment.id}
+                  id={`map-point-${experiment.id}`}
                   role="button"
                   tabIndex={0}
+                  aria-pressed={selectedId === experiment.id}
                   aria-label={`${experimentLabel(experiment)}, ${experiment.outcome ?? t('outcomeUnreported')}, ${experiment.o2_pct}% oxygen, ${experiment.flow_cm_s} centimeters per second airflow`}
-                  onClick={() => setSelectedId(experiment.id)}
-                  onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); setSelectedId(experiment.id); } }}
+                  onClick={() => onSelect(experiment.id)}
+                  onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onSelect(experiment.id); } }}
                   className="cursor-pointer focus-visible:outline focus-visible:outline-1 focus-visible:outline-amber"
                 >
+                  <circle cx={x(experiment.flow_cm_s!)} cy={y(experiment.o2_pct!)} r="18" fill="transparent" />
                   {matchIds.has(experiment.id) && <circle cx={x(experiment.flow_cm_s!)} cy={y(experiment.o2_pct!)} r="9" fill="none" stroke="var(--color-text)" strokeWidth="1.25" />}
-                  <circle cx={x(experiment.flow_cm_s!)} cy={y(experiment.o2_pct!)} r="5.5" fill={outcomeColor(experiment.outcome)} stroke="var(--color-bg)" strokeWidth="1.5" />
+                  {selectedId === experiment.id && <circle cx={x(experiment.flow_cm_s!)} cy={y(experiment.o2_pct!)} r="13" fill="none" stroke="var(--color-amber)" strokeWidth="2" />}
+                  <OutcomeMark outcome={experiment.outcome} x={x(experiment.flow_cm_s!)} y={y(experiment.o2_pct!)} color={outcomeColor(experiment.outcome)} />
                   <title>{experiment.test_id} · {experiment.outcome ?? t('outcomeNotReported')} · {experiment.o2_pct}% O₂ · {experiment.flow_cm_s} cm/s</title>
                 </g>
               ))}
@@ -670,15 +689,12 @@ function EvidenceMap({
             </svg>
           </div>
           <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-dim" aria-label="Evidence map legend">
-            <span className="inline-flex items-center gap-2"><i aria-hidden className="size-2.5 rounded-full bg-flame" />{t('sustained')}</span>
-            <span className="inline-flex items-center gap-2"><i aria-hidden className="size-2.5 rounded-full bg-blue" />{t('extinguished')}</span>
-            <span className="inline-flex items-center gap-2"><i aria-hidden className="size-2.5 rounded-full bg-violet" />{t('transition')}</span>
-            <span className="inline-flex items-center gap-2"><i aria-hidden className="size-2.5 rounded-full bg-success" />{t('partial')}</span>
-            <span className="inline-flex items-center gap-2"><i aria-hidden className="size-2.5 rounded-full bg-faint" />{t('outcomeNotReported')}</span>
+            {(['sustained', 'extinguished', 'transition', 'partial'] as const).map((outcome) => <span key={outcome} className="inline-flex items-center gap-2"><svg aria-hidden="true" viewBox="0 0 20 20" className="size-5"><OutcomeMark outcome={outcome} x={10} y={10} color={outcomeColor(outcome)} /></svg>{t(outcome)}</span>)}
             <span className="inline-flex items-center gap-2"><i aria-hidden className="size-2.5 rounded-full border border-lit" />{t('scenario')}</span>
             <span className="inline-flex items-center gap-2"><i aria-hidden className="h-3 w-4 rounded-sm border border-faint/50" style={{ backgroundImage: 'repeating-linear-gradient(135deg, transparent 0 3px, var(--color-faint) 3px 4px)' }} />{t('untestedCell')}</span>
             <span className="inline-flex items-center gap-2"><i aria-hidden className="h-3 w-4 rounded-sm border border-dashed border-faint/60 bg-faint/10" />{t('outsideCatalogRange')}</span>
           </div>
+          <p className="mt-3 text-sm leading-relaxed text-dim">{COPY.mapScope}</p>
           <p className="mt-3 text-[13px] text-dim">{plotted.length} {t('plotted')} · {matches.length} {t('rankedMatches')}</p>
           {outsideAxesCount > 0 && <p role="status" className="mt-2 text-[13px] text-dim">{outsideAxesCount} {t(outsideAxesCount === 1 ? 'outsideAxesRecord' : 'outsideAxesRecords')}</p>}
           {outsideEnvelope && <p role="status" className="mt-3 rounded-lg border border-warn/35 bg-warn/[0.05] px-3 py-2 text-sm text-warn">{COPY.outsideRange}</p>}
@@ -686,38 +702,43 @@ function EvidenceMap({
             <div className="mt-4 rounded-xl border border-border bg-bg/55 p-4">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
-                <p className="console-label text-amber">{selected.campaign} · {selected.test_id}</p>
+                <p className="console-label break-words text-amber [overflow-wrap:anywhere]">{selected.campaign} · {selected.test_id}</p>
                 <p className="mt-1 text-sm text-text">{selected.outcome ?? 'Outcome not reported'} · {selected.o2_pct}% O₂ · {selected.flow_cm_s} cm/s</p>
                 </div>
-                {(nasaPdfUrl(selected) || selected.source_url) && <a href={nasaPdfUrl(selected) ?? selected.source_url} target="_blank" rel="noreferrer" className="text-sm text-amber underline underline-offset-4">{nasaPdfUrl(selected) ? 'NASA paper PDF' : 'Source'}</a>}
+                {source && <a href={source.url} target="_blank" rel="noreferrer" className="text-sm text-amber underline underline-offset-4">{source.pdf ? t('nasaPaperPdf') : t('source')}</a>}
               </div>
-              {selected.key_observation_quote && <blockquote className="mt-3 border-l-2 border-raised pl-3 text-sm leading-relaxed text-dim">“{selected.key_observation_quote}”</blockquote>}
-              <p className="mt-2 text-xs text-dim">{[selected.source_page != null ? `${t('sourcePage')} ${selected.source_page}` : null, selected.source_figure, selected.source_table].filter(Boolean).join(' · ')}</p>
+              {selected.condition_changes?.map((change, index) => <p key={index} className="mt-2 text-sm text-warn">{COPY.changingConditions}: {change.note}</p>)}
+              {selected.key_observation_quote && <blockquote className="mt-3 break-words border-l-2 border-raised pl-3 text-sm leading-relaxed text-dim [overflow-wrap:anywhere]">“{selected.key_observation_quote}”</blockquote>}
+              <p className="mt-2 break-words text-sm text-dim [overflow-wrap:anywhere]">{selected.source_title}</p>
+              {evidenceLocator(selected) && <p className="mt-1 break-words text-xs text-dim [overflow-wrap:anywhere]">{evidenceLocator(selected)}</p>}
               {/* Selection stays on the map; opening the match card is the visitor's choice (no jump on every click). */}
               {matches.some((match) => match.experiment.id === selected.id) && (
                 <button type="button" onClick={() => focusExperiment(selected.id)} className="mt-3 text-sm text-amber underline underline-offset-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-amber">{t('openMatchCard')}</button>
               )}
             </div>
           )}
-          {missingAxisCount > 0 && <p className="mt-3 text-[13px] text-dim">{missingAxisCount} {t(missingAxisCount === 1 ? 'eligibleRecord' : 'eligibleRecords')} {t(missingAxisCount === 1 ? 'missingAxisRecord' : 'missingAxisRecords')}</p>}
         </>
       )}
+      {status === 'connected' && missingAxisCount > 0 && <p className="mt-3 text-[13px] text-dim">{missingAxisCount} {t(missingAxisCount === 1 ? 'eligibleRecord' : 'eligibleRecords')} {t(missingAxisCount === 1 ? 'missingAxisRecord' : 'missingAxisRecords')}</p>}
     </div>
   );
 }
 
-function MatchPanel({ matches, status, confirmed }: { matches: MatchResult[]; status: 'connected' | 'loading' | 'unavailable'; confirmed: boolean }) {
+export function MatchPanel({ matches, status, confirmed, selectedId, onSelect }: { matches: MatchResult[]; status: 'connected' | 'loading' | 'unavailable'; confirmed: boolean; selectedId: string | null; onSelect: (id: string) => void }) {
   if (status === 'loading') return <p role="status" className="rounded-xl border border-border bg-bg/50 px-4 py-6 text-center text-sm text-dim">{t('waitingCatalog')}</p>;
   if (status === 'unavailable') return <p role="status" className="rounded-xl border border-border bg-bg/50 px-4 py-6 text-center text-sm text-dim">{t('matchCatalogUnavailable')}</p>;
   if (!confirmed) return <p role="status" className="rounded-xl border border-border bg-bg/50 px-4 py-6 text-center text-sm text-dim">{t('confirmForMatches')}</p>;
   if (matches.length === 0) return <p role="status" className="rounded-xl border border-border bg-bg/50 px-4 py-6 text-center text-sm text-dim">{t('noVerifiedMatches')}</p>;
 
   return (
+    <div>
+    <p className="mb-3 text-sm leading-relaxed text-dim">{COPY.matchOrder}</p>
     <div className="grid auto-rows-fr gap-3 lg:grid-cols-3">
       {matches.map((match, index) => {
         const why = whyMatched(match);
         const { experiment } = match;
-        const provenance = [experiment.source_page != null ? `p. ${experiment.source_page}` : null, experiment.source_figure, experiment.source_table].filter(Boolean).join(' · ');
+        const source = evidenceSource(experiment);
+        const provenance = evidenceLocator(experiment);
         const field = (label: string, value: string, parameter?: ContinuousParam) => {
           const qualifier = parameter ? experiment.condition_changes?.filter((change) => change.parameter === parameter).map((change) => change.note) : [];
           return (
@@ -731,7 +752,7 @@ function MatchPanel({ matches, status, confirmed }: { matches: MatchResult[]; st
           );
         };
         return (
-          <article key={experiment.id} id={`experiment-${experiment.id}`} className="flex min-w-0 flex-col rounded-xl border border-border bg-bg/45 p-4">
+          <article key={experiment.id} id={`experiment-${experiment.id}`} tabIndex={-1} onFocus={() => onSelect(experiment.id)} className={`flex min-w-0 flex-col rounded-xl border border-border bg-bg/45 p-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-amber ${selectedId === experiment.id ? 'ring-2 ring-amber' : ''}`}>
             {experiment.media_url && <div className="mb-3 aspect-[16/9] overflow-hidden rounded-lg border border-border bg-bg/60">
               <img src={experiment.media_url} alt={`${COPY.campaignContext}: ${experimentLabel(experiment)}`} loading="lazy" className="size-full object-cover" />
             </div>}
@@ -742,6 +763,7 @@ function MatchPanel({ matches, status, confirmed }: { matches: MatchResult[]; st
                 <h3 className="mt-1 min-w-0 break-words text-base font-semibold text-text [overflow-wrap:anywhere]">{experimentLabel(experiment)}</h3>
               </div>
             </div>
+            {experiment.condition_changes?.length ? <p className="mt-2 text-sm text-warn">{COPY.changingConditions}</p> : null}
             <dl className="mt-3 divide-y divide-border/70 border-y border-border/70">
               {field(t('material'), experiment.fuel_material.replace(/_/g, ' '))}
               {field(t('form'), experiment.fuel_form.replace(/_/g, ' '))}
@@ -764,17 +786,19 @@ function MatchPanel({ matches, status, confirmed }: { matches: MatchResult[]; st
             {experiment.key_observation_quote && (
               <details className="mt-3 border-t border-border/70 pt-3 text-sm">
                 <summary className="cursor-pointer text-dim can-hover:hover:text-text">{t('sourceExcerpt')}</summary>
-                <blockquote className="mt-2 border-l-2 border-raised pl-3 leading-relaxed text-dim">“{experiment.key_observation_quote}”</blockquote>
-                  <a href="#s2" className="mt-3 inline-block text-xs text-amber underline underline-offset-4">{t('backToMap')}</a>
+                <blockquote className="mt-2 break-words border-l-2 border-raised pl-3 leading-relaxed text-dim [overflow-wrap:anywhere]">“{experiment.key_observation_quote}”</blockquote>
+                  <button type="button" onClick={() => { onSelect(experiment.id); const point = document.getElementById(`map-point-${experiment.id}`) ?? document.getElementById('evidence-map'); point?.focus({ preventScroll: true }); point?.scrollIntoView({ block: 'center' }); }} className="mt-3 inline-block min-h-10 text-sm text-amber underline underline-offset-4">{t('backToMap')}</button>
               </details>
             )}
+            <p className="mt-3 mb-2 break-words text-sm text-dim [overflow-wrap:anywhere]">{experiment.source_title}</p>
             <div className="mt-auto flex flex-wrap items-center justify-between gap-2 border-t border-border/70 pt-3 text-[13px]">
-              {provenance && <span className="text-dim">{provenance}</span>}
-              {(nasaPdfUrl(experiment) || experiment.source_url) && <a href={nasaPdfUrl(experiment) ?? experiment.source_url} target="_blank" rel="noreferrer" className="text-amber underline underline-offset-4">{nasaPdfUrl(experiment) ? t('nasaPaperPdf') : t('source')}</a>}
+              {provenance && <span className="min-w-0 break-words text-dim [overflow-wrap:anywhere]">{provenance}</span>}
+              {source && <a href={source.url} target="_blank" rel="noreferrer" className="min-h-10 text-amber underline underline-offset-4">{source.pdf ? t('nasaPaperPdf') : t('source')}</a>}
             </div>
           </article>
         );
       })}
+    </div>
     </div>
   );
 }
@@ -785,8 +809,7 @@ function focusExperiment(experimentId: string) {
   const excerpt = card.querySelector('details');
   if (excerpt instanceof HTMLDetailsElement) excerpt.open = true;
   card.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'center' });
-  card.classList.add('ring-2', 'ring-amber');
-  window.setTimeout(() => card.classList.remove('ring-2', 'ring-amber'), 1800);
+  card.focus({ preventScroll: true });
 }
 
 function MissionBrief({
@@ -825,6 +848,7 @@ function MissionBrief({
         return (
           <Panel key={group.classification} tone={group.tone} className="!p-4">
             <h3 className="console-label text-text">{group.title}</h3>
+            {group.classification === 'SUPPORTED' && <p className="mt-2 text-sm leading-relaxed text-dim">{COPY.interpretationLimit}</p>}
             <ul className="mt-2 flex flex-col gap-3">
               {claims.map((claim, index) => (
                 <li key={`${group.classification}-${index}`}>
@@ -849,24 +873,28 @@ function MissionBrief({
   );
 }
 
-function EvidenceOnlyFallback({ matches }: { matches: MatchResult[] }) {
+export function EvidenceOnlyFallback({ matches }: { matches: MatchResult[] }) {
   return (
     <div className="grid gap-3 lg:grid-cols-3">
       <p role="status" className="rounded-lg border border-warn/35 bg-warn/[0.05] px-3 py-2 text-sm text-warn lg:col-span-3">
         {COPY.fallback}
       </p>
       <h3 className="console-label text-dim lg:col-span-3">{t('matchedEvidenceOnly')}</h3>
-      {matches.map(({ experiment }) => (
-        <article key={experiment.id} className="rounded-xl border border-border bg-bg/45 p-3">
+      {matches.map(({ experiment }) => {
+        const source = evidenceSource(experiment);
+        return (
+        <article key={experiment.id} className="min-w-0 break-words rounded-xl border border-border bg-bg/45 p-3 [overflow-wrap:anywhere]">
           <p className="text-sm font-medium text-text">{experimentLabel(experiment)}</p>
           <p className="mt-1 text-sm text-dim">
           {experiment.outcome ?? t('outcomeNotReported')} · {experiment.o2_pct == null ? t('oxygenNotReported') : `${experiment.o2_pct}% O₂`} · {experiment.flow_cm_s == null ? t('airflowNotReported') : `${experiment.flow_cm_s} cm/s`}
           </p>
-          {experiment.source_page != null && <p className="mt-1 text-[12px] text-dim">{t('sourcePage')} {experiment.source_page}{experiment.source_figure ? ` · ${experiment.source_figure}` : ''}</p>}
-          {experiment.key_observation_quote && <p className="mt-2 text-sm leading-relaxed text-dim">“{experiment.key_observation_quote}”</p>}
-          {(nasaPdfUrl(experiment) || experiment.source_url) && <a href={nasaPdfUrl(experiment) ?? experiment.source_url} target="_blank" rel="noreferrer" className="mt-2 inline-block text-sm text-amber underline underline-offset-4">{nasaPdfUrl(experiment) ? t('nasaPaperPdf') : t('source')}</a>}
+          <p className="mt-2 text-sm text-dim">{experiment.source_title}</p>
+          {evidenceLocator(experiment) && <p className="mt-1 text-xs text-dim">{evidenceLocator(experiment)}</p>}
+          {experiment.condition_changes?.map((change, index) => <p key={index} className="mt-2 text-sm text-warn">{COPY.changingConditions}: {change.note}</p>)}
+          {experiment.key_observation_quote && <p className="mt-2 break-words text-sm leading-relaxed text-dim [overflow-wrap:anywhere]">“{experiment.key_observation_quote}”</p>}
+          {source && <a href={source.url} target="_blank" rel="noreferrer" className="mt-2 inline-block text-sm text-amber underline underline-offset-4">{source.pdf ? t('nasaPaperPdf') : t('source')}</a>}
         </article>
-      ))}
+      ); })}
     </div>
   );
 }

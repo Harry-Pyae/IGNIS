@@ -52,6 +52,16 @@ describe.skipIf(!dbTestsEnabled)('curation lifecycle (A2)', () => {
     expect(experiment.test_id).toBe(testId);
   });
 
+  it('rejects another publication of the same campaign/run, including normalized identity', async () => {
+    const original = record(testId);
+    const duplicate = { ...original, campaign: ` ${original.campaign.toLowerCase()} `, test_id: ` ${testId.toLowerCase()} `, source_url: 'https://ntrs.nasa.gov/citations/another-paper' };
+    const res = await write({ action: 'save_draft', record: duplicate });
+    expect(res.status).toBe(409);
+    expect((await res.json()).error.code).toBe('duplicate_experiment');
+    const concurrent = await Promise.all([write({ action: 'save_draft', record: original }), write({ action: 'save_draft', record: original })]);
+    expect(concurrent.map((r) => r.status)).toEqual([409, 409]);
+  });
+
   it('R1 corrects it — still a draft', async () => {
     const res = await write({ action: 'save_draft', id, record: { ...record(testId), thickness_mm: 1.5, notes: 'corrected per Table 2' } });
     expect(res.status).toBe(200);

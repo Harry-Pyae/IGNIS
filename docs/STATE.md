@@ -1,5 +1,12 @@
 # IGNIS — state handoff (2026-11-10, console merged · preparation phase)
 
+> **2026-11-13 local update:** the team lead authorized implementation of the unified execution specification.
+> [EXECUTION-STATUS.md](EXECUTION-STATUS.md) is the current status matrix (implemented / signed / production / QA).
+> Map semantics, source navigation, duplicate-run protection and scientific interpretation refinements are local;
+> this patch has not been pushed or deployed. Push only on event days per the team lead's clarification.
+> Source/coverage/media/QA/demo/submission documents now exist as working records; pending reviews remain pending.
+> The older snapshot below records historical results, not fresh validation of this patch.
+
 > **Timeline:** the official event is **Sat 2026-11-14 (Day 1) → Sun 2026-11-15 (Day 2)**. All work so far is the
 > preparation phase (from 2026-11-07). The official FAQ says teams may not begin working on the challenge before the
 > hackathon; our pre-event work is disclosed in `docs/DISCLOSURE.md`. **Ruling (reported 2026-11-10): preparation may

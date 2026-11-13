@@ -12,6 +12,11 @@ combustion experiments, explains what they actually observed, and marks where th
 verified evidence.
 **IGNIS refuses to guess.**
 
+Current delivery status and remaining human review gates: [execution status](docs/EXECUTION-STATUS.md).
+The official challenge's current long title is
+[Flame in Freefall: SI-Powered Fire Safety Insights from Microgravity Combustion Data](https://www.spaceappschallenge.org/2026/challenges/flame-in-freefall/?tab=teams).
+The 2026-11-13 refinement is local; GitHub pushes are reserved for event days.
+
 - **Build plan (technical contracts):** [IGNIS_BUILD_PLAN.md](IGNIS_BUILD_PLAN.md)
 - **Team plan (who owns what):** [IGNIS_TEAM_PLAN.md](IGNIS_TEAM_PLAN.md)
 - **Git + coding rules for humans and agents:** [AGENTS.md](AGENTS.md)
@@ -100,7 +105,7 @@ the deploy runbook §3.
 ## Database setup (once, Coder A)
 
 1. Create a Supabase project. In **SQL Editor**, run every migration **in order**, then the seed:
-   `supabase/migrations/0001_init.sql` → `0002_round2.sql` → `0003_rate_limit.sql` → `supabase/seed.sql`
+   `supabase/migrations/0001_init.sql` → `0002_round2.sql` → `0003_rate_limit.sql` → `0004_experiment_identity.sql` → `supabase/seed.sql`
    (3 **draft** cards, public only after R1 verifies them in `/curate`). Skipping 0003 is silent: the rate
    limiter deliberately fails open, so the site works but has **no shared request cap**. Check with a real 429
    after deploy (runbook §3).

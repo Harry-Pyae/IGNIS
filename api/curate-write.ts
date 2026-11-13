@@ -33,6 +33,8 @@ export const POST = route(async (req) => {
   const row = { ...record, verified_by, verified_at: verified_by ? new Date().toISOString() : null };
   const query = data.id ? db.from('experiments').update(row).eq('id', data.id) : db.from('experiments').insert(row);
   const { data: saved, error } = await query.select('*').maybeSingle();
+  if (error?.code === '23505')
+    return apiError(409, 'duplicate_experiment', 'This campaign and test ID already exist. Reopen the existing card and reconcile its sources; do not publish the same run twice.');
   if (error) return apiError(502, 'db_error', `Save failed: ${error.message}`);
   if (!saved) return apiError(404, 'not_found', 'No card with that id');
   return json({ experiment: ExperimentSchema.parse(saved) }, data.id ? 200 : 201);

@@ -3,6 +3,11 @@
 **NASA Space Apps 2026 · "Flame in Freefall" · Team AstroFlare**
 This is one self-contained file for checking progress without the repo. Coder A updates it after every patch.
 
+**2026-11-13 local implementation:** see [EXECUTION-STATUS.md](EXECUTION-STATUS.md) for the authoritative matrix
+separating implemented code, signed content, production verification, and QA. The unified specification's map/source/
+selection refinements, duplicate-run migration, review protocols and disclosure update are local, not deployed.
+GitHub pushes occur only on event days. The table below is the last recorded deployment snapshot (Nov 11).
+
 | | |
 |---|---|
 | **As of** | 2026-11-11, preparation phase (3 days before the official start, Sat 2026-11-14 = Day 1) |
@@ -38,12 +43,12 @@ refuses to guess.
 
 | Role | Owns | Status |
 |---|---|---|
-| **Coder A** (team lead) | `main`, engine, API, deploy, merges, shared contracts/copy | Active; queue empty until the next console PR or R1's cards |
+| **Coder A** (team lead) | `main`, engine, API, deploy, merges, shared contracts/copy | Unified specification refinements local Nov 13; next real-data checkpoint awaits R1 |
 | **Coder B** | Mission console (`console` branch) | Console v1 merged and live 2026-11-10 |
 | **Coder C** (optional) | Features (`features` branch) | ❌ no commits beyond `main`; the Team Plan's fallback rules apply |
 | **R1** | Data and science research: the catalog | ⛔ 0 cards published (blocks the demo) |
-| **R2** | NASA media, media ledger, pitch video | ❓ no ledger in the repo yet |
-| **R3** | QA, demo, captions, Burmese review, submission | ❓ no QA log or demo script in the repo yet |
+| **R2** | NASA media, media ledger, pitch video | Media ledger prepared; asset verification and video pending |
+| **R3** | QA, demo, captions, Burmese review, submission | QA/demo/submission protocols prepared; human execution and review pending |
 
 Rules: only Coder A merges to `main`; CI green before every PR; production holds real data only; publication is a named
 human (`verified_by` is the reviewer's own name).
@@ -99,21 +104,21 @@ human (`verified_by` is the reviewer's own name).
 | Live sliders with re-retrieval | ✅ | O₂ and airflow, each with a "Not specified" state |
 | Gap-grid shading on the map | ✅ | |
 | Gap Radar panel | ✅ | Largest untested regions + materials with < 3 records |
-| Media thumbnails on cards | ❌ | Needs R2's stills (`media_url`); the console doesn't render them yet |
+| Media thumbnails on cards | 🟡 | Renderer shipped in Round 6; approved R2 assets and R1 associations pending |
 | 30 cards | ⛔ | R1 |
 | Briefing cache | ✅ | Keyed by scenario + `catalog_revision` + prompt/validator version |
-| Guided Demo (Judge Mode) | 🟡 | Panel and button exist but are **disabled** until cards are live; captions from R3 pending |
+| Guided Demo (Judge Mode) | 🟡 | Five-step wiring shipped; reviewed case/captions and ≥3 distinct verified solid records pending |
 
 ### WOW (if time allows)
 
 | Item | Status |
 |---|---|
-| Auto-play Guided Demo captions | ❌ (Coder C item 2, falls back to Coder B static captions) |
-| Telemetry sparklines/modal | ❌ (field exists in `/curate`; R1 digitizes 3–5 curves) |
-| Comparison animation | ❌ (cut by default without Coder C) |
+| Auto-play Guided Demo captions | Cut; approved mission uses manual navigation |
+| Telemetry sparklines/modal | Cut; schema field is not a requirement to implement it |
+| Comparison animation | Rejected by current decisions and unified specification |
 | Flammability boundary polyline | ⛔ deferred (decision R2-6: needs a certified comparable measured series) |
 | Burmese UI | 🟡 `t()` plumbing + EN set done; Round 5 MY draft staged (`src/i18n/my.draft.ts`, 3 of 144 keys + glossary) behind R3 review (`docs/MY-REVIEW.md`); ships only complete and reviewed |
-| Map choreography (dot stagger, marker glide, crossfade) | ❌ (Coder B item 6, after everything else) |
+| Map choreography (dot stagger, marker glide, crossfade) | Cut; retain static evidence and preference-guarded existing motion |
 
 ### DO NOT BUILD (unchanged)
 Prediction/simulator · free chat · user PDF upload · droplet domain · 3D flames · accounts · offline/PWA claims ·
@@ -189,7 +194,7 @@ real verified cards, the video.
 
 **Round 5 (2026-11-10, Pyroverse content):** adopted: environment presets as honest gap demos (R1-gated) · Burmese draft set behind R3 review · verified-only context content · demo-guide UX pattern · SVS imagery via the ledger. Rejected: safety scores / 0–100 ratings · cost-per-kg and cost/safety optimization · planetary combustion profiles or derived burn formulas · 3D flame chamber · NASA-STD-6001B audit/compliance framing · chat bot · carding droplet/gaseous domains · "Approved/Qualified/Prohibited" language.
 
-**Round 4 (2026-11-10, upgrade proposal):** (1) Guided Demo → five-step evidence-investigation mission; content only from R1's verified cards · (2) ledgered stills on cards; the map stays a pure plot · (3) align Match Panel fields first, static comparison only if time allows · (4) rejected: trainers, survival guides, games, health tools, boundary fits, danger heatmaps, safety rankings, new report formats, new artwork · (5) lazy-loading before any mission code · (6) schedule re-baselined to 2026-11-14 = Day 1 · (7) the proposal stays uncommitted. **All build items are on hold pending the organizer ruling.**
+**Round 4 (2026-11-10, upgrade proposal):** (1) Guided Demo → five-step evidence-investigation mission; content only from R1's verified cards · (2) ledgered stills on cards; the map stays a pure plot · (3) align Match Panel fields first, static comparison only if time allows · (4) rejected: trainers, survival guides, games, health tools, boundary fits, danger heatmaps, safety rankings, new report formats, new artwork · (5) lazy-loading before any mission code · (6) schedule re-baselined to 2026-11-14 = Day 1 · (7) the proposal stays uncommitted. **Historical hold lifted by the reported organizer ruling; the Nov 13 clarification reserves GitHub pushes for event days.**
 
 ## 9. Open risks and blockers
 
@@ -197,7 +202,7 @@ real verified cards, the video.
 |---|---|---|
 | **Pre-event work vs the FAQ rule** | Ruling reported 2026-11-10: preparation may continue | Coder A: attach the written ruling to DISCLOSURE.md; keep the disclosure and AI-use section in the submission |
 | **No verified cards** | Blocks the demo case, the integration checkpoint, the mission, stills, the production failover proof and the acceptance run | R1: verification sprint on Day 1 (in the event window only) |
-| No R2/R3 artifacts in the repo | Can't confirm the video, ledger, QA log or demo script are on track | R2/R3: send docs-only PRs or issues to Coder A |
+| R2/R3 execution evidence pending | Ledger, QA log and demo structure now exist; they do not establish completed reviews or a video | R2/R3: append actual asset reviews, sessions and rehearsal results |
 | Forced-Gemini synthesize unproven on production | Backup path on stage is proven in tests and locally only | Coder A: run once on R1's first real card (runbook §3) |
 | Two presets lack materials | Cable insulation and Cargo packaging always open the picker | R1: card a real insulation and a packaging material, send the `fuel_material` names |
 | Coder C absent | WOW features cut by default | Follow the fallback rules; nobody absorbs them at the cost of their own "done when" |

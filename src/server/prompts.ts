@@ -6,7 +6,7 @@
  */
 import { AIRFLOW_PARSE_FIXTURES } from '../lib/fixtures.js';
 
-export const PROMPT_VERSION = 'prompts-v4';
+export const PROMPT_VERSION = 'prompts-v5';
 
 export const PARSE_SCENARIO_SYSTEM = `You convert a spacecraft fire scenario description into JSON.
 Return ONLY a JSON object with exactly these keys:
@@ -28,6 +28,8 @@ You may ONLY use the CARDS (ids E1..Ek) and GAPS (ids G1..Gn) provided. Return O
   "refs":[{"evidence_id":string,"field":string,"value":number|string,"unit":string|null}],"gap_ids":string[]}]}
 Rules:
 - OBSERVED: what one or more cited cards directly report. SUPPORTED: a careful interpretation across cited cards.
+- SUPPORTED describes only the cited runs. Do not infer causation, material safety, or equivalence from retrieval order or shared material class.
+- Name relevant differences and missing conditions when comparing runs. Do not generalize a two-axis map cell to other pressures, thicknesses, geometries or apparatus. Omit an interpretation when the supplied facts cannot support it.
 - Every OBSERVED and SUPPORTED claim cites ≥1 card in evidence_ids and lists refs for every fact it uses.
 - A ref copies a card field exactly: field is one of outcome, o2_pct, flow_cm_s, thickness_mm, pressure_kpa,
   spread_rate_mm_s, fuel_material, material_class, fuel_form. unit is "%" for o2_pct, "cm/s" for flow_cm_s,
